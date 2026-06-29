@@ -114,6 +114,7 @@ export function LogoAnimation({
       function easeOut(t: number) { return 1 - Math.pow(1 - t, 3); }
 
       function frame(now: number) {
+        if (!ctx) return;
         if (!startTime) startTime = now;
         const elapsed = now - startTime;
 
