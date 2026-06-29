@@ -572,7 +572,7 @@ export default function LandingPage() {
 
         <div className="flex-1 relative flex items-end overflow-hidden rounded-2xl" style={{ minHeight: 500 }}>
           <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, #2C2218 0%, #1A1512 100%)" }} />
-          <img src="/ChatGPT Image Jun 28, 2026, 11_48_21 PM.png" alt=""
+          <img src="/פגישת צוות באתר.png" alt=""
             className="absolute inset-0 w-full h-full object-cover transition-opacity"
             onError={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = "0"; }} />
           <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(20,14,10,0.93) 0%, rgba(20,14,10,0.35) 55%, rgba(20,14,10,0.1) 100%)" }} />
@@ -585,7 +585,7 @@ export default function LandingPage() {
 
         <div className="flex-1 relative flex items-end overflow-hidden rounded-2xl" style={{ minHeight: 500 }}>
           <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, #18202C 0%, #0E1520 100%)" }} />
-          <img src="/ChatGPT Image Jun 29, 2026, 12_04_28 AM.png" alt=""
+          <img src="/תמונת פגישה במשרדים.png" alt=""
             className="absolute inset-0 w-full h-full object-cover transition-opacity"
             onError={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = "0"; }} />
           <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(10,14,22,0.93) 0%, rgba(10,14,22,0.35) 55%, rgba(10,14,22,0.1) 100%)" }} />
