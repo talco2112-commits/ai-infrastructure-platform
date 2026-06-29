@@ -8,6 +8,7 @@ import {
   FileBarChart, Settings, LogOut, ChevronDown, Pencil,
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { LogoAnimation } from "@/components/LogoAnimation";
 
 const navItems = [
   { href: "/dashboard",      icon: LayoutDashboard, labelEn: "Dashboard",     labelHe: "לוח בקרה"  },
@@ -31,16 +32,8 @@ export function Sidebar({ lang }: { lang: "en" | "he" }) {
   return (
     <aside className="w-56 flex flex-col h-full shrink-0" style={{ background: "#1A1512" }}>
       {/* Logo */}
-      <div className="flex items-center gap-2.5 px-5 h-[60px] border-b shrink-0" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-        <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: "#D4714A" }}>
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M2 12L7 2L12 12" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M4 8.5H10" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
-          </svg>
-        </div>
-        <span className="font-bold text-white text-sm tracking-tight" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
-          InfrA<span style={{ color: "#ECA070", fontFamily: "'Cinzel','Trajan Pro',serif", fontSize: "1.08em", fontStyle: "normal", fontWeight: "600" }}>I</span>
-        </span>
+      <div className="flex items-center px-4 h-[60px] border-b shrink-0" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+        <LogoAnimation size={44} />
       </div>
 
       {/* Project Selector */}

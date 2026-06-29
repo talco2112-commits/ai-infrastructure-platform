@@ -1,6 +1,8 @@
 ﻿"use client";
 
 import { useState } from "react";
+import { VideoBackground } from "@/components/VideoBackground";
+import { LogoAnimation } from "@/components/LogoAnimation";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
@@ -34,27 +36,15 @@ export default function LoginPage() {
       {/* ── Left panel — atmospheric image/video ── */}
       <div className="hidden lg:flex flex-1 relative overflow-hidden flex-col justify-between p-12">
         {/* video / image background */}
-        <video autoPlay muted loop playsInline
-          className="absolute inset-0 w-full h-full object-cover"
-          src="/construction.mp4"
-          poster="/construction-poster.jpg"
-        />
+        <VideoBackground className="absolute inset-0 w-full h-full object-cover" />
         {/* warm dark overlay */}
         <div className="absolute inset-0" style={{ background: "linear-gradient(160deg, rgba(20,14,10,0.72) 0%, rgba(26,21,18,0.80) 100%)" }} />
         {/* fallback */}
         <div className="absolute inset-0 -z-10" style={{ background: "linear-gradient(160deg, #2C1810 0%, #1A1512 60%, #2A1A0E 100%)" }} />
 
         {/* Logo top-left */}
-        <div className="relative z-10 flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: copper }}>
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M2 12L7 2L12 12" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M4 8.5H10" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
-            </svg>
-          </div>
-          <span className="text-[18px] font-bold text-white tracking-tight">
-            InfrA<span style={{ color: copperL, fontFamily: "'Cinzel','Trajan Pro',serif", fontSize: "1.08em", fontStyle: "normal", fontWeight: "600" }}>I</span>
-          </span>
+        <div className="relative z-10">
+          <LogoAnimation size={80} />
         </div>
 
         {/* Bottom tagline */}
@@ -86,16 +76,8 @@ export default function LoginPage() {
         </Link>
 
         {/* Mobile logo (hidden on lg) */}
-        <div className="flex lg:hidden items-center gap-2 mb-10">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: copper }}>
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M2 12L7 2L12 12" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M4 8.5H10" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
-            </svg>
-          </div>
-          <span className="text-[18px] font-bold tracking-tight" style={{ color: text1 }}>
-            InfrA<span style={{ color: copper, fontFamily: "'Cinzel','Trajan Pro',serif", fontSize: "1.08em", fontStyle: "normal", fontWeight: "600" }}>I</span>
-          </span>
+        <div className="flex lg:hidden mb-10">
+          <LogoAnimation size={56} />
         </div>
 
         <div className="max-w-sm mx-auto w-full">

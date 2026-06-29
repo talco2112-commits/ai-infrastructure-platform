@@ -1,72 +1,132 @@
-﻿"use client";
+"use client";
 
 import { useState, useRef, useEffect } from "react";
-import { X, Send, Zap, MessageSquare, ChevronDown } from "lucide-react";
+import { Send, Zap, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type Role = "user" | "ai";
+type Role = "user" | "assistant";
 interface Message { role: Role; content: string }
 
-const suggestions = [
+const suggestionsEn = [
   "What is delaying Bridge 68?",
-  "Show all open RFIs related to electricity",
-  "Which quantities exceed the contract?",
+  "Show all open RFIs related to structural",
+  "Which budget sections are over plan?",
   "What activities are on the critical path?",
-  "Estimate delay if utility relocation slips 2 weeks",
+  "Summarize today's safety issues",
 ];
 
-const demoAnswers: Record<string, string> = {
-  "What is delaying Bridge 68?":
-    "Bridge 68 is currently 14 days behind schedule. The root cause is utility relocation in Zone D — currently at 23% vs. the planned 37%. Contributing factors include:\n\n• RFI-042 (electrical conduit routing) has been open for 8 days with no client response\n• Concrete delivery delay flagged by supplier on June 24\n• 2 structural drawings still at Rev.B pending design team approval\n\nAI recommendation: Escalate RFI-042 today. Moving pile foundation work earlier in the sequence could recover 8 days on the critical path.",
-  "What activities are on the critical path?":
-    "Based on the current schedule, the critical path runs through:\n\n1. Utility relocation – Zone D (bottleneck, 14d behind)\n2. Pile foundations – Bridge 68 approach\n3. Bridge deck formwork\n4. Concrete pour – deck slab\n5. Road base layer – Section B connection\n\nAny further delay to utility relocation directly extends project completion. The critical path has shifted twice this month due to the supplier delivery issue.",
-};
+const suggestionsHe = [
+  "מה מעכב את גשר 68?",
+  "הצג את כל הבקשות מידע הפתוחות",
+  "אילו מקטעי תקציב חרגו מהתוכנית?",
+  "אילו פעילויות נמצאות במסלול הקריטי?",
+  "סכם את בעיות הבטיחות של היום",
+];
 
 function TypingDots() {
   return (
-    <div className="flex items-center gap-1 px-3 py-2.5 bg-slate-100 rounded-xl rounded-bl-sm w-fit">
+    <div className="flex items-center gap-1 px-3 py-2.5 rounded-xl rounded-bl-sm w-fit"
+      style={{ background: "#F5F0EB" }}>
       {[0, 1, 2].map((i) => (
         <span
           key={i}
-          className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce"
-          style={{ animationDelay: `${i * 0.15}s` }}
+          className="w-1.5 h-1.5 rounded-full animate-bounce"
+          style={{ background: "#A8A29E", animationDelay: `${i * 0.15}s` }}
         />
       ))}
     </div>
   );
 }
 
-export function AiPrompter() {
-  const [open, setOpen] = useState(false);
+export function AiPrompter({ lang = "en" }: { lang?: "en" | "he" }) {
+  const [open, setOpen]         = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState("");
-  const [thinking, setThinking] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [input, setInput]       = useState("");
+  const [streaming, setStreaming] = useState(false);
+  const bottomRef  = useRef<HTMLDivElement>(null);
+  const inputRef   = useRef<HTMLInputElement>(null);
+  const abortRef   = useRef<AbortController | null>(null);
+
+  const isHe       = lang === "he";
+  const suggestions = isHe ? suggestionsHe : suggestionsEn;
 
   useEffect(() => {
-    if (open) {
-      setTimeout(() => inputRef.current?.focus(), 100);
-    }
+    if (open) setTimeout(() => inputRef.current?.focus(), 100);
   }, [open]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, thinking]);
+  }, [messages, streaming]);
 
-  function handleSend(text?: string) {
+  async function handleSend(text?: string) {
     const q = (text ?? input).trim();
-    if (!q || thinking) return;
-    setMessages((prev) => [...prev, { role: "user", content: q }]);
+    if (!q || streaming) return;
+
+    const userMsg: Message = { role: "user", content: q };
+    const next = [...messages, userMsg];
+    setMessages(next);
     setInput("");
-    setThinking(true);
-    setTimeout(() => {
-      const answer =
-        demoAnswers[q] ??
-        "I'm analyzing your project documents and schedule data. Connect the AI backend to get real-time answers about your project.";
-      setMessages((prev) => [...prev, { role: "ai", content: answer }]);
-      setThinking(false);
-    }, 1200);
+    setStreaming(true);
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    // Add empty assistant message that we'll fill via streaming
+    setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: next }),
+        signal: controller.signal,
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Request failed" }));
+        setMessages((prev) => {
+          const copy = [...prev];
+          copy[copy.length - 1] = { role: "assistant", content: `Error: ${err.error ?? "Something went wrong"}` };
+          return copy;
+        });
+        return;
+      }
+
+      const reader = res.body!.getReader();
+      const decoder = new TextDecoder();
+      let accumulated = "";
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        accumulated += decoder.decode(value, { stream: true });
+        const snap = accumulated;
+        setMessages((prev) => {
+          const copy = [...prev];
+          copy[copy.length - 1] = { role: "assistant", content: snap };
+          return copy;
+        });
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === "AbortError") return;
+      setMessages((prev) => {
+        const copy = [...prev];
+        copy[copy.length - 1] = {
+          role: "assistant",
+          content: isHe
+            ? "שגיאה בחיבור. בדוק שמפתח ה-API מוגדר ב-.env.local"
+            : "Connection error. Make sure ANTHROPIC_API_KEY is set in .env.local",
+        };
+        return copy;
+      });
+    } finally {
+      setStreaming(false);
+    }
+  }
+
+  function handleClose() {
+    abortRef.current?.abort();
+    setOpen(false);
   }
 
   return (
@@ -76,59 +136,82 @@ export function AiPrompter() {
         <button
           onClick={() => setOpen(true)}
           className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 active:scale-95 text-white pl-4 pr-5 py-3 rounded-2xl transition-all duration-200 text-[14px] font-semibold"
-        style={{ background: "#D4714A", boxShadow: "0 4px 20px rgba(212,113,74,0.35)" }}
+          style={{ background: "#D4714A", boxShadow: "0 4px 20px rgba(212,113,74,0.35)" }}
         >
           <div className="w-5 h-5 rounded-md bg-white/20 flex items-center justify-center">
             <Zap className="w-3 h-3 text-white" />
           </div>
-          Ask InfrAI
+          {isHe ? "שאל InfrAI" : "Ask InfrAI"}
         </button>
       )}
 
       {/* Chat panel */}
       {open && (
-        <div className="fixed bottom-6 right-6 z-50 w-[420px] bg-white rounded-2xl shadow-2xl shadow-black/20 border border-slate-200/60 flex flex-col overflow-hidden">
+        <div
+          className="fixed bottom-6 right-6 z-50 w-[440px] rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+          style={{ background: "#FAF8F5", border: "1px solid #EDE8DF", boxShadow: "0 8px 40px rgba(28,25,23,0.18)" }}
+          dir={isHe ? "rtl" : "ltr"}
+        >
           {/* Header */}
-          <div className="flex items-center gap-3 px-5 py-4 shrink-0" style={{ background: "linear-gradient(135deg, #D4714A, #B05E38)" }}>
+          <div
+            className="flex items-center gap-3 px-5 py-4 shrink-0"
+            style={{ background: "linear-gradient(135deg, #D4714A, #B05E38)" }}
+          >
             <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
               <Zap className="w-4 h-4 text-white" />
             </div>
             <div className="flex-1">
               <p className="text-[14px] font-bold text-white leading-tight">InfrAI Assistant</p>
-              <p className="text-[11px] text-blue-200 mt-0.5">Ask anything about your project documents</p>
+              <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.65)" }}>
+                {isHe ? "שאל כל שאלה על הפרויקט" : "Ask anything about your project"}
+              </p>
             </div>
             <button
-              onClick={() => setOpen(false)}
-              className="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/70 hover:text-white transition-colors"
+              onClick={handleClose}
+              className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
+              style={{ background: "rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.7)" }}
+              onMouseEnter={(e) => { (e.currentTarget.style.background = "rgba(255,255,255,0.22)"); (e.currentTarget.style.color = "#fff"); }}
+              onMouseLeave={(e) => { (e.currentTarget.style.background = "rgba(255,255,255,0.12)"); (e.currentTarget.style.color = "rgba(255,255,255,0.7)"); }}
             >
               <ChevronDown className="w-4 h-4" />
             </button>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto min-h-[300px] max-h-[420px] px-4 py-4 space-y-3 bg-slate-50/50">
-            {messages.length === 0 && !thinking && (
+          <div className="flex-1 overflow-y-auto min-h-[300px] max-h-[440px] px-4 py-4 space-y-3" style={{ background: "#F5F0EB" }}>
+            {messages.length === 0 && !streaming && (
               <div className="space-y-3">
+                {/* Greeting */}
                 <div className="flex items-start gap-2.5">
-                  <div className="w-6 h-6 rounded-full bg-[#D4714A] flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#D4714A" }}>
                     <Zap className="w-3 h-3 text-white" />
                   </div>
-                  <div className="bg-white rounded-xl rounded-tl-sm px-3.5 py-2.5 shadow-sm border border-slate-100 max-w-[85%]">
-                    <p className="text-[13px] text-slate-700 leading-relaxed">
-                      Hi David! I have access to all your project documents, schedule, contracts, and RFIs. What would you like to know?
+                  <div className="rounded-xl rounded-tl-sm px-3.5 py-2.5 max-w-[85%]" style={{ background: "#FAF8F5", border: "1px solid #EDE8DF" }}>
+                    <p className="text-[13px] leading-relaxed" style={{ color: "#1C1917" }}>
+                      {isHe
+                        ? "שלום דוד! יש לי גישה לכל נתוני הפרויקט — לוח זמנים, תקציב, בקשות מידע, חוזים ועוד. מה תרצה לדעת?"
+                        : "Hi David! I have full access to all project data — schedule, budget, RFIs, contracts and more. What would you like to know?"}
                     </p>
                   </div>
                 </div>
-                <div className="ml-8 space-y-1.5">
-                  <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                    Suggested questions
+
+                {/* Suggestions */}
+                <div className={cn("space-y-1.5", isHe ? "mr-8" : "ml-8")}>
+                  <p className="text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: "#A8A29E" }}>
+                    {isHe ? "שאלות מוצעות" : "Suggested questions"}
                   </p>
                   {suggestions.map((s) => (
                     <button
                       key={s}
                       onClick={() => handleSend(s)}
-                      className="w-full text-left text-[12.5px] px-3.5 py-2 rounded-xl transition-colors leading-snug font-medium"
-                      style={{ background: "#F5EDE8", color: "#B05E38", border: "1px solid #EDE0D8" }}
+                      className="w-full text-[12.5px] px-3.5 py-2 rounded-xl transition-colors leading-snug font-medium"
+                      style={{
+                        background: "#F5EDE8", color: "#B05E38",
+                        border: "1px solid #EDE0D8",
+                        textAlign: isHe ? "right" : "left",
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "#EDE0D8")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = "#F5EDE8")}
                     >
                       {s}
                     </button>
@@ -142,28 +225,34 @@ export function AiPrompter() {
                 key={i}
                 className={cn("flex items-start gap-2.5", msg.role === "user" ? "justify-end" : "justify-start")}
               >
-                {msg.role === "ai" && (
-                  <div className="w-6 h-6 rounded-full bg-[#D4714A] flex items-center justify-center shrink-0 mt-0.5">
+                {msg.role === "assistant" && (
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#D4714A" }}>
                     <Zap className="w-3 h-3 text-white" />
                   </div>
                 )}
                 <div
                   className={cn(
-                    "max-w-[85%] px-3.5 py-2.5 rounded-xl text-[13px] leading-relaxed whitespace-pre-line shadow-sm",
-                    msg.role === "user"
-                      ? "text-white rounded-tr-sm"
-                      : "text-stone-800 rounded-tl-sm border border-stone-100 bg-stone-50"
+                    "max-w-[85%] px-3.5 py-2.5 rounded-xl text-[13px] leading-relaxed whitespace-pre-line",
+                    msg.role === "user" ? "rounded-tr-sm text-white" : "rounded-tl-sm"
                   )}
-                  style={msg.role === "user" ? { background: "#D4714A" } : {}}
+                  style={
+                    msg.role === "user"
+                      ? { background: "#D4714A" }
+                      : { background: "#FAF8F5", border: "1px solid #EDE8DF", color: "#1C1917" }
+                  }
                 >
-                  {msg.content}
+                  {msg.content || (streaming && i === messages.length - 1 ? "" : "—")}
+                  {/* blinking cursor while streaming last assistant message */}
+                  {streaming && msg.role === "assistant" && i === messages.length - 1 && (
+                    <span className="inline-block w-0.5 h-3.5 ml-0.5 align-middle animate-pulse" style={{ background: "#D4714A" }} />
+                  )}
                 </div>
               </div>
             ))}
 
-            {thinking && (
+            {streaming && messages[messages.length - 1]?.role !== "assistant" && (
               <div className="flex items-start gap-2.5">
-                <div className="w-6 h-6 rounded-full bg-[#D4714A] flex items-center justify-center shrink-0 mt-0.5">
+                <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#D4714A" }}>
                   <Zap className="w-3 h-3 text-white" />
                 </div>
                 <TypingDots />
@@ -173,19 +262,29 @@ export function AiPrompter() {
           </div>
 
           {/* Input */}
-          <div className="border-t border-slate-200 px-4 py-3 flex items-center gap-2.5 bg-white shrink-0">
+          <div className="px-4 py-3 flex items-center gap-2.5 shrink-0" style={{ borderTop: "1px solid #EDE8DF", background: "#FAF8F5" }}>
             <input
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              placeholder="Ask about your project..."
-              className="flex-1 text-[13.5px] bg-slate-100 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all placeholder:text-slate-400 text-slate-800"
+              placeholder={isHe ? "שאל על הפרויקט שלך..." : "Ask about your project..."}
+              dir={isHe ? "rtl" : "ltr"}
+              className="flex-1 text-[13.5px] rounded-xl px-4 py-2.5 outline-none transition-all"
+              style={{
+                background: "#EDE8E1", color: "#1C1917",
+                border: "1.5px solid #EDE8DF",
+              }}
+              onFocus={(e) => (e.currentTarget.style.border = "1.5px solid #D4714A")}
+              onBlur={(e) => (e.currentTarget.style.border = "1.5px solid #EDE8DF")}
             />
             <button
               onClick={() => handleSend()}
-              disabled={!input.trim() || thinking}
-              className="w-9 h-9 bg-[#D4714A] hover:bg-[#B05E38] disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl flex items-center justify-center transition-colors shrink-0"
+              disabled={!input.trim() || streaming}
+              className="w-9 h-9 text-white rounded-xl flex items-center justify-center transition-colors shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{ background: "#D4714A" }}
+              onMouseEnter={(e) => { if (input.trim() && !streaming) e.currentTarget.style.background = "#B05E38"; }}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "#D4714A")}
             >
               <Send className="w-3.5 h-3.5" />
             </button>

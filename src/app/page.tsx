@@ -1,8 +1,10 @@
 ﻿"use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { sanityClient } from "@/sanity/lib/client";
-import type { SanityLandingContent } from "@/sanity/lib/queries";
+import { useState, useEffect } from "react";
+import { EditDrawer, type SavedContent, type FlatContent } from "@/components/EditDrawer";
+import { VideoBackground } from "@/components/VideoBackground";
+import { LogoAnimation } from "@/components/LogoAnimation";
+import { LogoIntro } from "@/components/LogoIntro";
 import Link from "next/link";
 import {
   ArrowRight, Zap, FolderOpen, CalendarDays, Banknote,
@@ -192,59 +194,101 @@ const integrations = [
   { name: "AutoCAD",      descEn: "Drawing management",    descHe: "ניהול תוכניות",    bg: "rgba(185,28,28,0.07)",  tc: "#991B1B", bc: "#DDD5CB" },
 ];
 
-const SANITY_QUERY = `*[_type == "landingPage"][0]{ hero, stats, scene1, scene2, platform, cta, footer }`;
-
-function mergeT(base: typeof T.en, s: SanityLandingContent | null, isHe: boolean): typeof T.en {
-  if (!s) return base;
-  const p = <A, B>(a: A, b: B) => (isHe ? b : a);
+function applyFlat(base: typeof T.en, f: FlatContent): typeof T.en {
+  const o = (v: string | undefined, b: string) => v || b;
   return {
     ...base,
-    headline1:   p(s.hero?.headline1En,   s.hero?.headline1He)   || base.headline1,
-    headline2:   p(s.hero?.headline2En,   s.hero?.headline2He)   || base.headline2,
-    heroDesc:    p(s.hero?.heroDescEn,    s.hero?.heroDescHe)    || base.heroDesc,
-    requestDemo: p(s.hero?.ctaPrimaryEn,  s.hero?.ctaPrimaryHe)  || base.requestDemo,
-    seePlatform: p(s.hero?.ctaSecondaryEn,s.hero?.ctaSecondaryHe)|| base.seePlatform,
-    stats: s.stats?.length
-      ? s.stats.map((st, i) => ({
-          value: st.value                        || base.stats[i]?.value || "",
-          label: p(st.labelEn, st.labelHe)       || base.stats[i]?.label || "",
-        }))
-      : base.stats,
-    scene1Title: p(s.scene1?.titleEn, s.scene1?.titleHe) || base.scene1Title,
-    scene1Desc:  p(s.scene1?.descEn,  s.scene1?.descHe)  || base.scene1Desc,
-    scene2Title: p(s.scene2?.titleEn, s.scene2?.titleHe) || base.scene2Title,
-    scene2Desc:  p(s.scene2?.descEn,  s.scene2?.descHe)  || base.scene2Desc,
-    platformTag:   p(s.platform?.tagEn,   s.platform?.tagHe)   || base.platformTag,
-    platformTitle: p(s.platform?.titleEn, s.platform?.titleHe) || base.platformTitle,
-    platformDesc:  p(s.platform?.descEn,  s.platform?.descHe)  || base.platformDesc,
-    ctaLine1:   p(s.cta?.line1En, s.cta?.line1He) || base.ctaLine1,
-    ctaLine2:   p(s.cta?.line2En, s.cta?.line2He) || base.ctaLine2,
-    ctaDesc:    p(s.cta?.descEn,  s.cta?.descHe)  || base.ctaDesc,
-    exploreBtn: p(s.cta?.btnEn,   s.cta?.btnHe)   || base.exploreBtn,
-    copyright:  p(s.footer?.copyrightEn, s.footer?.copyrightHe) || base.copyright,
+    badge:        o(f.badge,        base.badge),
+    headline1:    o(f.headline1,    base.headline1),
+    headline2:    o(f.headline2,    base.headline2),
+    heroDesc:     o(f.heroDesc,     base.heroDesc),
+    requestDemo:  o(f.requestDemo,  base.requestDemo),
+    seePlatform:  o(f.seePlatform,  base.seePlatform),
+    logIn:        o(f.logIn,        base.logIn),
+    requestNav:   o(f.requestNav,   base.requestNav),
+    navItems: [
+      o(f.nav0, base.navItems[0]),
+      o(f.nav1, base.navItems[1]),
+      o(f.nav2, base.navItems[2]),
+      o(f.nav3, base.navItems[3]),
+    ],
+    stats: [
+      { value: o(f.stat0value, base.stats[0].value), label: o(f.stat0label, base.stats[0].label) },
+      { value: o(f.stat1value, base.stats[1].value), label: o(f.stat1label, base.stats[1].label) },
+      { value: o(f.stat2value, base.stats[2].value), label: o(f.stat2label, base.stats[2].label) },
+    ],
+    scene1Title:   o(f.scene1Title,   base.scene1Title),
+    scene1Desc:    o(f.scene1Desc,    base.scene1Desc),
+    scene2Title:   o(f.scene2Title,   base.scene2Title),
+    scene2Desc:    o(f.scene2Desc,    base.scene2Desc),
+    platformTag:   o(f.platformTag,   base.platformTag),
+    platformTitle: o(f.platformTitle, base.platformTitle),
+    platformDesc:  o(f.platformDesc,  base.platformDesc),
+    datumTag:      o(f.datumTag,      base.datumTag),
+    datumTitle:    o(f.datumTitle,    base.datumTitle),
+    datumDesc:     o(f.datumDesc,     base.datumDesc),
+    datumFeatures: [
+      o(f.datumFeature0, base.datumFeatures[0]),
+      o(f.datumFeature1, base.datumFeatures[1]),
+      o(f.datumFeature2, base.datumFeatures[2]),
+      o(f.datumFeature3, base.datumFeatures[3]),
+    ],
+    datumSub:   o(f.datumSub,   base.datumSub),
+    datumLive:  o(f.datumLive,  base.datumLive),
+    aiTag:       o(f.aiTag,       base.aiTag),
+    aiTitle:     o(f.aiTitle,     base.aiTitle),
+    aiDesc:      o(f.aiDesc,      base.aiDesc),
+    aiConnected: o(f.aiConnected, base.aiConnected),
+    aiInput:     o(f.aiInput,     base.aiInput),
+    aiQA: [
+      { q: o(f.aiQ0, base.aiQA[0].q), a: o(f.aiA0, base.aiQA[0].a) },
+      { q: o(f.aiQ1, base.aiQA[1].q), a: o(f.aiA1, base.aiQA[1].a) },
+      { q: o(f.aiQ2, base.aiQA[2].q), a: o(f.aiA2, base.aiQA[2].a) },
+    ],
+    ctaLine1:   o(f.ctaLine1,   base.ctaLine1),
+    ctaLine2:   o(f.ctaLine2,   base.ctaLine2),
+    ctaDesc:    o(f.ctaDesc,    base.ctaDesc),
+    exploreBtn: o(f.exploreBtn, base.exploreBtn),
+    footerLinks: [
+      o(f.footer0, base.footerLinks[0]),
+      o(f.footer1, base.footerLinks[1]),
+      o(f.footer2, base.footerLinks[2]),
+      o(f.footer3, base.footerLinks[3]),
+    ],
+    copyright: o(f.copyright, base.copyright),
   };
 }
 
 export default function LandingPage() {
-  const [lang, setLang]   = useState<"en" | "he">("en");
-  const [sanity, setSanity] = useState<SanityLandingContent | null>(null);
+  const [lang, setLang]           = useState<"en" | "he">("en");
+  const [custom, setCustom]       = useState<SavedContent | null>(null);
+  const [introDone,    setIntroDone]    = useState(false);
+  const [introMounted, setIntroMounted] = useState(true);
   const isHe = lang === "he";
   const font = isHe ? FONT_HE : FONT_EN;
-  const t = mergeT(T[lang], sanity, isHe);
+  const t    = custom ? applyFlat(T[lang], custom[lang]) : T[lang];
 
-  const fetchSanity = useCallback(async () => {
-    if (!process.env.NEXT_PUBLIC_SANITY_PROJECT_ID) return;
-    try {
-      const data = await sanityClient.fetch(SANITY_QUERY);
-      if (data) setSanity(data);
-    } catch { /* fall back to hardcoded T */ }
-  }, []);
+  const mergedSolutions = solutions.map((s, i) => {
+    const f = custom?.[lang];
+    const ti = `sol${i}title` as keyof FlatContent;
+    const di = `sol${i}desc`  as keyof FlatContent;
+    return {
+      ...s,
+      titleEn: (!isHe && f?.[ti]) ? (f[ti] as string) : s.titleEn,
+      titleHe: (isHe  && f?.[ti]) ? (f[ti] as string) : s.titleHe,
+      descEn:  (!isHe && f?.[di]) ? (f[di] as string) : s.descEn,
+      descHe:  (isHe  && f?.[di]) ? (f[di] as string) : s.descHe,
+    };
+  });
 
   useEffect(() => {
     const match = document.cookie.match(/(?:^|;\s*)lang=([^;]*)/);
     if (match?.[1] === "he") setLang("he");
-    fetchSanity();
-  }, [fetchSanity]);
+    fetch("/api/content")
+      .then(r => r.json())
+      .then(d => { if (d?.en || d?.he) setCustom(d); })
+      .catch(() => {});
+  }, []);
 
   function toggleLang() {
     const next = lang === "en" ? "he" : "en";
@@ -253,23 +297,28 @@ export default function LandingPage() {
   }
 
   return (
+    <>
+      {/* Canvas stays mounted during its own 1 s fade so it doesn't snap off */}
+      {introMounted && (
+        <LogoIntro onDone={() => {
+          setIntroDone(true);                              // page fades in (1 s)
+          setTimeout(() => setIntroMounted(false), 1200); // remove canvas after fade
+        }} />
+      )}
+
     <div className="overflow-x-hidden" dir={isHe ? "rtl" : "ltr"}
-      style={{ background: L.bg, color: L.text1, fontFamily: font }}>
+      style={{
+        background: L.bg, color: L.text1, fontFamily: font,
+        opacity: introDone ? 1 : 0,
+        transition: introDone ? "opacity 1s ease" : "none",
+      }}>
 
       {/* ── Nav (dark, fixed over video) ──────── */}
       <nav className="fixed top-0 left-0 right-0 z-50 h-16 backdrop-blur-md flex items-center px-8"
         style={{ background: "rgba(22,17,14,0.88)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
         <div className="max-w-7xl mx-auto w-full flex items-center">
-          <Link href="/" className="flex items-center gap-2.5 me-12">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: L.copper }}>
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M2 12L7 2L12 12" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M4 8.5H10" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
-              </svg>
-            </div>
-            <span className="text-[18px] font-bold tracking-tight text-white" style={{ fontFamily: FONT_EN }}>
-              InfrA<span style={{ color: L.copperL, fontFamily: "'Cinzel','Trajan Pro',serif", fontSize: "1.08em", fontStyle: "normal", fontWeight: "600" }}>I</span>
-            </span>
+          <Link href="/" className="flex items-center me-12">
+            <LogoAnimation size={48} />
           </Link>
           <div className="hidden md:flex items-center gap-8 flex-1">
             {t.navItems.map((item, i) => (
@@ -309,16 +358,7 @@ export default function LandingPage() {
       {/* ── Hero — full-screen video background ─ */}
       <section className="relative flex flex-col items-center justify-center overflow-hidden"
         style={{ minHeight: "65vh" }}>
-        {/*
-          Drop a bridge construction video at: public/construction.mp4
-          Source: pexels.com → "bridge construction" → free download
-          Poster frame at: public/construction-poster.jpg
-        */}
-        <video autoPlay muted loop playsInline
-          className="absolute inset-0 w-full h-full object-cover"
-          src="/construction.mp4"
-          poster="/construction-poster.jpg"
-        />
+        <VideoBackground className="absolute inset-0 w-full h-full object-cover" />
         {/* warm dark overlay */}
         <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(20,14,10,0.7) 0%, rgba(26,21,18,0.62) 60%, rgba(26,21,18,0.85) 100%)" }} />
         {/* fallback shown while video is absent */}
@@ -528,14 +568,11 @@ export default function LandingPage() {
       </section>
 
       {/* ── Scene Photos — full-bleed split panels ── */}
-      <section className="flex flex-col md:flex-row" style={{ minHeight: 500 }}>
+      <section className="flex flex-col md:flex-row gap-2 px-2 pb-2" style={{ minHeight: 500, background: L.bg }}>
 
-        {/* Panel 1: PM site office
-            ASSET: public/scene-pm-office.jpg
-            Search pexels.com: "project manager team office large screen tv" */}
-        <div className="flex-1 relative flex items-end overflow-hidden" style={{ minHeight: 500 }}>
+        <div className="flex-1 relative flex items-end overflow-hidden rounded-2xl" style={{ minHeight: 500 }}>
           <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, #2C2218 0%, #1A1512 100%)" }} />
-          <img src="/scene-pm-office.jpg" alt=""
+          <img src="/ChatGPT Image Jun 28, 2026, 11_48_21 PM.png" alt=""
             className="absolute inset-0 w-full h-full object-cover transition-opacity"
             onError={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = "0"; }} />
           <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(20,14,10,0.93) 0%, rgba(20,14,10,0.35) 55%, rgba(20,14,10,0.1) 100%)" }} />
@@ -546,12 +583,9 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Panel 2: CEO boardroom
-            ASSET: public/scene-ceo-boardroom.jpg
-            Search pexels.com: "ceo board members meeting room large screen" */}
-        <div className="flex-1 relative flex items-end overflow-hidden" style={{ minHeight: 500 }}>
+        <div className="flex-1 relative flex items-end overflow-hidden rounded-2xl" style={{ minHeight: 500 }}>
           <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, #18202C 0%, #0E1520 100%)" }} />
-          <img src="/scene-ceo-boardroom.jpg" alt=""
+          <img src="/ChatGPT Image Jun 29, 2026, 12_04_28 AM.png" alt=""
             className="absolute inset-0 w-full h-full object-cover transition-opacity"
             onError={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = "0"; }} />
           <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(10,14,22,0.93) 0%, rgba(10,14,22,0.35) 55%, rgba(10,14,22,0.1) 100%)" }} />
@@ -572,7 +606,7 @@ export default function LandingPage() {
             <p className="text-[16px] mt-4 max-w-2xl mx-auto" style={{ color: L.text2 }}>{t.platformDesc}</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {solutions.map((sol) => (
+            {mergedSolutions.map((sol) => (
               <div key={sol.titleEn} className="rounded-2xl p-6 transition-all"
                 style={{ background: L.card, border: `1px solid ${L.border}`, boxShadow: "0 2px 8px rgba(28,25,23,0.04)" }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(212,113,74,0.35)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(212,113,74,0.1)"; }}
@@ -735,16 +769,8 @@ export default function LandingPage() {
       {/* ── Footer ────────────────────────────── */}
       <footer className="py-10 px-6" style={{ background: L.card, borderTop: `1px solid ${L.border}` }}>
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: L.copper }}>
-              <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-                <path d="M2 12L7 2L12 12" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M4 8.5H10" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
-              </svg>
-            </div>
-            <span className="text-[16px] font-bold" style={{ color: L.text1, fontFamily: FONT_EN }}>
-              InfrA<span style={{ color: L.copper, fontFamily: "'Cinzel','Trajan Pro',serif", fontSize: "1.08em", fontStyle: "normal", fontWeight: "600" }}>I</span>
-            </span>
+          <div className="flex items-center">
+            <LogoAnimation size={52} />
           </div>
           <div className="flex items-center gap-8">
             {t.footerLinks.map((item) => (
@@ -758,6 +784,19 @@ export default function LandingPage() {
           <p className="text-[13px]" style={{ color: L.text3 }}>{t.copyright}</p>
         </div>
       </footer>
+
+      <EditDrawer
+        currentEn={{
+          ...(custom ? applyFlat(T.en, custom.en) : T.en) as unknown as Record<string, unknown>,
+          solutions: mergedSolutions.map(s => ({ title: s.titleEn, desc: s.descEn })),
+        }}
+        currentHe={{
+          ...(custom ? applyFlat(T.he, custom.he) : T.he) as unknown as Record<string, unknown>,
+          solutions: mergedSolutions.map(s => ({ title: s.titleHe, desc: s.descHe })),
+        }}
+        onSaved={(c) => setCustom(c)}
+      />
     </div>
+    </>
   );
 }
