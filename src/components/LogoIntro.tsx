@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef } from "react";
 
-const LOGO_SRC = "/לוגו עם כיתוב חום קרם.png";
+const LOGO_SRC = "/לוגו עם כיתוב חום רקע קרם.png";
 const BG       = "237,232,225";
 
 export function LogoIntro({ onDone }: { onDone: () => void }) {

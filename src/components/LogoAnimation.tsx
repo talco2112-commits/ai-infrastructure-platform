@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 
-const LOGO = "/לוגו עם כיתוב חום קרם.png";
+const LOGO = "/לוגו עם כיתוב חום רקע קרם.png";
 
 export function LogoAnimation({
   size = 44,          // controls HEIGHT; width is derived from aspect ratio
