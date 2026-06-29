@@ -36,7 +36,7 @@ export function LogoAnimation({
   // Step 2: run particle animation once dims are known
   useEffect(() => {
     if (!dims) return;
-    const canvas = canvasRef.current;
+    const canvas = canvasRef.current as HTMLCanvasElement;
     if (!canvas) return;
     const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
     if (!ctx) return;
