@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { EditDrawer, type SavedContent, type FlatContent } from "@/components/EditDrawer";
 import { VideoBackground } from "@/components/VideoBackground";
 import { LogoAnimation } from "@/components/LogoAnimation";
-import { LogoIntro } from "@/components/LogoIntro";
 import Link from "next/link";
 import {
   ArrowRight, Zap, FolderOpen, CalendarDays, Banknote,
@@ -262,8 +261,6 @@ function applyFlat(base: typeof T.en, f: FlatContent): typeof T.en {
 export default function LandingPage() {
   const [lang, setLang]           = useState<"en" | "he">("en");
   const [custom, setCustom]       = useState<SavedContent | null>(null);
-  const [introDone,    setIntroDone]    = useState(false);
-  const [introMounted, setIntroMounted] = useState(true);
   const isHe = lang === "he";
   const font = isHe ? FONT_HE : FONT_EN;
   const t    = custom ? applyFlat(T[lang], custom[lang]) : T[lang];
@@ -297,21 +294,8 @@ export default function LandingPage() {
   }
 
   return (
-    <>
-      {/* Canvas stays mounted during its own 1 s fade so it doesn't snap off */}
-      {introMounted && (
-        <LogoIntro onDone={() => {
-          setIntroDone(true);                              // page fades in (1 s)
-          setTimeout(() => setIntroMounted(false), 1200); // remove canvas after fade
-        }} />
-      )}
-
     <div className="overflow-x-hidden" dir={isHe ? "rtl" : "ltr"}
-      style={{
-        background: L.bg, color: L.text1, fontFamily: font,
-        opacity: introDone ? 1 : 0,
-        transition: introDone ? "opacity 1s ease" : "none",
-      }}>
+      style={{ background: L.bg, color: L.text1, fontFamily: font }}>
 
       {/* ── Nav (dark, fixed over video) ──────── */}
       <nav className="fixed top-0 left-0 right-0 z-50 h-16 backdrop-blur-md flex items-center px-8"
@@ -797,6 +781,5 @@ export default function LandingPage() {
         onSaved={(c) => setCustom(c)}
       />
     </div>
-    </>
   );
 }
