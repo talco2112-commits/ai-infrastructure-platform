@@ -7,6 +7,7 @@ import {
   RefreshCw, ExternalLink, ArrowUpRight, Layers, Pencil,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { TaskWidget } from "@/components/TaskWidget";
 
 const P = {
   bg: "#EDE8E1",
@@ -357,34 +358,8 @@ export default async function DashboardPage() {
 
           {/* Tasks */}
           <Card>
-            <CardTitle
-              title={t.tasks}
-              aside={<span className="text-[13px] font-bold" style={{ color: P.text3 }}>{tasks.filter(t => !t.done).length}/{tasks.length}</span>}
-            />
-            <div className="px-3 pb-5 pt-3 space-y-0.5">
-              {tasks.map((task) => (
-                <div key={task.id} className="flex items-center gap-3 px-3 py-3 rounded-xl" style={{ opacity: task.done ? 0.45 : 1 }}>
-                  <div className="shrink-0">
-                    {task.done
-                      ? <CheckCircle2 className="w-[18px] h-[18px]" style={{ color: P.good }} />
-                      : <Circle       className="w-[18px] h-[18px]" style={{ color: P.track }} />}
-                  </div>
-                  <p className="flex-1 text-[13.5px] font-medium leading-snug"
-                    style={{ color: task.done ? P.text3 : P.text1, textDecoration: task.done ? "line-through" : "none" }}>
-                    {isHe ? task.textHe : task.text}
-                  </p>
-                  <div className="flex items-center gap-2 shrink-0">
-                    {task.urgent && !task.done && <span className="w-2 h-2 rounded-full bg-red-500" />}
-                    {tagStyle[task.tag] && (
-                      <span className="text-[11px] font-bold px-2 py-0.5 rounded-lg"
-                        style={{ background: tagStyle[task.tag].bg, color: tagStyle[task.tag].color }}>
-                        {isHe ? tagHe[task.tag] : task.tag}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
+            <CardTitle title={t.tasks} />
+            <TaskWidget lang={lang} />
           </Card>
 
           {/* Alerts */}
