@@ -3,7 +3,7 @@ import { Bell, Search, FileBarChart, Download, Eye, Sparkles, Calendar, FileText
 
 const P = {
   bg: "#EDE8E1", card: "#FAF8F5", border: "#EDE8DF",
-  copper: "#D4714A", copperLight: "#F5EDE8", copperMid: "#E8A080",
+  copper: "#8B5A2B", copperLight: "#F5EBE0", copperMid: "#B5855A",
   text1: "#1C1917", text2: "#57534E", text3: "#A8A29E",
   good: "#15803D", goodBg: "#F0FDF4",
   warn: "#B45309", warnBg: "#FFFBEB",
@@ -333,7 +333,7 @@ export default async function ReportsPage() {
                   </div>
                 </div>
                 <button className="w-full py-2.5 rounded-xl text-[13px] font-bold text-white flex items-center justify-center gap-2 mt-1"
-                  style={{ background: P.copper, boxShadow: "0 4px 16px rgba(212,113,74,0.28)" }}>
+                  style={{ background: P.copper, boxShadow: "0 4px 16px rgba(139,90,43,0.28)" }}>
                   <Sparkles className="w-3.5 h-3.5" />
                   {T.generateBtn}
                 </button>

@@ -3,7 +3,7 @@ import { Bell, Search, Satellite, RefreshCw, Layers, AlertTriangle, CheckCircle2
 
 const P = {
   bg: "#EDE8E1", card: "#FAF8F5", border: "#EDE8DF",
-  copper: "#D4714A", copperLight: "#F5EDE8", copperMid: "#E8A080",
+  copper: "#8B5A2B", copperLight: "#F5EBE0", copperMid: "#B5855A",
   text1: "#1C1917", text2: "#57534E", text3: "#A8A29E",
   good: "#15803D", goodBg: "#F0FDF4",
   warn: "#B45309", warnBg: "#FFFBEB",

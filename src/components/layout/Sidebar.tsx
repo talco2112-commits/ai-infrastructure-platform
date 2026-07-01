@@ -66,7 +66,7 @@ export function Sidebar({ lang }: { lang: "en" | "he" }) {
               href={href}
               className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium transition-all"
               style={{
-                background: active ? "#D4714A" : "transparent",
+                background: active ? "#8B5A2B" : "transparent",
                 color: active ? "#fff" : "#A8A29E",
               }}
               onMouseEnter={(e) => {
@@ -101,7 +101,7 @@ export function Sidebar({ lang }: { lang: "en" | "he" }) {
         </Link>
 
         <div className="flex items-center gap-2.5 px-3 py-2.5">
-          <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[11px] font-bold shrink-0" style={{ background: "#D4714A" }}>
+          <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[11px] font-bold shrink-0" style={{ background: "#8B5A2B" }}>
             DC
           </div>
           <div className="flex-1 min-w-0">

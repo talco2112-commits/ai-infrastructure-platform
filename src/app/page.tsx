@@ -16,9 +16,9 @@ const L = {
   bgAlt:   "#E4DDD5",
   card:    "#FAF8F5",
   border:  "#DDD5CB",
-  copper:  "#D4714A",
-  copperL: "#ECA070",
-  copperD: "#B05E38",
+  copper:  "#8B5A2B",
+  copperL: "#C49A6C",
+  copperD: "#6B3E18",
   text1:   "#1C1917",
   text2:   "#57534E",
   text3:   "#A8A29E",
@@ -151,7 +151,7 @@ const solutions = [
     descHe: "ייבוא קבצי P6 או MS Project — ניתוח נתיב קריטי בזמן אמת, מידול השפעות איחורים ותרחישי מה-אם",
     kickEn: "AI proactively reorders activities to recover delay and presents alternative critical paths",
     kickHe: "AI מארגן מחדש פעילויות לשחזור איחור ומציג נתיבים קריטיים חלופיים" },
-  { icon: Banknote,     iconCls: "text-[#B05E38]",  iconBg: "rgba(176,94,56,0.1)",
+  { icon: Banknote,     iconCls: "text-[#6B3E18]",  iconBg: "rgba(176,94,56,0.1)",
     titleEn: "Finance & Budget", titleHe: "פיננסים ותקציב",
     descEn: "Track budget vs actuals, validate quantities against your BoQ, manage procurement — connected to SAP or Priority",
     descHe: "מעקב תקציב מול ביצוע, אימות כמויות מול כתב הכמויות, ניהול רכש — מחובר ל-SAP או Priority",
@@ -187,7 +187,7 @@ const steps = [
 ];
 
 const integrations = [
-  { name: "SAP ERP",      descEn: "Finance & procurement", descHe: "פיננסים ורכש",     bg: "rgba(212,113,74,0.07)", tc: "#B05E38", bc: "#DDD5CB" },
+  { name: "SAP ERP",      descEn: "Finance & procurement", descHe: "פיננסים ורכש",     bg: "rgba(139,90,43,0.07)", tc: "#6B3E18", bc: "#DDD5CB" },
   { name: "Priority",     descEn: "Israeli ERP platform",  descHe: "מערכת ERP ישראלית", bg: "rgba(124,58,237,0.07)", tc: "#5B21B6", bc: "#DDD5CB" },
   { name: "Primavera P6", descEn: "Schedule management",   descHe: "ניהול לוח זמנים",  bg: "rgba(180,83,9,0.07)",   tc: "#92400E", bc: "#DDD5CB" },
   { name: "MS Project",   descEn: "Schedule management",   descHe: "ניהול לוח זמנים",  bg: "rgba(194,65,12,0.07)",  tc: "#9A3412", bc: "#DDD5CB" },
@@ -318,7 +318,7 @@ export default function LandingPage() {
         style={{ background: "rgba(22,17,14,0.88)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
         <div className="max-w-7xl mx-auto w-full flex items-center">
           <Link href="/" className="flex items-center me-12">
-            <LogoAnimation size={48} />
+            <img src="/לוגו עם כיתוב חום שחור.png" alt="InfrAI" style={{ height: 44, objectFit: "contain" }} />
           </Link>
           <div className="hidden md:flex items-center gap-8 flex-1">
             {t.navItems.map((item, i) => (
@@ -380,7 +380,7 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/login"
               className="flex items-center gap-2 text-white text-[16px] font-bold px-7 py-3.5 rounded-xl transition-all"
-              style={{ background: L.copper, boxShadow: "0 8px 28px rgba(212,113,74,0.4)" }}
+              style={{ background: L.copper, boxShadow: "0 8px 28px rgba(139,90,43,0.4)" }}
               onMouseEnter={(e) => (e.currentTarget.style.background = L.copperD)}
               onMouseLeave={(e) => (e.currentTarget.style.background = L.copper)}>
               {t.requestDemo} <ArrowRight className="w-4 h-4" />
@@ -609,7 +609,7 @@ export default function LandingPage() {
             {mergedSolutions.map((sol) => (
               <div key={sol.titleEn} className="rounded-2xl p-6 transition-all"
                 style={{ background: L.card, border: `1px solid ${L.border}`, boxShadow: "0 2px 8px rgba(28,25,23,0.04)" }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(212,113,74,0.35)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(212,113,74,0.1)"; }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(139,90,43,0.35)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(139,90,43,0.1)"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = L.border; e.currentTarget.style.boxShadow = "0 2px 8px rgba(28,25,23,0.04)"; }}>
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style={{ background: sol.iconBg }}>
                   <sol.icon className={`w-5 h-5 ${sol.iconCls}`} />
@@ -617,7 +617,7 @@ export default function LandingPage() {
                 <h3 className="text-[16px] font-bold mb-2" style={{ color: L.text1 }}>{isHe ? sol.titleHe : sol.titleEn}</h3>
                 <p className="text-[14px] leading-relaxed mb-4" style={{ color: L.text2 }}>{isHe ? sol.descHe : sol.descEn}</p>
                 <div className="flex items-start gap-2 pt-4" style={{ borderTop: `1px solid ${L.border}` }}>
-                  <div className="w-4 h-4 rounded flex items-center justify-center shrink-0 mt-0.5" style={{ background: "rgba(212,113,74,0.12)" }}>
+                  <div className="w-4 h-4 rounded flex items-center justify-center shrink-0 mt-0.5" style={{ background: "rgba(139,90,43,0.12)" }}>
                     <Lightbulb className="w-2.5 h-2.5" style={{ color: L.copper }} />
                   </div>
                   <p className="text-[13px] font-medium leading-relaxed" style={{ color: L.copperD }}>{isHe ? sol.kickHe : sol.kickEn}</p>
@@ -638,7 +638,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {steps.map((step) => (
               <div key={step.num}>
-                <div className="text-[60px] font-black leading-none mb-4 select-none" style={{ color: "rgba(212,113,74,0.16)" }}>{step.num}</div>
+                <div className="text-[60px] font-black leading-none mb-4 select-none" style={{ color: "rgba(139,90,43,0.16)" }}>{step.num}</div>
                 <h3 className="text-[19px] font-bold mb-3" style={{ color: L.text1 }}>{isHe ? step.titleHe : step.titleEn}</h3>
                 <p className="text-[14px] leading-relaxed" style={{ color: L.text2 }}>{isHe ? step.descHe : step.descEn}</p>
               </div>
@@ -752,7 +752,7 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/login"
               className="flex items-center gap-2 text-white text-[16px] font-bold px-8 py-4 rounded-xl transition-all"
-              style={{ background: L.copper, boxShadow: "0 8px 24px rgba(212,113,74,0.35)" }}
+              style={{ background: L.copper, boxShadow: "0 8px 24px rgba(139,90,43,0.35)" }}
               onMouseEnter={(e) => (e.currentTarget.style.background = L.copperD)}
               onMouseLeave={(e) => (e.currentTarget.style.background = L.copper)}>
               {t.requestDemo} <ArrowRight className="w-4 h-4" />

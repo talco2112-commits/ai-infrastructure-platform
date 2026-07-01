@@ -12,9 +12,9 @@ const P = {
   bg: "#EDE8E1",
   card: "#FAF8F5",
   border: "#EDE8DF",
-  copper: "#D4714A",
-  copperLight: "#F5EDE8",
-  copperMid: "#E8A080",
+  copper: "#8B5A2B",
+  copperLight: "#F5EBE0",
+  copperMid: "#B5855A",
   text1: "#1C1917",
   text2: "#57534E",
   text3: "#A8A29E",
@@ -213,7 +213,7 @@ const modules = [
   { labelEn: "Documents", labelHe: "מסמכים",    sub: "124 files · 3 new",         subHe: "124 קבצים · 3 חדשים",     icon: Layers,        bg: "#EDE9FF", color: "#5B21B6", alert: false },
   { labelEn: "Design",    labelHe: "תכנון",      sub: "2 drawing inconsistencies", subHe: "2 אי-התאמות בתוכניות",   icon: Pencil,        bg: "#EDE9FF", color: "#4338CA", alert: true  },
   { labelEn: "Schedule",  labelHe: "לוח זמנים",  sub: "14d behind critical path",  subHe: "14י מאחורי נתיב קריטי",  icon: Clock,         bg: "#FFFBEB", color: "#B45309", alert: true  },
-  { labelEn: "Finance",   labelHe: "פיננסים",    sub: "₪312M of ₪450M",           subHe: "312M ₪ מתוך 450M ₪",     icon: Banknote,      bg: "#F5EDE8", color: "#D4714A", alert: false },
+  { labelEn: "Finance",   labelHe: "פיננסים",    sub: "₪312M of ₪450M",           subHe: "312M ₪ מתוך 450M ₪",     icon: Banknote,      bg: "#F5EBE0", color: "#8B5A2B", alert: false },
   { labelEn: "RFIs",      labelHe: "בקשות מידע", sub: "3 overdue · 8 open",        subHe: "3 פגי תוקף · 8 פתוחים",  icon: AlertTriangle, bg: "#FEF2F2", color: "#B91C1C", alert: true  },
   { labelEn: "Quality",   labelHe: "איכות",      sub: "6 open NCRs",               subHe: "6 אי-התאמות פתוחות",      icon: ClipboardCheck,bg: "#F0FDF4", color: "#15803D", alert: false },
 ];
@@ -275,7 +275,7 @@ export default async function DashboardPage() {
           </div>
           <div className="flex-1 max-w-3xl lg:ms-auto">
             <div className="flex items-start gap-4 rounded-2xl px-6 py-4"
-              style={{ background: `linear-gradient(135deg, ${P.copper}, #B05E38)`, boxShadow: "0 4px 20px rgba(212,113,74,0.25)" }}>
+              style={{ background: `linear-gradient(135deg, ${P.copper}, #6B3E18)`, boxShadow: "0 4px 20px rgba(139,90,43,0.25)" }}>
               <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(255,255,255,0.2)" }}>
                 <Zap className="w-5 h-5 text-white" />
               </div>
@@ -515,7 +515,7 @@ export default async function DashboardPage() {
             </div>
             <div className="mx-6 mt-4 h-24 rounded-xl flex items-center justify-center relative overflow-hidden" style={{ background: "#1A1512" }}>
               <div className="absolute inset-0 opacity-25" style={{
-                backgroundImage: "radial-gradient(ellipse at 30% 60%, #D4714A 0%, transparent 55%), radial-gradient(ellipse at 75% 30%, #15803D 0%, transparent 45%)"
+                backgroundImage: "radial-gradient(ellipse at 30% 60%, #8B5A2B 0%, transparent 55%), radial-gradient(ellipse at 75% 30%, #15803D 0%, transparent 45%)"
               }} />
               <div className="text-center relative z-10">
                 <Satellite className="w-6 h-6 mx-auto mb-1.5" style={{ color: "#78716C" }} />

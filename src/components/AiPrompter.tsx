@@ -136,7 +136,7 @@ export function AiPrompter({ lang = "en" }: { lang?: "en" | "he" }) {
         <button
           onClick={() => setOpen(true)}
           className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 active:scale-95 text-white pl-4 pr-5 py-3 rounded-2xl transition-all duration-200 text-[14px] font-semibold"
-          style={{ background: "#D4714A", boxShadow: "0 4px 20px rgba(212,113,74,0.35)" }}
+          style={{ background: "#8B5A2B", boxShadow: "0 4px 20px rgba(139,90,43,0.35)" }}
         >
           <div className="w-5 h-5 rounded-md bg-white/20 flex items-center justify-center">
             <Zap className="w-3 h-3 text-white" />
@@ -155,7 +155,7 @@ export function AiPrompter({ lang = "en" }: { lang?: "en" | "he" }) {
           {/* Header */}
           <div
             className="flex items-center gap-3 px-5 py-4 shrink-0"
-            style={{ background: "linear-gradient(135deg, #D4714A, #B05E38)" }}
+            style={{ background: "linear-gradient(135deg, #8B5A2B, #6B3E18)" }}
           >
             <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
               <Zap className="w-4 h-4 text-white" />
@@ -183,7 +183,7 @@ export function AiPrompter({ lang = "en" }: { lang?: "en" | "he" }) {
               <div className="space-y-3">
                 {/* Greeting */}
                 <div className="flex items-start gap-2.5">
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#D4714A" }}>
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#8B5A2B" }}>
                     <Zap className="w-3 h-3 text-white" />
                   </div>
                   <div className="rounded-xl rounded-tl-sm px-3.5 py-2.5 max-w-[85%]" style={{ background: "#FAF8F5", border: "1px solid #EDE8DF" }}>
@@ -206,12 +206,12 @@ export function AiPrompter({ lang = "en" }: { lang?: "en" | "he" }) {
                       onClick={() => handleSend(s)}
                       className="w-full text-[12.5px] px-3.5 py-2 rounded-xl transition-colors leading-snug font-medium"
                       style={{
-                        background: "#F5EDE8", color: "#B05E38",
+                        background: "#F5EBE0", color: "#6B3E18",
                         border: "1px solid #EDE0D8",
                         textAlign: isHe ? "right" : "left",
                       }}
                       onMouseEnter={(e) => (e.currentTarget.style.background = "#EDE0D8")}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = "#F5EDE8")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = "#F5EBE0")}
                     >
                       {s}
                     </button>
@@ -226,7 +226,7 @@ export function AiPrompter({ lang = "en" }: { lang?: "en" | "he" }) {
                 className={cn("flex items-start gap-2.5", msg.role === "user" ? "justify-end" : "justify-start")}
               >
                 {msg.role === "assistant" && (
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#D4714A" }}>
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#8B5A2B" }}>
                     <Zap className="w-3 h-3 text-white" />
                   </div>
                 )}
@@ -237,14 +237,14 @@ export function AiPrompter({ lang = "en" }: { lang?: "en" | "he" }) {
                   )}
                   style={
                     msg.role === "user"
-                      ? { background: "#D4714A" }
+                      ? { background: "#8B5A2B" }
                       : { background: "#FAF8F5", border: "1px solid #EDE8DF", color: "#1C1917" }
                   }
                 >
                   {msg.content || (streaming && i === messages.length - 1 ? "" : "—")}
                   {/* blinking cursor while streaming last assistant message */}
                   {streaming && msg.role === "assistant" && i === messages.length - 1 && (
-                    <span className="inline-block w-0.5 h-3.5 ml-0.5 align-middle animate-pulse" style={{ background: "#D4714A" }} />
+                    <span className="inline-block w-0.5 h-3.5 ml-0.5 align-middle animate-pulse" style={{ background: "#8B5A2B" }} />
                   )}
                 </div>
               </div>
@@ -252,7 +252,7 @@ export function AiPrompter({ lang = "en" }: { lang?: "en" | "he" }) {
 
             {streaming && messages[messages.length - 1]?.role !== "assistant" && (
               <div className="flex items-start gap-2.5">
-                <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#D4714A" }}>
+                <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#8B5A2B" }}>
                   <Zap className="w-3 h-3 text-white" />
                 </div>
                 <TypingDots />
@@ -275,16 +275,16 @@ export function AiPrompter({ lang = "en" }: { lang?: "en" | "he" }) {
                 background: "#EDE8E1", color: "#1C1917",
                 border: "1.5px solid #EDE8DF",
               }}
-              onFocus={(e) => (e.currentTarget.style.border = "1.5px solid #D4714A")}
+              onFocus={(e) => (e.currentTarget.style.border = "1.5px solid #8B5A2B")}
               onBlur={(e) => (e.currentTarget.style.border = "1.5px solid #EDE8DF")}
             />
             <button
               onClick={() => handleSend()}
               disabled={!input.trim() || streaming}
               className="w-9 h-9 text-white rounded-xl flex items-center justify-center transition-colors shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
-              style={{ background: "#D4714A" }}
-              onMouseEnter={(e) => { if (input.trim() && !streaming) e.currentTarget.style.background = "#B05E38"; }}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "#D4714A")}
+              style={{ background: "#8B5A2B" }}
+              onMouseEnter={(e) => { if (input.trim() && !streaming) e.currentTarget.style.background = "#6B3E18"; }}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "#8B5A2B")}
             >
               <Send className="w-3.5 h-3.5" />
             </button>

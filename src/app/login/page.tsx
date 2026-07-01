@@ -7,9 +7,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 
-const copper  = "#D4714A";
-const copperD = "#B05E38";
-const copperL = "#ECA070";
+const copper  = "#8B5A2B";
+const copperD = "#6B3E18";
+const copperL = "#C49A6C";
 const bg      = "#EDE8E1";
 const card    = "#FAF8F5";
 const border  = "#DDD5CB";
@@ -151,7 +151,7 @@ export default function LoginPage() {
               type="submit"
               disabled={loading}
               className="w-full py-3.5 text-white text-[15px] font-bold rounded-xl transition-all flex items-center justify-center gap-2 mt-2"
-              style={{ background: loading ? copperD : copper, boxShadow: "0 4px 16px rgba(212,113,74,0.28)" }}
+              style={{ background: loading ? copperD : copper, boxShadow: "0 4px 16px rgba(139,90,43,0.28)" }}
               onMouseEnter={(e) => { if (!loading) e.currentTarget.style.background = copperD; }}
               onMouseLeave={(e) => { if (!loading) e.currentTarget.style.background = copper; }}>
               {loading ? (
