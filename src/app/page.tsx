@@ -302,7 +302,7 @@ export default function LandingPage() {
         style={{ background: "rgba(22,17,14,0.88)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
         <div className="max-w-7xl mx-auto w-full flex items-center">
           <Link href="/" className="flex items-center me-12">
-            <img src="/לוגו עם כיתוב חום שחור.png" alt="InfrAI" style={{ height: 44, objectFit: "contain" }} />
+            <img src="/לוגו חום בלי רקע.png" alt="InfrAI" style={{ height: 44, objectFit: "contain" }} />
           </Link>
           <div className="hidden md:flex items-center gap-8 flex-1">
             {t.navItems.map((item, i) => (
