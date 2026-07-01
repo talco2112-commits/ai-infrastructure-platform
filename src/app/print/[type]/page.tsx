@@ -52,7 +52,7 @@ const PRINT_CSS = `
   }
 `;
 
-function ReportHeader({ title, subtitle, ref: refNum }: { title: string; subtitle: string; ref: string }) {
+function ReportHeader({ title, subtitle, docRef }: { title: string; subtitle: string; docRef: string }) {
   return (
     <div style={{ marginBottom: "22px", paddingBottom: "14px", borderBottom: "2.5px solid #8B5A2B" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -62,7 +62,7 @@ function ReportHeader({ title, subtitle, ref: refNum }: { title: string; subtitl
         </div>
         <div style={{ textAlign: "right" }}>
           <div style={{ fontSize: "8.5pt", color: "#57534E" }}>Generated: {PROJECT.reportDate}</div>
-          <div style={{ fontSize: "8.5pt", color: "#A8A29E" }}>Ref: {refNum}</div>
+          <div style={{ fontSize: "8.5pt", color: "#A8A29E" }}>Ref: {docRef}</div>
           <div style={{ fontSize: "8.5pt", color: "#A8A29E" }}>CONFIDENTIAL</div>
         </div>
       </div>
@@ -107,7 +107,7 @@ function WeeklyProgressReport() {
       <ReportHeader
         title="Weekly Progress Report – Week 26"
         subtitle={`Period: 23–27 June 2026  ·  Contractor: ${PROJECT.contractor}  ·  PM: ${PROJECT.pm}`}
-        ref="HW20-WPR-W26-2026"
+        docRef="HW20-WPR-W26-2026"
       />
 
       {/* 1. Executive Summary */}
@@ -357,7 +357,7 @@ function FinancialReport() {
       <ReportHeader
         title="Financial Report – June 2026"
         subtitle={`Period: June 2026  ·  Contract Value: ₪450M  ·  ${PROJECT.contractor}`}
-        ref="HW20-FIN-JUN2026"
+        docRef="HW20-FIN-JUN2026"
       />
 
       <div className="kpi-grid" style={{ gridTemplateColumns: "1fr 1fr 1fr 1fr" }}>
@@ -533,7 +533,7 @@ function SafetyReport() {
       <ReportHeader
         title="Safety & HSE Report – June 2026"
         subtitle={`Period: June 2026 (Month-to-Date)  ·  Workforce: ${SAFETY.workforce} workers  ·  PM: ${PROJECT.pm}`}
-        ref="HW20-HSE-JUN2026"
+        docRef="HW20-HSE-JUN2026"
       />
 
       <div className="kpi-grid" style={{ gridTemplateColumns: "1fr 1fr 1fr 1fr" }}>
@@ -668,7 +668,7 @@ function ScheduleReport() {
       <ReportHeader
         title="Schedule Analysis Report – Week 26"
         subtitle={`Period: Q2 2026 · Week 89/156 · Overall Progress: 57% (Planned: 63%)`}
-        ref="HW20-SCH-W26-2026"
+        docRef="HW20-SCH-W26-2026"
       />
 
       <div className="kpi-grid" style={{ gridTemplateColumns: "1fr 1fr 1fr 1fr" }}>
@@ -802,7 +802,7 @@ function MonthlyOwnerReport() {
       <ReportHeader
         title="Monthly Owner Report – June 2026"
         subtitle={`Reporting Period: 01–30 June 2026  ·  Submitted to: ${PROJECT.owner}  ·  PM: ${PROJECT.pm}`}
-        ref="HW20-MOR-JUN2026"
+        docRef="HW20-MOR-JUN2026"
       />
 
       <p className="summary">
@@ -960,7 +960,7 @@ function PaymentCertificate() {
       <ReportHeader
         title={`Payment Certificate No. ${certNo}`}
         subtitle={`Period: June 2026  ·  Contractor: ${PROJECT.contractor}  ·  Contract No: HW20/2024/01`}
-        ref={`HW20-PC-${certNo}-JUN2026`}
+        docRef={`HW20-PC-${certNo}-JUN2026`}
       />
 
       {/* Certificate Summary Box */}
