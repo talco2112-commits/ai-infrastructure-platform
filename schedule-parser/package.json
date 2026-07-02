@@ -1,0 +1,16 @@
+{
+  "name": "schedule-parser",
+  "version": "1.0.0",
+  "description": "MPXJ-based schedule file parsing service",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "setup": "node setup.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1",
+    "xml2js": "^0.6.2"
+  }
+}
