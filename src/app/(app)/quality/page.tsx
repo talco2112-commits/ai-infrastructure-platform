@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useProjects } from "@/contexts/ProjectContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Bell, Search, AlertTriangle, CheckCircle2, XCircle, Pause, Lightbulb, Plus, Trash2 } from "lucide-react";
 import { QuickAddModal } from "@/components/QuickAddModal";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -123,12 +124,7 @@ export default function QualityPage() {
   const { active } = useProjects();
   const isDemo = active.id === "highway-20";
 
-  const [lang, setLang] = useState<"en" | "he">("en");
-  useEffect(() => {
-    const c = document.cookie.split(";").find(s => s.trim().startsWith("lang="))?.split("=")[1]?.trim();
-    if (c === "he") setLang("he");
-  }, []);
-  const isHe = lang === "he";
+  const { lang, isHe } = useLanguage();
   const T = TRANSLATIONS[lang];
 
   const [ncrs, setNcrs] = useState(isDemo ? DEMO_NCRS : []);

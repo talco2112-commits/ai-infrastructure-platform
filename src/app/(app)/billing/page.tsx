@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useProjects } from "@/contexts/ProjectContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   Bell, Plus, Search, Lightbulb, AlertTriangle, X,
   CheckCircle2, Clock, XCircle, FileText,
@@ -20,8 +21,6 @@ const P = {
   danger: "#B91C1C", dangerBg: "#FEF2F2",
   blue: "#1D4ED8", blueBg: "#EFF6FF",
 };
-
-type Lang = "en" | "he";
 
 /* ─────────────────────────── TYPES ─────────────────────────── */
 
@@ -846,24 +845,17 @@ type TabId = "all" | "pending" | "overdue" | "paid" | "disputed" | "retention";
 export default function BillingPage() {
   const { active }                = useProjects();
   const isDemo                    = active.id === "highway-20";
-  const [lang, setLang]           = useState<Lang>("en");
+  const { isHe }                   = useLanguage();
   const [activeTab, setActiveTab] = useState<TabId>("all");
   const [search, setSearch]       = useState("");
   const [showModal, setShowModal] = useState(false);
   const [invoices, setInvoices]   = useState<Invoice[]>(isDemo ? INVOICES : []);
-
-  useEffect(() => {
-    const c = document.cookie.split(";").find(s => s.trim().startsWith("lang="))?.split("=")[1]?.trim();
-    if (c === "he") setLang("he");
-  }, []);
 
   // ProjectProvider hydrates `active` from localStorage asynchronously after
   // first paint, so isDemo can flip after this component already mounted.
   useEffect(() => {
     setInvoices(isDemo ? INVOICES : []);
   }, [isDemo]);
-
-  const isHe = lang === "he";
 
   const contractValue   = isDemo ? 148_000_000 : (Number(active.contractValue.replace(/,/g, "")) || 0);
   const totalClaimed    = invoices.reduce((s, i) => s + i.claimedAmount, 0);

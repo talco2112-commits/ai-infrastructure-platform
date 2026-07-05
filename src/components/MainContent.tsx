@@ -2,23 +2,17 @@
 
 import { usePathname } from "next/navigation";
 import { useProjects } from "@/contexts/ProjectContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { RealSchedule } from "@/components/RealSchedule";
-import { useState, useEffect } from "react";
 
 interface Props {
   children: React.ReactNode;
-  defaultLang: "en" | "he";
 }
 
-export function MainContent({ children, defaultLang }: Props) {
+export function MainContent({ children }: Props) {
   const { active } = useProjects();
+  const { isHe }   = useLanguage();
   const pathname   = usePathname();
-
-  const [isHe, setIsHe] = useState(defaultLang === "he");
-  useEffect(() => {
-    const c = document.cookie.split(";").find(s => s.trim().startsWith("lang="))?.split("=")[1]?.trim();
-    setIsHe(c === "he");
-  }, []);
 
   const isDemo = active.id === "highway-20";
 

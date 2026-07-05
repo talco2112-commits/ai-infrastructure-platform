@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import { useProjects } from "@/contexts/ProjectContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   Bell, Plus, Search, Lightbulb, AlertTriangle, Filter,
   ClipboardList, CalendarCheck, Calendar, Zap, ShoppingCart,
@@ -22,8 +23,6 @@ const P = {
   warn: "#B45309", warnBg: "#FFFBEB",
   danger: "#B91C1C", dangerBg: "#FEF2F2",
 };
-
-type Lang = "en" | "he";
 
 const TABS = [
   { id: "daily",          icon: ClipboardList, labelEn: "Daily Tasks",       labelHe: "משימות יומיות",  newEn: "New Task",        newHe: "משימה חדשה"       },
@@ -1230,15 +1229,9 @@ export default function ConstructionPage() {
   const { active } = useProjects();
   const isDemo = active.id === "highway-20";
   const [activeTab, setActiveTab] = useState<TabId>("daily");
-  const [lang, setLang] = useState<Lang>("en");
+  const { isHe } = useLanguage();
   const contentRef = useRef<TabHandle>(null);
 
-  useEffect(() => {
-    const c = document.cookie.split(";").find(s => s.trim().startsWith("lang="))?.split("=")[1]?.trim();
-    if (c === "he") setLang("he");
-  }, []);
-
-  const isHe = lang === "he";
   const tab = TABS.find(t => t.id === activeTab)!;
   const Content = TAB_CONTENT[activeTab];
 

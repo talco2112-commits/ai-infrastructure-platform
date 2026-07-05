@@ -13,6 +13,7 @@ import {
 import { cn } from "@/lib/utils";
 import { TaskWidget } from "@/components/TaskWidget";
 import { useProjects } from "@/contexts/ProjectContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useRouter } from "next/navigation";
 
 const P = {
@@ -26,7 +27,6 @@ const P = {
   track: "#E7E0D8",
 };
 
-type Lang = "en" | "he";
 type Status = "good" | "warning" | "danger";
 
 /* ─── shared sub-components ─── */
@@ -841,15 +841,8 @@ function FullDashboard({ isHe, projectName }: { isHe: boolean; projectName: stri
 ════════════════════════════════════════════════════ */
 
 export default function DashboardPage() {
-  const [lang, setLang] = useState<Lang>("en");
+  const { isHe } = useLanguage();
   const { active } = useProjects();
-
-  useEffect(() => {
-    const c = document.cookie.split(";").find(s => s.trim().startsWith("lang="))?.split("=")[1]?.trim();
-    if (c === "he") setLang("he");
-  }, []);
-
-  const isHe = lang === "he";
 
   if (active.id !== "highway-20") {
     return <EmptyDashboard isHe={isHe} project={active}/>;

@@ -7,7 +7,7 @@ import {
   LayoutDashboard, FolderOpen, CalendarDays, Banknote,
   Satellite, HelpCircle, Scale, ClipboardCheck, Shield,
   FileBarChart, Settings, LogOut, ChevronDown, Pencil,
-  HardHat, Receipt, Plus, CheckCircle2,
+  HardHat, Receipt, Plus, CheckCircle2, Target,
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { LogoAnimation } from "@/components/LogoAnimation";
@@ -27,6 +27,7 @@ const navItems = [
   { href: "/safety",        icon: Shield,          labelEn: "Safety",        labelHe: "בטיחות"      },
   { href: "/quality",       icon: ClipboardCheck,  labelEn: "Quality",       labelHe: "איכות"       },
   { href: "/billing",       icon: Receipt,         labelEn: "Billing",       labelHe: "חשבונות"     },
+  { href: "/goals",         icon: Target,          labelEn: "Goals",         labelHe: "יעדים"       },
   { href: "/reports",       icon: FileBarChart,    labelEn: "Reports",       labelHe: "דוחות"       },
 ];
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useProjects } from "@/contexts/ProjectContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   Bell, Search, Upload, Filter, Grid, List,
   FolderOpen, Folder, FileText, Download, Eye,
@@ -51,7 +52,6 @@ const TRANSLATIONS = {
       "Geotechnical Reports",
       "As-Built Drawings",
     ],
-    activeFolderLabel: "Drawings & Plans",
   },
   he: {
     title: "ניהול מסמכים",
@@ -84,7 +84,6 @@ const TRANSLATIONS = {
       "דוחות גאוטכניים",
       "תכניות כנבנה",
     ],
-    activeFolderLabel: "תכניות ושרטוטים",
   },
 };
 
@@ -126,16 +125,12 @@ export default function DocumentsPage() {
   const { active } = useProjects();
   const isDemo = active.id === "highway-20";
 
-  const [lang, setLang] = useState<"en" | "he">("en");
-  useEffect(() => {
-    const c = document.cookie.split(";").find(s => s.trim().startsWith("lang="))?.split("=")[1]?.trim();
-    if (c === "he") setLang("he");
-  }, []);
-  const isHe = lang === "he";
+  const { lang, isHe } = useLanguage();
   const T = TRANSLATIONS[lang];
 
   const [files, setFiles] = useState(isDemo ? DEMO_FILES : []);
   const [deleteIdx, setDeleteIdx] = useState<number | null>(null);
+  const [activeFolderIdx, setActiveFolderIdx] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => { setFiles(isDemo ? DEMO_FILES : []); }, [isDemo]);
 
@@ -147,7 +142,9 @@ export default function DocumentsPage() {
 
   const folderCounts = isDemo ? DEMO_FOLDER_COUNTS : [files.length, ...DEMO_FOLDER_COUNTS.slice(1).map(() => 0)];
   const filesCount   = isHe ? `${files.length} קבצים`      : `${files.length} files`;
-  const docsCount    = isHe ? `${folderCounts[0]} מסמכים`  : `${folderCounts[0]} documents`;
+  const docsCount    = isHe ? `${folderCounts[activeFolderIdx]} מסמכים`  : `${folderCounts[activeFolderIdx]} documents`;
+  // Only "Drawings & Plans" (folder 0) has file rows associated with it today.
+  const visibleFiles = activeFolderIdx === 0 ? files : [];
 
   function fmtSize(bytes: number) {
     if (bytes >= 1_000_000) return `${(bytes / 1_000_000).toFixed(1)} MB`;
@@ -199,9 +196,9 @@ export default function DocumentsPage() {
             {T.projectFolders}
           </p>
           {T.folders.map((name, idx) => {
-            const active = idx === 0;
+            const active = idx === activeFolderIdx;
             return (
-              <div key={name}
+              <div key={name} onClick={() => setActiveFolderIdx(idx)}
                 className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl cursor-pointer"
                 style={{
                   background: active ? P.copperLight : "transparent",
@@ -226,7 +223,7 @@ export default function DocumentsPage() {
           {/* Toolbar */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <span className="text-[13px] font-semibold" style={{ color: P.text2 }}>{T.activeFolderLabel}</span>
+              <span className="text-[13px] font-semibold" style={{ color: P.text2 }}>{T.folders[activeFolderIdx]}</span>
               <ChevronRight className="w-3.5 h-3.5" style={{ color: P.text3 }} />
               <span className="text-[13px]" style={{ color: P.text3 }}>{docsCount}</span>
             </div>
@@ -278,12 +275,12 @@ export default function DocumentsPage() {
                 </tr>
               </thead>
               <tbody>
-                {files.length === 0 && (
+                {visibleFiles.length === 0 && (
                   <tr><td colSpan={8} className="px-4 py-10 text-center text-[13px]" style={{ color: P.text3 }}>
-                    {isHe ? "אין מסמכים עדיין — העלה קבצים כדי להתחיל" : "No documents yet — upload files to get started"}
+                    {isHe ? "אין מסמכים בתיקייה זו" : "No documents in this folder"}
                   </td></tr>
                 )}
-                {files.map((f, i) => (
+                {visibleFiles.map((f, i) => (
                   <tr key={i} style={{ borderBottom: `1px solid ${P.border}` }}
                     className="transition-colors hover:bg-[#F5F2EF]">
                     <td className="px-4 py-3">

@@ -1,5 +1,9 @@
-import { cookies } from "next/headers";
-import { Bell, Search, AlertTriangle, Lightbulb } from "lucide-react";
+"use client";
+
+import { useState } from "react";
+import { Bell, Search, Lightbulb, CheckCircle2, Circle } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useProjects } from "@/contexts/ProjectContext";
 
 const P = {
   bg: "#EDE8E1", card: "#FAF8F5", border: "#EDE8DF",
@@ -10,6 +14,12 @@ const P = {
   danger: "#B91C1C", dangerBg: "#FEF2F2",
   track: "#E7E0D8",
 };
+
+type ViewId = "gantt" | "milestones" | "scurve" | "critical";
+type FilterId = "all" | "critical" | "delays" | "A" | "B" | "C" | "D";
+
+const VIEW_IDS: ViewId[] = ["gantt", "milestones", "scurve", "critical"];
+const FILTER_IDS: FilterId[] = ["all", "critical", "delays", "A", "B", "C", "D"];
 
 const TRANSLATIONS = {
   en: {
@@ -28,6 +38,16 @@ const TRANSLATIONS = {
     aiLabel: "AI Schedule Analysis",
     aiText: "Critical path runs through Utility relocation Zone D → Pile drilling Sec. B → Pile caps → Bridge 68 substructure. Current 14-day delay in utility relocation is pushing forecast completion to Mar 2027. Recovery option: accelerate Zone D crew to 3 shifts (cost ~₪180K) to recover 8 working days by end of July. Recommend review with subcontractor Ambar Engineering by 02 Jul.",
     months: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
+    noResults: "No activities match this filter",
+    milestonesTitle: "Project Milestones",
+    achieved: "Achieved",
+    upcoming: "Upcoming",
+    scurveTitle: "Cumulative Progress — Planned vs Actual",
+    planned: "Planned",
+    actual: "Actual",
+    criticalTitle: "Critical Path Activities",
+    colFloat: "Float",
+    colDelay: "Delay",
   },
   he: {
     title: "לוח זמנים",
@@ -45,6 +65,16 @@ const TRANSLATIONS = {
     aiLabel: "ניתוח לוח זמנים AI",
     aiText: "הנתיב הקריטי עובר דרך העברת תשתיות אזור D ← קידוח יסודות מקטע B ← כובעי יסוד ← תת-מבנה Bridge 68. האיחור הנוכחי של 14 יום בהעברת תשתיות מזיז את תחזית הסיום למרץ 2027. אפשרות התאוששות: האצת צוות אזור D לשלוש משמרות (עלות ~₪180K) לשחזור 8 ימי עבודה עד סוף יולי. מומלץ לבחון עם קבלן המשנה אמבר הנדסה עד 02 יולי.",
     months: ["ינו","פבר","מרץ","אפר","מאי","יונ","יול","אוג","ספט","אוק","נוב","דצמ"],
+    noResults: "אין פעילויות התואמות לסינון זה",
+    milestonesTitle: "אבני דרך של הפרויקט",
+    achieved: "הושג",
+    upcoming: "צפוי",
+    scurveTitle: "התקדמות מצטברת — מתוכנן מול בפועל",
+    planned: "מתוכנן",
+    actual: "בפועל",
+    criticalTitle: "פעילויות נתיב קריטי",
+    colFloat: "פלואט",
+    colDelay: "איחור",
   },
 };
 
@@ -61,24 +91,24 @@ type Activity = {
   id: string; wbs: string; name: string;
   startM: number; startD: number; endM: number; endD: number;
   progress: number; critical: boolean; delay?: string;
-  isSummary?: boolean;
+  isSummary?: boolean; zone?: "A" | "B" | "C" | "D"; float?: string;
 };
 
 const activities: Activity[] = [
   { id:"1",   wbs:"1",   name:"EARTHWORKS",                      startM:1, startD:2,  endM:7,  endD:15, progress:78, critical:false, isSummary:true  },
   { id:"1.1", wbs:"1.1", name:"Site clearing & grubbing",         startM:1, startD:2,  endM:2,  endD:15, progress:100, critical:false },
-  { id:"1.2", wbs:"1.2", name:"Bulk excavation – Zone A",         startM:2, startD:1,  endM:4,  endD:30, progress:92,  critical:false },
-  { id:"1.3", wbs:"1.3", name:"Bulk excavation – Zone B",         startM:3, startD:15, endM:6,  endD:30, progress:75,  critical:false },
-  { id:"1.4", wbs:"1.4", name:"Utility relocation – Zone D",      startM:3, startD:1,  endM:7,  endD:15, progress:23,  critical:true,  delay:"14d" },
+  { id:"1.2", wbs:"1.2", name:"Bulk excavation – Zone A",         startM:2, startD:1,  endM:4,  endD:30, progress:92,  critical:false, zone:"A" },
+  { id:"1.3", wbs:"1.3", name:"Bulk excavation – Zone B",         startM:3, startD:15, endM:6,  endD:30, progress:75,  critical:false, zone:"B" },
+  { id:"1.4", wbs:"1.4", name:"Utility relocation – Zone D",      startM:3, startD:1,  endM:7,  endD:15, progress:23,  critical:true,  delay:"14d", zone:"D", float:"-14d" },
   { id:"2",   wbs:"2",   name:"FOUNDATIONS",                      startM:4, startD:15, endM:10, endD:31, progress:35, critical:true,  isSummary:true  },
-  { id:"2.1", wbs:"2.1", name:"Pile drilling – Sec. A",           startM:4, startD:15, endM:7,  endD:31, progress:65,  critical:true  },
-  { id:"2.2", wbs:"2.2", name:"Pile drilling – Sec. B",           startM:6, startD:1,  endM:9,  endD:30, progress:30,  critical:true  },
-  { id:"2.3", wbs:"2.3", name:"Pile caps & grade beams",          startM:7, startD:15, endM:10, endD:31, progress:12,  critical:true  },
+  { id:"2.1", wbs:"2.1", name:"Pile drilling – Sec. A",           startM:4, startD:15, endM:7,  endD:31, progress:65,  critical:true,  zone:"A", float:"-7d" },
+  { id:"2.2", wbs:"2.2", name:"Pile drilling – Sec. B",           startM:6, startD:1,  endM:9,  endD:30, progress:30,  critical:true,  zone:"B", float:"-14d" },
+  { id:"2.3", wbs:"2.3", name:"Pile caps & grade beams",          startM:7, startD:15, endM:10, endD:31, progress:12,  critical:true,  float:"-14d" },
   { id:"3",   wbs:"3",   name:"STRUCTURES",                       startM:6, startD:15, endM:12, endD:31, progress:10, critical:true,  isSummary:true  },
-  { id:"3.1", wbs:"3.1", name:"Bridge 68 – substructure",         startM:8, startD:1,  endM:11, endD:30, progress:5,   critical:true  },
-  { id:"3.2", wbs:"3.2", name:"Bridge 68 – superstructure",       startM:11,startD:1,  endM:12, endD:31, progress:0,   critical:true  },
-  { id:"3.3", wbs:"3.3", name:"Retaining walls – Zone A",         startM:6, startD:15, endM:9,  endD:30, progress:28,  critical:false },
-  { id:"3.4", wbs:"3.4", name:"Bridge deck formwork",             startM:8, startD:15, endM:12, endD:15, progress:0,   critical:false },
+  { id:"3.1", wbs:"3.1", name:"Bridge 68 – substructure",         startM:8, startD:1,  endM:11, endD:30, progress:5,   critical:true,  zone:"B", float:"-14d" },
+  { id:"3.2", wbs:"3.2", name:"Bridge 68 – superstructure",       startM:11,startD:1,  endM:12, endD:31, progress:0,   critical:true,  zone:"B", float:"-14d" },
+  { id:"3.3", wbs:"3.3", name:"Retaining walls – Zone A",         startM:6, startD:15, endM:9,  endD:30, progress:28,  critical:false, zone:"A" },
+  { id:"3.4", wbs:"3.4", name:"Bridge deck formwork",             startM:8, startD:15, endM:12, endD:15, progress:0,   critical:false, zone:"B" },
   { id:"4",   wbs:"4",   name:"ROAD PAVEMENT",                    startM:5, startD:1,  endM:12, endD:31, progress:24, critical:false, isSummary:true  },
   { id:"4.1", wbs:"4.1", name:"Subgrade preparation",             startM:5, startD:1,  endM:8,  endD:31, progress:61,  critical:false },
   { id:"4.2", wbs:"4.2", name:"Sub-base layer",                   startM:8, startD:1,  endM:10, endD:31, progress:15,  critical:false },
@@ -91,11 +121,116 @@ const activities: Activity[] = [
 
 const TODAY_POS = 177 / 365;
 
-export default async function SchedulePage() {
-  const cookieStore = await cookies();
-  const lang = (cookieStore.get("lang")?.value ?? "en") as "en" | "he";
-  const isHe = lang === "he";
+const PLANNED_CUM = [5, 12, 20, 30, 45, 63, 71, 78, 85, 91, 96, 100];
+const ACTUAL_CUM  = [4, 9, 15, 23, 36, 57];
+
+function matchesFilter(a: Activity, filter: FilterId): boolean {
+  if (filter === "all") return true;
+  if (filter === "critical") return a.critical;
+  if (filter === "delays") return !!a.delay;
+  return a.zone === filter;
+}
+
+function GanttRows({ list, wbsCol }: { list: Activity[]; wbsCol: string }) {
+  return (
+    <div className="rounded-2xl overflow-hidden"
+      style={{ background: P.card, border: `1px solid ${P.border}`, boxShadow: "0 2px 12px rgba(28,25,23,0.06)" }}>
+      <div className="flex" style={{ borderBottom: `1px solid ${P.border}` }}>
+        <div className="w-64 shrink-0 px-4 py-2.5 font-bold text-[11px] uppercase tracking-wider"
+          style={{ color: P.text3, borderRight: `1px solid ${P.border}`, background: P.bg }}>
+          {wbsCol}
+        </div>
+        <div className="flex-1 relative">
+          <div className="flex">
+            {TRANSLATIONS.en.months.map((_, i) => (
+              <div key={i} className="flex-1 py-2.5" style={{ borderRight: `1px solid ${P.border}`, background: P.bg }} />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {list.map((act) => {
+        const left    = monthOffset(act.startM, act.startD) * 100;
+        const width   = monthDuration(act.startM, act.startD, act.endM, act.endD) * 100;
+        const barColor = act.isSummary ? "#1C1917" : act.critical ? P.danger : P.copper;
+
+        return (
+          <div key={act.id} className="flex items-center"
+            style={{
+              borderBottom: `1px solid ${P.border}`,
+              background: act.isSummary ? "#F5F2EF" : "transparent",
+              minHeight: act.isSummary ? 36 : 40,
+            }}>
+            <div className="w-64 shrink-0 px-3 flex items-center gap-2"
+              style={{ borderRight: `1px solid ${P.border}`, height: "100%" }}>
+              <span className="text-[11.5px] font-mono shrink-0" style={{ color: P.text3, minWidth: 28 }}>
+                {act.wbs}
+              </span>
+              <span
+                className={act.isSummary ? "text-[12px] font-bold uppercase tracking-wide" : "text-[12px] font-medium"}
+                style={{ color: act.isSummary ? P.text1 : act.critical ? P.danger : P.text2 }}>
+                {act.name}
+              </span>
+              {act.delay && (
+                <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                  style={{ background: P.dangerBg, color: P.danger }}>
+                  +{act.delay}
+                </span>
+              )}
+            </div>
+
+            <div className="flex-1 relative flex items-center" style={{ height: 40 }}>
+              <div className="absolute top-0 bottom-0 z-10 pointer-events-none"
+                style={{ left: `${TODAY_POS * 100}%`, width: 2, background: P.copper, opacity: 0.6 }} />
+
+              {!act.isSummary && (
+                <div className="absolute h-5 rounded-full overflow-hidden"
+                  style={{
+                    left: `${left}%`,
+                    width: `${Math.max(width, 1)}%`,
+                    background: `${barColor}26`,
+                    border: `1.5px solid ${barColor}`,
+                  }}>
+                  {act.progress > 0 && (
+                    <div className="h-full rounded-full"
+                      style={{ width: `${act.progress}%`, background: barColor, opacity: 0.85 }} />
+                  )}
+                </div>
+              )}
+
+              {act.isSummary && (
+                <div className="absolute h-3 rounded-sm"
+                  style={{ left: `${left}%`, width: `${Math.max(width, 1)}%`, background: "#1C1917", opacity: 0.75 }}>
+                  <div className="h-full rounded-sm" style={{ width: `${act.progress}%`, background: "#1C1917" }} />
+                </div>
+              )}
+
+              {!act.isSummary && act.progress > 0 && (
+                <div className="absolute text-[10px] font-bold"
+                  style={{ left: `calc(${left}% + ${Math.max(width, 1)}% + 4px)`, color: P.text3, whiteSpace: "nowrap" }}>
+                  {act.progress}%
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+export default function SchedulePage() {
+  const { lang, isHe } = useLanguage();
+  const { active } = useProjects();
   const T = TRANSLATIONS[lang];
+
+  const [view, setView] = useState<ViewId>("gantt");
+  const [filter, setFilter] = useState<FilterId>("all");
+
+  const filteredActivities = activities.filter(a => matchesFilter(a, filter));
+  const criticalActivities = activities.filter(a => a.critical);
+
+  const now = Date.now();
 
   return (
     <div dir={isHe ? "rtl" : "ltr"} className="flex flex-col h-full" style={{ background: P.bg, fontFamily: "Inter, system-ui, sans-serif" }}>
@@ -106,17 +241,21 @@ export default async function SchedulePage() {
         <div className="flex items-center gap-3">
           <h1 className="text-[18px] font-bold" style={{ color: P.text1 }}>{T.title}</h1>
           <div className="flex items-center gap-1">
-            {T.views.map((v, i) => (
-              <button key={v}
-                className="px-3 py-1.5 rounded-xl text-[12px] font-semibold transition-colors"
-                style={{
-                  background: i === 0 ? P.copper : P.bg,
-                  color: i === 0 ? "#fff" : P.text2,
-                  border: `1px solid ${i === 0 ? P.copper : P.border}`,
-                }}>
-                {v}
-              </button>
-            ))}
+            {T.views.map((v, i) => {
+              const id = VIEW_IDS[i];
+              const activeView = view === id;
+              return (
+                <button key={v} onClick={() => setView(id)}
+                  className="px-3 py-1.5 rounded-xl text-[12px] font-semibold transition-colors"
+                  style={{
+                    background: activeView ? P.copper : P.bg,
+                    color: activeView ? "#fff" : P.text2,
+                    border: `1px solid ${activeView ? P.copper : P.border}`,
+                  }}>
+                  {v}
+                </button>
+              );
+            })}
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -134,21 +273,27 @@ export default async function SchedulePage() {
 
       <div className="flex-1 overflow-y-auto p-5">
 
-        {/* Filter chips */}
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-[12px] font-semibold" style={{ color: P.text3 }}>{T.filterLabel}</span>
-          {T.filterChips.map((chip, i) => (
-            <button key={chip}
-              className="px-3 py-1 rounded-full text-[11.5px] font-semibold"
-              style={{
-                background: i === 0 ? P.copper : P.bg,
-                color: i === 0 ? "#fff" : P.text2,
-                border: `1px solid ${i === 0 ? P.copper : P.border}`,
-              }}>
-              {chip}
-            </button>
-          ))}
-        </div>
+        {/* Filter chips — only meaningful on the Gantt view */}
+        {view === "gantt" && (
+          <div className="flex items-center gap-2 mb-4 flex-wrap">
+            <span className="text-[12px] font-semibold" style={{ color: P.text3 }}>{T.filterLabel}</span>
+            {T.filterChips.map((chip, i) => {
+              const id = FILTER_IDS[i];
+              const activeChip = filter === id;
+              return (
+                <button key={chip} onClick={() => setFilter(id)}
+                  className="px-3 py-1 rounded-full text-[11.5px] font-semibold"
+                  style={{
+                    background: activeChip ? P.copper : P.bg,
+                    color: activeChip ? "#fff" : P.text2,
+                    border: `1px solid ${activeChip ? P.copper : P.border}`,
+                  }}>
+                  {chip}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {/* Summary KPIs */}
         <div className="grid grid-cols-4 gap-3 mb-5">
@@ -165,100 +310,114 @@ export default async function SchedulePage() {
           })}
         </div>
 
-        {/* Gantt Chart */}
-        <div className="rounded-2xl overflow-hidden"
-          style={{ background: P.card, border: `1px solid ${P.border}`, boxShadow: "0 2px 12px rgba(28,25,23,0.06)" }}>
-
-          {/* Month header row */}
-          <div className="flex" style={{ borderBottom: `1px solid ${P.border}` }}>
-            <div className="w-64 shrink-0 px-4 py-2.5 font-bold text-[11px] uppercase tracking-wider"
-              style={{ color: P.text3, borderRight: `1px solid ${P.border}`, background: P.bg }}>
-              {T.wbsCol}
+        {/* ── Gantt view ── */}
+        {view === "gantt" && (
+          filteredActivities.length === 0 ? (
+            <div className="rounded-2xl p-10 text-center text-[13px]"
+              style={{ background: P.card, border: `1px solid ${P.border}`, color: P.text3 }}>
+              {T.noResults}
             </div>
-            <div className="flex-1 relative">
-              <div className="flex">
-                {T.months.map((m) => (
-                  <div key={m} className="flex-1 text-center py-2.5 text-[11px] font-bold uppercase"
-                    style={{ color: P.text3, borderRight: `1px solid ${P.border}`, background: P.bg }}>
-                    {m}
-                  </div>
+          ) : (
+            <GanttRows list={filteredActivities} wbsCol={T.wbsCol} />
+          )
+        )}
+
+        {/* ── Critical Path view ── */}
+        {view === "critical" && (
+          <div className="rounded-2xl overflow-hidden"
+            style={{ background: P.card, border: `1px solid ${P.border}`, boxShadow: "0 2px 12px rgba(28,25,23,0.06)" }}>
+            <div className="px-5 pt-5 pb-3">
+              <h3 className="text-[14px] font-bold" style={{ color: P.text1 }}>{T.criticalTitle}</h3>
+            </div>
+            <table className="w-full text-[12.5px]">
+              <thead>
+                <tr style={{ borderBottom: `1px solid ${P.border}` }}>
+                  {[T.wbsCol, T.colFloat, T.colDelay].map(h => (
+                    <th key={h} className="px-4 py-2.5 text-left font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {criticalActivities.map(a => (
+                  <tr key={a.id} className="hover:bg-[#F5F2EF]" style={{ borderBottom: `1px solid ${P.border}` }}>
+                    <td className="px-4 py-2.5 font-medium" style={{ color: a.isSummary ? P.text1 : P.danger }}>
+                      <span className="font-mono text-[11px] me-2" style={{ color: P.text3 }}>{a.wbs}</span>
+                      {a.name}
+                    </td>
+                    <td className="px-4 py-2.5 font-mono font-bold" style={{ color: P.danger }}>{a.float ?? "—"}</td>
+                    <td className="px-4 py-2.5">
+                      {a.delay
+                        ? <span className="text-[10.5px] font-bold px-2 py-0.5 rounded-full" style={{ background: P.dangerBg, color: P.danger }}>+{a.delay}</span>
+                        : <span style={{ color: P.text3 }}>—</span>}
+                    </td>
+                  </tr>
                 ))}
-              </div>
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* ── Milestones view ── */}
+        {view === "milestones" && (
+          <div className="rounded-2xl p-5"
+            style={{ background: P.card, border: `1px solid ${P.border}`, boxShadow: "0 2px 12px rgba(28,25,23,0.06)" }}>
+            <h3 className="text-[14px] font-bold mb-4" style={{ color: P.text1 }}>{T.milestonesTitle}</h3>
+            <div className="space-y-2">
+              {active.milestones.map((m) => {
+                const achieved = new Date(m.date).getTime() <= now;
+                return (
+                  <div key={m.id} className="flex items-center gap-3 px-4 py-3 rounded-xl"
+                    style={{ background: P.bg, border: `1px solid ${P.border}` }}>
+                    {achieved
+                      ? <CheckCircle2 className="w-4 h-4 shrink-0" style={{ color: P.good }} />
+                      : <Circle className="w-4 h-4 shrink-0" style={{ color: P.text3 }} />}
+                    <span className="flex-1 text-[13px] font-semibold" style={{ color: P.text1 }}>
+                      {isHe ? (m.nameHe || m.name) : m.name}
+                    </span>
+                    <span className="text-[11.5px] font-semibold px-2.5 py-1 rounded-lg"
+                      style={{ background: achieved ? P.goodBg : P.copperLight, color: achieved ? P.good : P.copper }}>
+                      {achieved ? T.achieved : T.upcoming}
+                    </span>
+                    <span className="text-[12px] font-medium" style={{ color: P.text3 }}>
+                      {new Date(m.date).toLocaleDateString(isHe ? "he-IL" : "en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           </div>
+        )}
 
-          {/* Activity rows */}
-          {activities.map((act) => {
-            const left    = monthOffset(act.startM, act.startD) * 100;
-            const width   = monthDuration(act.startM, act.startD, act.endM, act.endD) * 100;
-            const barColor = act.isSummary ? "#1C1917" : act.critical ? P.danger : P.copper;
-
-            return (
-              <div key={act.id} className="flex items-center"
-                style={{
-                  borderBottom: `1px solid ${P.border}`,
-                  background: act.isSummary ? "#F5F2EF" : "transparent",
-                  minHeight: act.isSummary ? 36 : 40,
-                }}>
-
-                {/* Name col */}
-                <div className="w-64 shrink-0 px-3 flex items-center gap-2"
-                  style={{ borderRight: `1px solid ${P.border}`, height: "100%" }}>
-                  <span className="text-[11.5px] font-mono shrink-0" style={{ color: P.text3, minWidth: 28 }}>
-                    {act.wbs}
-                  </span>
-                  <span
-                    className={act.isSummary ? "text-[12px] font-bold uppercase tracking-wide" : "text-[12px] font-medium"}
-                    style={{ color: act.isSummary ? P.text1 : act.critical ? P.danger : P.text2 }}>
-                    {act.name}
-                  </span>
-                  {act.delay && (
-                    <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full"
-                      style={{ background: P.dangerBg, color: P.danger }}>
-                      +{act.delay}
-                    </span>
-                  )}
-                </div>
-
-                {/* Bar area */}
-                <div className="flex-1 relative flex items-center" style={{ height: 40 }}>
-                  {/* Today line */}
-                  <div className="absolute top-0 bottom-0 z-10 pointer-events-none"
-                    style={{ left: `${TODAY_POS * 100}%`, width: 2, background: P.copper, opacity: 0.6 }} />
-
-                  {!act.isSummary && (
-                    <div className="absolute h-5 rounded-full overflow-hidden"
-                      style={{
-                        left: `${left}%`,
-                        width: `${Math.max(width, 1)}%`,
-                        background: `${barColor}26`,
-                        border: `1.5px solid ${barColor}`,
-                      }}>
-                      {act.progress > 0 && (
-                        <div className="h-full rounded-full"
-                          style={{ width: `${act.progress}%`, background: barColor, opacity: 0.85 }} />
-                      )}
-                    </div>
-                  )}
-
-                  {act.isSummary && (
-                    <div className="absolute h-3 rounded-sm"
-                      style={{ left: `${left}%`, width: `${Math.max(width, 1)}%`, background: "#1C1917", opacity: 0.75 }}>
-                      <div className="h-full rounded-sm" style={{ width: `${act.progress}%`, background: "#1C1917" }} />
-                    </div>
-                  )}
-
-                  {!act.isSummary && act.progress > 0 && (
-                    <div className="absolute text-[10px] font-bold"
-                      style={{ left: `calc(${left}% + ${Math.max(width, 1)}% + 4px)`, color: P.text3, whiteSpace: "nowrap" }}>
-                      {act.progress}%
-                    </div>
-                  )}
-                </div>
+        {/* ── S-Curve view ── */}
+        {view === "scurve" && (
+          <div className="rounded-2xl p-5"
+            style={{ background: P.card, border: `1px solid ${P.border}`, boxShadow: "0 2px 12px rgba(28,25,23,0.06)" }}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[14px] font-bold" style={{ color: P.text1 }}>{T.scurveTitle}</h3>
+              <div className="flex items-center gap-3 text-[11px]">
+                <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 inline-block" style={{ background: P.track }} />{T.planned}</span>
+                <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 inline-block" style={{ background: P.copper }} />{T.actual}</span>
               </div>
-            );
-          })}
-        </div>
+            </div>
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full" style={{ height: 220 }}>
+              {[0, 25, 50, 75, 100].map(y => (
+                <line key={y} x1={0} x2={100} y1={100 - y} y2={100 - y} stroke={P.track} strokeWidth={0.3} />
+              ))}
+              <polyline
+                points={PLANNED_CUM.map((v, i) => `${(i / (PLANNED_CUM.length - 1)) * 100},${100 - v}`).join(" ")}
+                fill="none" stroke={P.track} strokeWidth={1.5} vectorEffect="non-scaling-stroke" />
+              <polyline
+                points={ACTUAL_CUM.map((v, i) => `${(i / (PLANNED_CUM.length - 1)) * 100},${100 - v}`).join(" ")}
+                fill="none" stroke={P.copper} strokeWidth={1.8} vectorEffect="non-scaling-stroke" />
+              <line x1={TODAY_POS * 100} x2={TODAY_POS * 100} y1={0} y2={100} stroke={P.copper} strokeWidth={0.4} strokeDasharray="2,2" opacity={0.6} />
+            </svg>
+            <div className="flex mt-1">
+              {T.months.map((m) => (
+                <div key={m} className="flex-1 text-center text-[10.5px] font-semibold" style={{ color: P.text3 }}>{m}</div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* AI insight */}
         <div className="flex items-start gap-3 p-4 rounded-2xl mt-5"

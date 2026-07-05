@@ -2,13 +2,15 @@
 
 import { useRouter } from "next/navigation";
 import { Languages } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export function LanguageSwitcher({ lang }: { lang: "en" | "he" }) {
   const router = useRouter();
+  const { setLang } = useLanguage();
 
   function toggle() {
     const next = lang === "en" ? "he" : "en";
-    document.cookie = `lang=${next}; path=/; max-age=31536000`;
+    setLang(next);
     router.refresh();
   }
 

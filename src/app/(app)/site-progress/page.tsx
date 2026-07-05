@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useProjects } from "@/contexts/ProjectContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Bell, Search, Satellite, RefreshCw, Layers, AlertTriangle, CheckCircle2 } from "lucide-react";
 
 const P = {
@@ -112,12 +113,7 @@ export default function SiteProgressPage() {
   const { active } = useProjects();
   const isDemo = active.id === "highway-20";
 
-  const [lang, setLang] = useState<"en" | "he">("en");
-  useEffect(() => {
-    const c = document.cookie.split(";").find(s => s.trim().startsWith("lang="))?.split("=")[1]?.trim();
-    if (c === "he") setLang("he");
-  }, []);
-  const isHe = lang === "he";
+  const { lang, isHe } = useLanguage();
   const T = TRANSLATIONS[lang];
 
   const zones            = isDemo ? DEMO_ZONES : [];
