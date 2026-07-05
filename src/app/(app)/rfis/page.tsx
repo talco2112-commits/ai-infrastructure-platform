@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useProjects } from "@/contexts/ProjectContext";
-import { Bell, Search, AlertTriangle, Plus, Clock } from "lucide-react";
+import { Bell, Search, AlertTriangle, Plus, Clock, Trash2 } from "lucide-react";
 import { QuickAddModal } from "@/components/QuickAddModal";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 const P = {
   bg: "#EDE8E1", card: "#FAF8F5", border: "#EDE8DF",
@@ -110,7 +111,14 @@ export default function RFIsPage() {
 
   const [rfis, setRfis]     = useState(isDemo ? DEMO_RFIS : []);
   const [showModal, setShowModal] = useState(false);
+  const [deleteIdx, setDeleteIdx] = useState<number | null>(null);
   useEffect(() => { setRfis(isDemo ? DEMO_RFIS : []); }, [isDemo]);
+
+  function confirmDelete() {
+    if (deleteIdx === null) return;
+    setRfis(prev => prev.filter((_, i) => i !== deleteIdx));
+    setDeleteIdx(null);
+  }
 
   const statsColors  = [P.copper, P.warn, P.danger, P.good, "#78716C"];
   const statsValues  = isDemo ? [47, 8, 3, 28, 8] : [
@@ -224,14 +232,14 @@ export default function RFIsPage() {
           <table className="w-full text-[12px]">
             <thead>
               <tr style={{ borderBottom: `1px solid ${P.border}` }}>
-                {[T.colNum, T.colSubject, T.colDiscipline, T.colSubmitted, T.colDue, T.colDaysOpen, T.colStatus, T.colPriority, T.colAssigned].map(h => (
+                {[T.colNum, T.colSubject, T.colDiscipline, T.colSubmitted, T.colDue, T.colDaysOpen, T.colStatus, T.colPriority, T.colAssigned, ""].map(h => (
                   <th key={h} className="px-4 py-3 text-left font-bold whitespace-nowrap" style={{ color: P.text3, background: P.bg }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {rfis.length === 0 && (
-                <tr><td colSpan={9} className="px-4 py-10 text-center text-[13px]" style={{ color: P.text3 }}>
+                <tr><td colSpan={10} className="px-4 py-10 text-center text-[13px]" style={{ color: P.text3 }}>
                   {isHe ? "אין בקשות מידע עדיין" : "No RFIs yet"}
                 </td></tr>
               )}
@@ -268,6 +276,11 @@ export default function RFIsPage() {
                     </span>
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap" style={{ color: P.text2 }}>{r.assignedTo}</td>
+                  <td className="px-4 py-3">
+                    <button onClick={() => setDeleteIdx(i)} className="p-1 rounded-lg transition-colors hover:bg-red-50">
+                      <Trash2 className="w-3.5 h-3.5" style={{ color: P.danger }} />
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -275,6 +288,16 @@ export default function RFIsPage() {
         </div>
 
       </div>
+
+      {deleteIdx !== null && (
+        <ConfirmDialog
+          isHe={isHe}
+          message={`Delete RFI "${rfis[deleteIdx]?.subject}"? This cannot be undone.`}
+          messageHe={`למחוק את בקשת המידע "${rfis[deleteIdx]?.subject}"? לא ניתן לשחזר פעולה זו.`}
+          onCancel={() => setDeleteIdx(null)}
+          onConfirm={confirmDelete}
+        />
+      )}
 
       {showModal && (
         <QuickAddModal

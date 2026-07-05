@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useProjects } from "@/contexts/ProjectContext";
-import { Bell, Search, AlertTriangle, CheckCircle2, Users, Lightbulb, Plus } from "lucide-react";
+import { Bell, Search, AlertTriangle, CheckCircle2, Users, Lightbulb, Plus, Trash2 } from "lucide-react";
 import { QuickAddModal } from "@/components/QuickAddModal";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 const P = {
   bg: "#EDE8E1", card: "#FAF8F5", border: "#EDE8DF",
@@ -141,7 +142,14 @@ export default function SafetyPage() {
 
   const [observations, setObservations] = useState(isDemo ? DEMO_OBSERVATIONS : []);
   const [showModal, setShowModal] = useState(false);
+  const [deleteIdx, setDeleteIdx] = useState<number | null>(null);
   useEffect(() => { setObservations(isDemo ? DEMO_OBSERVATIONS : []); }, [isDemo]);
+
+  function confirmDelete() {
+    if (deleteIdx === null) return;
+    setObservations(prev => prev.filter((_, i) => i !== deleteIdx));
+    setDeleteIdx(null);
+  }
 
   const toolboxTalks   = isDemo ? DEMO_TOOLBOX_TALKS : [];
   const incidentData   = isDemo ? DEMO_INCIDENT_DATA : T.months.map(() => ({ nearmiss: 0, observations: 0 }));
@@ -226,14 +234,14 @@ export default function SafetyPage() {
             <table className="w-full text-[12px]">
               <thead>
                 <tr style={{ borderBottom: `1px solid ${P.border}` }}>
-                  {[T.colType, T.colDesc, T.colZone, T.colReporter, T.colDate, T.colStatus].map(h => (
+                  {[T.colType, T.colDesc, T.colZone, T.colReporter, T.colDate, T.colStatus, ""].map(h => (
                     <th key={h} className="px-4 py-2.5 text-left font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {observations.length === 0 && (
-                  <tr><td colSpan={6} className="px-4 py-10 text-center text-[13px]" style={{ color: P.text3 }}>
+                  <tr><td colSpan={7} className="px-4 py-10 text-center text-[13px]" style={{ color: P.text3 }}>
                     {isHe ? "אין תצפיות בטיחות עדיין" : "No safety observations yet"}
                   </td></tr>
                 )}
@@ -262,6 +270,11 @@ export default function SafetyPage() {
                         style={{ background: obsStatusStyle[o.status].bg, color: obsStatusStyle[o.status].color }}>
                         {o.status}
                       </span>
+                    </td>
+                    <td className="px-4 py-2.5">
+                      <button onClick={() => setDeleteIdx(i)} className="p-1 rounded-lg transition-colors hover:bg-red-50">
+                        <Trash2 className="w-3.5 h-3.5" style={{ color: P.danger }} />
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -326,6 +339,16 @@ export default function SafetyPage() {
         </div>
 
       </div>
+
+      {deleteIdx !== null && (
+        <ConfirmDialog
+          isHe={isHe}
+          message="Delete this safety observation? This cannot be undone."
+          messageHe="למחוק תצפית בטיחות זו? לא ניתן לשחזר פעולה זו."
+          onCancel={() => setDeleteIdx(null)}
+          onConfirm={confirmDelete}
+        />
+      )}
 
       {showModal && (
         <QuickAddModal

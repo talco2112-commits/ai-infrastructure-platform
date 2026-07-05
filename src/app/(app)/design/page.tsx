@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useProjects } from "@/contexts/ProjectContext";
-import { Bell, Search, AlertTriangle, Plus } from "lucide-react";
+import { Bell, Search, AlertTriangle, Plus, Trash2 } from "lucide-react";
 import { QuickAddModal } from "@/components/QuickAddModal";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 const P = {
   bg: "#EDE8E1", card: "#FAF8F5", border: "#EDE8DF",
@@ -103,7 +104,14 @@ export default function DesignPage() {
 
   const [submittals, setSubmittals] = useState(isDemo ? DEMO_SUBMITTALS : []);
   const [showModal, setShowModal] = useState(false);
+  const [deleteIdx, setDeleteIdx] = useState<number | null>(null);
   useEffect(() => { setSubmittals(isDemo ? DEMO_SUBMITTALS : []); }, [isDemo]);
+
+  function confirmDelete() {
+    if (deleteIdx === null) return;
+    setSubmittals(prev => prev.filter((_, i) => i !== deleteIdx));
+    setDeleteIdx(null);
+  }
 
   const statsValues = isDemo ? [38, 14, 17, 4, 3] : [
     submittals.length,
@@ -207,14 +215,14 @@ export default function DesignPage() {
           <table className="w-full text-[12.5px]">
             <thead>
               <tr style={{ borderBottom: `1px solid ${P.border}` }}>
-                {[T.colNum, T.colTitle, T.colDiscipline, T.colRev, T.colSubmitted, T.colDue, T.colDaysLeft, T.colStatus].map(h => (
+                {[T.colNum, T.colTitle, T.colDiscipline, T.colRev, T.colSubmitted, T.colDue, T.colDaysLeft, T.colStatus, ""].map(h => (
                   <th key={h} className="px-4 py-3 text-left font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {submittals.length === 0 && (
-                <tr><td colSpan={8} className="px-4 py-10 text-center text-[13px]" style={{ color: P.text3 }}>
+                <tr><td colSpan={9} className="px-4 py-10 text-center text-[13px]" style={{ color: P.text3 }}>
                   {isHe ? "אין הגשות עדיין" : "No submittals yet"}
                 </td></tr>
               )}
@@ -249,6 +257,11 @@ export default function DesignPage() {
                       {s.status}
                     </span>
                   </td>
+                  <td className="px-4 py-3">
+                    <button onClick={() => setDeleteIdx(i)} className="p-1 rounded-lg transition-colors hover:bg-red-50">
+                      <Trash2 className="w-3.5 h-3.5" style={{ color: P.danger }} />
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -256,6 +269,16 @@ export default function DesignPage() {
         </div>
 
       </div>
+
+      {deleteIdx !== null && (
+        <ConfirmDialog
+          isHe={isHe}
+          message={`Delete submittal "${submittals[deleteIdx]?.title}"? This cannot be undone.`}
+          messageHe={`למחוק את ההגשה "${submittals[deleteIdx]?.title}"? לא ניתן לשחזר פעולה זו.`}
+          onCancel={() => setDeleteIdx(null)}
+          onConfirm={confirmDelete}
+        />
+      )}
 
       {showModal && (
         <QuickAddModal

@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useProjects } from "@/contexts/ProjectContext";
-import { Bell, Search, AlertTriangle, CheckCircle2, XCircle, Pause, Lightbulb, Plus } from "lucide-react";
+import { Bell, Search, AlertTriangle, CheckCircle2, XCircle, Pause, Lightbulb, Plus, Trash2 } from "lucide-react";
 import { QuickAddModal } from "@/components/QuickAddModal";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 const P = {
   bg: "#EDE8E1", card: "#FAF8F5", border: "#EDE8DF",
@@ -132,7 +133,14 @@ export default function QualityPage() {
 
   const [ncrs, setNcrs] = useState(isDemo ? DEMO_NCRS : []);
   const [showModal, setShowModal] = useState(false);
+  const [deleteIdx, setDeleteIdx] = useState<number | null>(null);
   useEffect(() => { setNcrs(isDemo ? DEMO_NCRS : []); }, [isDemo]);
+
+  function confirmDelete() {
+    if (deleteIdx === null) return;
+    setNcrs(prev => prev.filter((_, i) => i !== deleteIdx));
+    setDeleteIdx(null);
+  }
 
   const inspections   = isDemo ? DEMO_INSPECTIONS : [];
   const materialTests = isDemo ? DEMO_MATERIAL_TESTS : [];
@@ -219,14 +227,14 @@ export default function QualityPage() {
             <table className="w-full text-[12px]">
               <thead>
                 <tr style={{ borderBottom: `1px solid ${P.border}` }}>
-                  {[T.colNCR, T.colDesc, T.colTrade, T.colLocation, T.colOpened, T.colStatus, T.colCAR].map(h => (
+                  {[T.colNCR, T.colDesc, T.colTrade, T.colLocation, T.colOpened, T.colStatus, T.colCAR, ""].map(h => (
                     <th key={h} className="px-4 py-2.5 text-left font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {ncrs.length === 0 && (
-                  <tr><td colSpan={7} className="px-4 py-10 text-center text-[13px]" style={{ color: P.text3 }}>
+                  <tr><td colSpan={8} className="px-4 py-10 text-center text-[13px]" style={{ color: P.text3 }}>
                     {isHe ? "אין NCR עדיין" : "No NCRs yet"}
                   </td></tr>
                 )}
@@ -256,6 +264,11 @@ export default function QualityPage() {
                         ? <span className="text-[10.5px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: P.dangerBg, color: P.danger }}>YES</span>
                         : <span className="text-[10.5px]" style={{ color: P.text3 }}>—</span>
                       }
+                    </td>
+                    <td className="px-4 py-2.5">
+                      <button onClick={() => setDeleteIdx(i)} className="p-1 rounded-lg transition-colors hover:bg-red-50">
+                        <Trash2 className="w-3.5 h-3.5" style={{ color: P.danger }} />
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -335,6 +348,16 @@ export default function QualityPage() {
         </div>
 
       </div>
+
+      {deleteIdx !== null && (
+        <ConfirmDialog
+          isHe={isHe}
+          message={`Delete NCR "${ncrs[deleteIdx]?.num}"? This cannot be undone.`}
+          messageHe={`למחוק את ${ncrs[deleteIdx]?.num}? לא ניתן לשחזר פעולה זו.`}
+          onCancel={() => setDeleteIdx(null)}
+          onConfirm={confirmDelete}
+        />
+      )}
 
       {showModal && (
         <QuickAddModal

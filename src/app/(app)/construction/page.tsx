@@ -7,8 +7,10 @@ import {
   ClipboardList, CalendarCheck, Calendar, Zap, ShoppingCart,
   Package, BookOpen, Truck, Users, CheckCircle2, Clock,
   XCircle, Sun, Camera, Wrench, TrendingUp, TrendingDown,
+  ShieldCheck, Trash2,
 } from "lucide-react";
 import { QuickAddModal } from "@/components/QuickAddModal";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 export interface TabHandle { openAdd: () => void; }
 
@@ -28,6 +30,7 @@ const TABS = [
   { id: "weekly",         icon: CalendarCheck, labelEn: "Weekly Plan",       labelHe: "תכנון שבועי",    newEn: "New Activity",    newHe: "פעילות חדשה"      },
   { id: "monthly",        icon: Calendar,      labelEn: "Monthly Plan",      labelHe: "תכנון חודשי",    newEn: "New Milestone",   newHe: "אבן דרך חדשה"     },
   { id: "operations",     icon: Zap,           labelEn: "Special Ops",       labelHe: "פעולות מיוחדות", newEn: "New Operation",   newHe: "פעולה חדשה"       },
+  { id: "permits",        icon: ShieldCheck,   labelEn: "Permits",           labelHe: "היתרים",         newEn: "New Permit",      newHe: "היתר חדש"         },
   { id: "procurement",    icon: ShoppingCart,  labelEn: "Procurement",       labelHe: "רכש",            newEn: "New PO",          newHe: "הזמנת רכש חדשה"   },
   { id: "inventory",      icon: Package,       labelEn: "Inventory",         labelHe: "מלאי",           newEn: "Add Item",        newHe: "הוסף פריט"        },
   { id: "diary",          icon: BookOpen,      labelEn: "Site Diary",        labelHe: "יומן אתר",       newEn: "New Entry",       newHe: "רשומה חדשה"       },
@@ -119,8 +122,15 @@ const DailyTasks = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(fun
   ];
   const [tasks, setTasks] = useState(isDemo ? DEMO_TASKS : []);
   const [showModal, setShowModal] = useState(false);
+  const [deleteIdx, setDeleteIdx] = useState<number | null>(null);
   useEffect(() => { setTasks(isDemo ? DEMO_TASKS : []); }, [isDemo]);
   useImperativeHandle(ref, () => ({ openAdd: () => setShowModal(true) }));
+
+  function confirmDelete() {
+    if (deleteIdx === null) return;
+    setTasks(prev => prev.filter((_, i) => i !== deleteIdx));
+    setDeleteIdx(null);
+  }
 
   const kpis = isDemo ? kpisRaw : [
     { ...kpisRaw[0], val: String(tasks.length) },
@@ -154,11 +164,11 @@ const DailyTasks = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(fun
       <KPIRow items={kpis} colors={[P.text1, P.good, "#1D4ED8", P.danger]} />
       {isDemo && <AIBanner label={isHe?"תובנת AI לתכנית עבודה":"AI Work Plan Insight"} text={ai} />}
       <Card>
-        <table className="w-full text-[12px]"><THead cols={cols} /><tbody>
+        <table className="w-full text-[12px]"><THead cols={[...cols, ""]} /><tbody>
           {tasks.length === 0 && (
-            <tr><td colSpan={8} className="px-4 py-10 text-center text-[13px]" style={{color:P.text3}}>{isHe?"אין משימות עדיין":"No tasks yet"}</td></tr>
+            <tr><td colSpan={9} className="px-4 py-10 text-center text-[13px]" style={{color:P.text3}}>{isHe?"אין משימות עדיין":"No tasks yet"}</td></tr>
           )}
-          {tasks.map(t => { const ps=prStyle[t.priority]; const ss=stStyle[t.status]; const SI=ss.Icon; return (
+          {tasks.map((t, i) => { const ps=prStyle[t.priority]; const ss=stStyle[t.status]; const SI=ss.Icon; return (
             <tr key={t.id} className="hover:bg-[#F5F2EF]" style={{borderBottom:`1px solid ${P.border}`}}>
               <td className="px-4 py-2.5 font-mono text-[11px]" style={{color:P.text3}}>{t.id}</td>
               <td className="px-4 py-2.5 max-w-[240px] font-medium" style={{color:P.text1}}>{isHe?t.taskHe:t.task}</td>
@@ -168,10 +178,24 @@ const DailyTasks = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(fun
               <td className="px-4 py-2.5 font-mono" style={{color:P.text3}}>{t.start}</td>
               <td className="px-4 py-2.5 font-mono" style={{color:P.text3}}>{t.end}</td>
               <td className="px-4 py-2.5"><span className="flex items-center gap-1 text-[10.5px] font-bold px-2 py-0.5 rounded-full w-fit" style={{background:ss.bg,color:ss.color}}><SI className="w-3 h-3"/>{t.status}</span></td>
+              <td className="px-4 py-2.5">
+                <button onClick={() => setDeleteIdx(i)} className="p-1 rounded-lg transition-colors hover:bg-red-50">
+                  <Trash2 className="w-3.5 h-3.5" style={{color:P.danger}}/>
+                </button>
+              </td>
             </tr>
           );})}
         </tbody></table>
       </Card>
+      {deleteIdx !== null && (
+        <ConfirmDialog
+          isHe={isHe}
+          message="Delete this task? This cannot be undone."
+          messageHe="למחוק משימה זו? לא ניתן לשחזר פעולה זו."
+          onCancel={() => setDeleteIdx(null)}
+          onConfirm={confirmDelete}
+        />
+      )}
       {showModal && (
         <QuickAddModal isHe={isHe} title="New Task" titleHe="משימה חדשה"
           onClose={() => setShowModal(false)} onSave={addTask}
@@ -218,8 +242,15 @@ const WeeklyPlan = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(fun
   ];
   const [activities, setActivities] = useState(isDemo ? DEMO_ACTIVITIES : []);
   const [showModal, setShowModal] = useState(false);
+  const [deleteIdx, setDeleteIdx] = useState<number | null>(null);
   useEffect(() => { setActivities(isDemo ? DEMO_ACTIVITIES : []); }, [isDemo]);
   useImperativeHandle(ref, () => ({ openAdd: () => setShowModal(true) }));
+
+  function confirmDelete() {
+    if (deleteIdx === null) return;
+    setActivities(prev => prev.filter((_, i) => i !== deleteIdx));
+    setDeleteIdx(null);
+  }
 
   const kpis = isDemo ? kpisRaw : [
     { ...kpisRaw[0], val: String(activities.length) },
@@ -252,11 +283,11 @@ const WeeklyPlan = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(fun
       <KPIRow items={kpis} colors={[P.text1, P.good, "#1D4ED8", P.danger]} />
       {isDemo && <AIBanner label={isHe?"תובנת AI לתחזית":"AI Lookahead Insight"} text={ai} />}
       <Card>
-        <table className="w-full text-[12px]"><THead cols={cols} /><tbody>
+        <table className="w-full text-[12px]"><THead cols={[...cols, ""]} /><tbody>
           {activities.length === 0 && (
-            <tr><td colSpan={6} className="px-4 py-10 text-center text-[13px]" style={{color:P.text3}}>{isHe?"אין פעילויות עדיין":"No activities yet"}</td></tr>
+            <tr><td colSpan={7} className="px-4 py-10 text-center text-[13px]" style={{color:P.text3}}>{isHe?"אין פעילויות עדיין":"No activities yet"}</td></tr>
           )}
-          {activities.map(a => { const s=ss[a.status]; return (
+          {activities.map((a, i) => { const s=ss[a.status]; return (
             <tr key={a.id} className="hover:bg-[#F5F2EF]" style={{borderBottom:`1px solid ${P.border}`}}>
               <td className="px-4 py-2.5 font-mono text-[11px]" style={{color:P.text3}}>{a.id}</td>
               <td className="px-4 py-2.5 font-medium" style={{color:P.text1}}>{isHe?a.actHe:a.activity}</td>
@@ -264,10 +295,24 @@ const WeeklyPlan = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(fun
               <td className="px-4 py-2.5 text-[11px] font-semibold" style={{color:P.copper}}>{weekLabel(a.week)}</td>
               <td className="px-4 py-2.5 font-mono text-[11px]" style={{color:P.text2}}>{a.duration}</td>
               <td className="px-4 py-2.5"><Chip label={a.status} bg={s.bg} color={s.color}/></td>
+              <td className="px-4 py-2.5">
+                <button onClick={() => setDeleteIdx(i)} className="p-1 rounded-lg transition-colors hover:bg-red-50">
+                  <Trash2 className="w-3.5 h-3.5" style={{color:P.danger}}/>
+                </button>
+              </td>
             </tr>
           );})}
         </tbody></table>
       </Card>
+      {deleteIdx !== null && (
+        <ConfirmDialog
+          isHe={isHe}
+          message="Delete this activity? This cannot be undone."
+          messageHe="למחוק פעילות זו? לא ניתן לשחזר פעולה זו."
+          onCancel={() => setDeleteIdx(null)}
+          onConfirm={confirmDelete}
+        />
+      )}
       {showModal && (
         <QuickAddModal isHe={isHe} title="New Activity" titleHe="פעילות חדשה"
           onClose={() => setShowModal(false)} onSave={addActivity}
@@ -307,8 +352,15 @@ const MonthlyPlan = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(fu
   ];
   const [milestones, setMilestones] = useState(isDemo ? DEMO_MILESTONES : []);
   const [showModal, setShowModal] = useState(false);
+  const [deleteIdx, setDeleteIdx] = useState<number | null>(null);
   useEffect(() => { setMilestones(isDemo ? DEMO_MILESTONES : []); }, [isDemo]);
   useImperativeHandle(ref, () => ({ openAdd: () => setShowModal(true) }));
+
+  function confirmDelete() {
+    if (deleteIdx === null) return;
+    setMilestones(prev => prev.filter((_, i) => i !== deleteIdx));
+    setDeleteIdx(null);
+  }
 
   const kpis = isDemo ? kpisRaw : [
     { ...kpisRaw[0], val: "–" },
@@ -333,20 +385,34 @@ const MonthlyPlan = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(fu
       <KPIRow items={kpis} colors={[P.copper, P.text1, P.good, P.danger]} />
       {isDemo && <AIBanner label={isHe?"תחזית AI חודשית":"AI Monthly Outlook"} text={ai} />}
       <Card>
-        <table className="w-full text-[12px]"><THead cols={cols} /><tbody>
+        <table className="w-full text-[12px]"><THead cols={[...cols, ""]} /><tbody>
           {milestones.length === 0 && (
-            <tr><td colSpan={4} className="px-4 py-10 text-center text-[13px]" style={{color:P.text3}}>{isHe?"אין אבני דרך עדיין":"No milestones yet"}</td></tr>
+            <tr><td colSpan={5} className="px-4 py-10 text-center text-[13px]" style={{color:P.text3}}>{isHe?"אין אבני דרך עדיין":"No milestones yet"}</td></tr>
           )}
-          {milestones.map(m => { const s=msStyle[m.status]; return (
+          {milestones.map((m, i) => { const s=msStyle[m.status]; return (
             <tr key={m.ms} className="hover:bg-[#F5F2EF]" style={{borderBottom:`1px solid ${P.border}`}}>
               <td className="px-4 py-3 font-medium" style={{color:P.text1}}>{isHe?m.msHe:m.ms}</td>
               <td className="px-4 py-3 whitespace-nowrap" style={{color:P.text2}}>{m.date}</td>
               <td className="px-4 py-3 whitespace-nowrap" style={{color:P.text2}}>{m.owner}</td>
               <td className="px-4 py-3"><Chip label={m.status} bg={s.bg} color={s.color}/></td>
+              <td className="px-4 py-3">
+                <button onClick={() => setDeleteIdx(i)} className="p-1 rounded-lg transition-colors hover:bg-red-50">
+                  <Trash2 className="w-3.5 h-3.5" style={{color:P.danger}}/>
+                </button>
+              </td>
             </tr>
           );})}
         </tbody></table>
       </Card>
+      {deleteIdx !== null && (
+        <ConfirmDialog
+          isHe={isHe}
+          message="Delete this milestone? This cannot be undone."
+          messageHe="למחוק אבן דרך זו? לא ניתן לשחזר פעולה זו."
+          onCancel={() => setDeleteIdx(null)}
+          onConfirm={confirmDelete}
+        />
+      )}
       {showModal && (
         <QuickAddModal isHe={isHe} title="New Milestone" titleHe="אבן דרך חדשה"
           onClose={() => setShowModal(false)} onSave={addMilestone}
@@ -381,8 +447,15 @@ const SpecialOps = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(fun
   ];
   const [ops, setOps] = useState(isDemo ? DEMO_OPS : []);
   const [showModal, setShowModal] = useState(false);
+  const [deleteIdx, setDeleteIdx] = useState<number | null>(null);
   useEffect(() => { setOps(isDemo ? DEMO_OPS : []); }, [isDemo]);
   useImperativeHandle(ref, () => ({ openAdd: () => setShowModal(true) }));
+
+  function confirmDelete() {
+    if (deleteIdx === null) return;
+    setOps(prev => prev.filter((_, i) => i !== deleteIdx));
+    setDeleteIdx(null);
+  }
 
   const kpis = isDemo ? kpisRaw : [
     { ...kpisRaw[0], val: String(ops.filter(o => o.status === "ACTIVE").length) },
@@ -410,11 +483,11 @@ const SpecialOps = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(fun
       <KPIRow items={kpis} colors={[P.good, "#1D4ED8", P.copper, P.danger]} />
       {isDemo && <AIBanner label={isHe?"התראת AI לפעולות":"AI Operations Alert"} text={ai} danger />}
       <Card>
-        <table className="w-full text-[12px]"><THead cols={cols} /><tbody>
+        <table className="w-full text-[12px]"><THead cols={[...cols, ""]} /><tbody>
           {ops.length === 0 && (
-            <tr><td colSpan={7} className="px-4 py-10 text-center text-[13px]" style={{color:P.text3}}>{isHe?"אין פעולות מיוחדות עדיין":"No special operations yet"}</td></tr>
+            <tr><td colSpan={8} className="px-4 py-10 text-center text-[13px]" style={{color:P.text3}}>{isHe?"אין פעולות מיוחדות עדיין":"No special operations yet"}</td></tr>
           )}
-          {ops.map(op => { const s=ss[op.status]; const tc=typeColors[op.type]??P.text2; return (
+          {ops.map((op, i) => { const s=ss[op.status]; const tc=typeColors[op.type]??P.text2; return (
             <tr key={op.id} className="hover:bg-[#F5F2EF]" style={{borderBottom:`1px solid ${P.border}`}}>
               <td className="px-4 py-2.5 font-mono text-[11px]" style={{color:P.text3}}>{op.id}</td>
               <td className="px-4 py-2.5"><span className="text-[10.5px] font-bold px-2 py-0.5 rounded-full" style={{background:tc+"18",color:tc}}>{isHe?op.typeHe:op.type}</span></td>
@@ -423,10 +496,24 @@ const SpecialOps = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(fun
               <td className="px-4 py-2.5 whitespace-nowrap text-[11px]" style={{color:P.text2}}>{op.datetime}</td>
               <td className="px-4 py-2.5 font-mono text-[11px]" style={{color:P.text3}}>{op.permit}</td>
               <td className="px-4 py-2.5"><Chip label={op.status} bg={s.bg} color={s.color}/></td>
+              <td className="px-4 py-2.5">
+                <button onClick={() => setDeleteIdx(i)} className="p-1 rounded-lg transition-colors hover:bg-red-50">
+                  <Trash2 className="w-3.5 h-3.5" style={{color:P.danger}}/>
+                </button>
+              </td>
             </tr>
           );})}
         </tbody></table>
       </Card>
+      {deleteIdx !== null && (
+        <ConfirmDialog
+          isHe={isHe}
+          message="Delete this operation? This cannot be undone."
+          messageHe="למחוק פעולה זו? לא ניתן לשחזר פעולה זו."
+          onCancel={() => setDeleteIdx(null)}
+          onConfirm={confirmDelete}
+        />
+      )}
       {showModal && (
         <QuickAddModal isHe={isHe} title="New Operation" titleHe="פעולה חדשה"
           onClose={() => setShowModal(false)} onSave={addOp}
@@ -442,6 +529,126 @@ const SpecialOps = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(fun
             { key: "zone", label: "Zone", labelHe: "אזור", type: "select", options: ["A","B","C","D"].map(z => ({ value: z, label: z, labelHe: z })) },
             { key: "datetime", label: "Date / Time", labelHe: "תאריך / שעה", type: "text", placeholder: "5 Jul 09:00", placeholderHe: "5 יולי 09:00" },
             { key: "permit", label: "Permit #", labelHe: "מס' היתר", type: "text" },
+          ]}
+        />
+      )}
+    </>
+  );
+});
+
+const PERMIT_TYPES = [
+  { value: "Excavation Permit",      label: "Excavation Permit",      labelHe: "היתר חפירה"        },
+  { value: "Traffic Diversion",      label: "Traffic Diversion",      labelHe: "הסדרי תנועה"       },
+  { value: "Crane Lift Permit",      label: "Crane Lift Permit",      labelHe: "היתר הרמת עגורן"   },
+  { value: "Hot Work Permit",        label: "Hot Work Permit",        labelHe: "היתר עבודה חמה"    },
+  { value: "Working at Height",      label: "Working at Height",      labelHe: "עבודה בגובה"       },
+  { value: "Confined Space Entry",   label: "Confined Space Entry",   labelHe: "כניסה למרחב מוקף"  },
+  { value: "Environmental / Noise",  label: "Environmental / Noise",  labelHe: "היתר סביבתי / רעש" },
+  { value: "Electrical Isolation",   label: "Electrical Isolation",   labelHe: "בידוד חשמלי"       },
+  { value: "Other",                  label: "Other",                  labelHe: "אחר"               },
+] as const;
+
+const Permits = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(function Permits({ isHe, isDemo }, ref) {
+  const kpisRaw = isHe
+    ? [{ label:"היתרים פעילים", val:"5" }, { label:"פגים תוך 7 ימים", val:"1" }, { label:"פגי תוקף", val:"2" }, { label:"ממתין לאישור", val:"1" }]
+    : [{ label:"Active Permits", val:"5" }, { label:"Expiring ≤7d", val:"1" }, { label:"Expired", val:"2" }, { label:"Pending Approval", val:"1" }];
+  const ai = isHe
+    ? "היתר הסדרי תנועה PRM-002 פג ב-25 יוני — עדיין נדרש לסגירת נתיב 20N. חדש מיידית או עצור עבודות. היתר עבודה חמה PRM-004 פג — אין לבצע ריתוכים נוספים ב-RW-03 עד לחידוש."
+    : "Traffic diversion permit PRM-002 expired 25 Jun but Route 20N lane closure is still active — renew immediately or halt works. Hot work permit PRM-004 has expired — no further welding on RW-03 until renewed.";
+  type PermitStatus = "ACTIVE" | "EXPIRING" | "EXPIRED" | "PENDING";
+  const DEMO_PERMITS: { id:string; type:string; typeHe:string; zone:string; issuedBy:string; issued:string; expiry:string; status:PermitStatus }[] = [
+    { id:"PRM-001", type:"Excavation Permit",     typeHe:"היתר חפירה",        zone:"D", issuedBy:"Municipal Engineering Dept.", issued:"15 Jun 2026", expiry:"15 Jul 2026", status:"ACTIVE"   },
+    { id:"PRM-002", type:"Traffic Diversion",     typeHe:"הסדרי תנועה",       zone:"B", issuedBy:"Ministry of Transport",       issued:"20 Jun 2026", expiry:"25 Jun 2026", status:"EXPIRED"  },
+    { id:"PRM-003", type:"Crane Lift Permit",     typeHe:"היתר הרמת עגורן",   zone:"B", issuedBy:"Site Safety Office",          issued:"28 Jun 2026", expiry:"05 Jul 2026", status:"EXPIRING" },
+    { id:"PRM-004", type:"Hot Work Permit",       typeHe:"היתר עבודה חמה",    zone:"C", issuedBy:"Site Safety Office",          issued:"25 Jun 2026", expiry:"27 Jun 2026", status:"EXPIRED"  },
+    { id:"PRM-005", type:"Working at Height",     typeHe:"עבודה בגובה",       zone:"B", issuedBy:"Site Safety Office",          issued:"01 Jul 2026", expiry:"31 Jul 2026", status:"ACTIVE"   },
+    { id:"PRM-006", type:"Confined Space Entry",  typeHe:"כניסה למרחב מוקף",  zone:"D", issuedBy:"Site Safety Office",          issued:"22 Jun 2026", expiry:"22 Jul 2026", status:"ACTIVE"   },
+    { id:"PRM-007", type:"Environmental / Noise", typeHe:"היתר סביבתי / רעש", zone:"B", issuedBy:"Environmental Authority",     issued:"10 Jun 2026", expiry:"10 Aug 2026", status:"ACTIVE"   },
+    { id:"PRM-008", type:"Electrical Isolation",  typeHe:"בידוד חשמלי",       zone:"A", issuedBy:"Site Electrical Engineer",    issued:"05 Jul 2026", expiry:"06 Jul 2026", status:"PENDING"  },
+  ];
+  const [permits, setPermits] = useState(isDemo ? DEMO_PERMITS : []);
+  const [showModal, setShowModal] = useState(false);
+  const [deleteIdx, setDeleteIdx] = useState<number | null>(null);
+  useEffect(() => { setPermits(isDemo ? DEMO_PERMITS : []); }, [isDemo]);
+  useImperativeHandle(ref, () => ({ openAdd: () => setShowModal(true) }));
+
+  const kpis = isDemo ? kpisRaw : [
+    { ...kpisRaw[0], val: String(permits.filter(p => p.status === "ACTIVE").length) },
+    { ...kpisRaw[1], val: String(permits.filter(p => p.status === "EXPIRING").length) },
+    { ...kpisRaw[2], val: String(permits.filter(p => p.status === "EXPIRED").length) },
+    { ...kpisRaw[3], val: String(permits.filter(p => p.status === "PENDING").length) },
+  ];
+
+  function addPermit(values: Record<string, string>) {
+    const id = `PRM-${String(permits.length + 1).padStart(3, "0")}`;
+    setPermits(prev => [{
+      id, type: values.type || "Other", typeHe: values.type || "",
+      zone: values.zone || "A", issuedBy: values.issuedBy || "",
+      issued: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+      expiry: values.expiry ? new Date(values.expiry).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "",
+      status: "PENDING" as PermitStatus,
+    }, ...prev]);
+    setShowModal(false);
+  }
+
+  function confirmDelete() {
+    if (deleteIdx === null) return;
+    setPermits(prev => prev.filter((_, i) => i !== deleteIdx));
+    setDeleteIdx(null);
+  }
+
+  const ss: Record<PermitStatus,{bg:string;color:string}> = {
+    ACTIVE:   {bg:P.goodBg,   color:P.good},
+    EXPIRING: {bg:P.warnBg,   color:P.warn},
+    EXPIRED:  {bg:P.dangerBg, color:P.danger},
+    PENDING:  {bg:"#EFF6FF",  color:"#1D4ED8"},
+  };
+  const cols = isHe ? ["מזהה","סוג היתר","אזור","הונפק ע\"י","הונפק","פג תוקף","סטטוס"] : ["ID","Permit Type","Zone","Issued By","Issued","Expiry","Status"];
+  return (
+    <>
+      <KPIRow items={kpis} colors={[P.good, P.warn, P.danger, "#1D4ED8"]} />
+      {isDemo && <AIBanner label={isHe?"התראת AI להיתרים":"AI Permits Alert"} text={ai} danger />}
+      <Card>
+        <table className="w-full text-[12px]"><THead cols={[...cols, ""]} /><tbody>
+          {permits.length === 0 && (
+            <tr><td colSpan={8} className="px-4 py-10 text-center text-[13px]" style={{color:P.text3}}>{isHe?"אין היתרים עדיין":"No permits yet"}</td></tr>
+          )}
+          {permits.map((p, i) => { const s=ss[p.status]; return (
+            <tr key={p.id} className="hover:bg-[#F5F2EF]" style={{borderBottom:`1px solid ${P.border}`}}>
+              <td className="px-4 py-2.5 font-mono text-[11px]" style={{color:P.text3}}>{p.id}</td>
+              <td className="px-4 py-2.5 font-medium" style={{color:P.text1}}>{isHe?p.typeHe:p.type}</td>
+              <td className="px-4 py-2.5 text-center"><ZoneBadge z={p.zone}/></td>
+              <td className="px-4 py-2.5 whitespace-nowrap" style={{color:P.text2}}>{p.issuedBy}</td>
+              <td className="px-4 py-2.5 whitespace-nowrap text-[11px]" style={{color:P.text3}}>{p.issued}</td>
+              <td className="px-4 py-2.5 whitespace-nowrap text-[11px]" style={{color:p.status==="EXPIRED"?P.danger:P.text3}}>{p.expiry}</td>
+              <td className="px-4 py-2.5"><Chip label={p.status} bg={s.bg} color={s.color}/></td>
+              <td className="px-4 py-2.5">
+                <button onClick={() => setDeleteIdx(i)} className="p-1 rounded-lg transition-colors hover:bg-red-50">
+                  <Trash2 className="w-3.5 h-3.5" style={{color:P.danger}}/>
+                </button>
+              </td>
+            </tr>
+          );})}
+        </tbody></table>
+      </Card>
+      {deleteIdx !== null && (
+        <ConfirmDialog
+          isHe={isHe}
+          message={`Delete permit "${permits[deleteIdx]?.id}"? This cannot be undone.`}
+          messageHe={`למחוק את היתר ${permits[deleteIdx]?.id}? לא ניתן לשחזר פעולה זו.`}
+          onCancel={() => setDeleteIdx(null)}
+          onConfirm={confirmDelete}
+        />
+      )}
+      {showModal && (
+        <QuickAddModal isHe={isHe} title="New Permit" titleHe="היתר חדש"
+          onClose={() => setShowModal(false)} onSave={addPermit}
+          fields={[
+            { key: "type", label: "Permit Type", labelHe: "סוג היתר", type: "select", required: true,
+              options: PERMIT_TYPES.map(t => ({ value: t.value, label: t.label, labelHe: t.labelHe })) },
+            { key: "zone", label: "Zone", labelHe: "אזור", type: "select", options: ["A","B","C","D"].map(z => ({ value: z, label: z, labelHe: z })) },
+            { key: "issuedBy", label: "Issued By", labelHe: "הונפק ע\"י", type: "text" },
+            { key: "expiry", label: "Expiry Date", labelHe: "תאריך פקיעה", type: "date" },
           ]}
         />
       )}
@@ -469,8 +676,15 @@ const Procurement = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(fu
   ];
   const [pos, setPos] = useState(isDemo ? DEMO_POS : []);
   const [showModal, setShowModal] = useState(false);
+  const [deleteIdx, setDeleteIdx] = useState<number | null>(null);
   useEffect(() => { setPos(isDemo ? DEMO_POS : []); }, [isDemo]);
   useImperativeHandle(ref, () => ({ openAdd: () => setShowModal(true) }));
+
+  function confirmDelete() {
+    if (deleteIdx === null) return;
+    setPos(prev => prev.filter((_, i) => i !== deleteIdx));
+    setDeleteIdx(null);
+  }
 
   const kpis = isDemo ? kpisRaw : [
     { ...kpisRaw[0], val: String(pos.length) },
@@ -498,11 +712,11 @@ const Procurement = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(fu
       <KPIRow items={kpis} colors={[P.text1, P.warn, P.copper, P.good]} />
       {isDemo && <AIBanner label={isHe?"התראת רכש AI":"AI Procurement Alert"} text={ai} danger />}
       <Card>
-        <table className="w-full text-[12px]"><THead cols={cols} /><tbody>
+        <table className="w-full text-[12px]"><THead cols={[...cols, ""]} /><tbody>
           {pos.length === 0 && (
-            <tr><td colSpan={8} className="px-4 py-10 text-center text-[13px]" style={{color:P.text3}}>{isHe?"אין הזמנות רכש עדיין":"No purchase orders yet"}</td></tr>
+            <tr><td colSpan={9} className="px-4 py-10 text-center text-[13px]" style={{color:P.text3}}>{isHe?"אין הזמנות רכש עדיין":"No purchase orders yet"}</td></tr>
           )}
-          {pos.map(po => { const s=ss[po.status]; return (
+          {pos.map((po, i) => { const s=ss[po.status]; return (
             <tr key={po.po} className="hover:bg-[#F5F2EF]" style={{borderBottom:`1px solid ${P.border}`}}>
               <td className="px-4 py-2.5 font-mono text-[11px]" style={{color:P.text3}}>{po.po}</td>
               <td className="px-4 py-2.5 font-medium" style={{color:P.text1}}>{isHe?po.matHe:po.material}</td>
@@ -512,10 +726,24 @@ const Procurement = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(fu
               <td className="px-4 py-2.5 font-mono font-semibold whitespace-nowrap" style={{color:P.copper}}>{po.value}</td>
               <td className="px-4 py-2.5 whitespace-nowrap" style={{color:po.status==="DELAYED"?P.danger:P.text2}}>{po.delivery}</td>
               <td className="px-4 py-2.5"><Chip label={po.status} bg={s.bg} color={s.color}/></td>
+              <td className="px-4 py-2.5">
+                <button onClick={() => setDeleteIdx(i)} className="p-1 rounded-lg transition-colors hover:bg-red-50">
+                  <Trash2 className="w-3.5 h-3.5" style={{color:P.danger}}/>
+                </button>
+              </td>
             </tr>
           );})}
         </tbody></table>
       </Card>
+      {deleteIdx !== null && (
+        <ConfirmDialog
+          isHe={isHe}
+          message="Delete this purchase order? This cannot be undone."
+          messageHe="למחוק הזמנת רכש זו? לא ניתן לשחזר פעולה זו."
+          onCancel={() => setDeleteIdx(null)}
+          onConfirm={confirmDelete}
+        />
+      )}
       {showModal && (
         <QuickAddModal isHe={isHe} title="New PO" titleHe="הזמנת רכש חדשה"
           onClose={() => setShowModal(false)} onSave={addPo}
@@ -553,8 +781,15 @@ const Inventory = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(func
   ];
   const [items, setItems] = useState(isDemo ? DEMO_ITEMS : []);
   const [showModal, setShowModal] = useState(false);
+  const [deleteIdx, setDeleteIdx] = useState<number | null>(null);
   useEffect(() => { setItems(isDemo ? DEMO_ITEMS : []); }, [isDemo]);
   useImperativeHandle(ref, () => ({ openAdd: () => setShowModal(true) }));
+
+  function confirmDelete() {
+    if (deleteIdx === null) return;
+    setItems(prev => prev.filter((_, i) => i !== deleteIdx));
+    setDeleteIdx(null);
+  }
 
   const kpis = isDemo ? kpisRaw : [
     { ...kpisRaw[0], val: String(items.length) },
@@ -589,11 +824,11 @@ const Inventory = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(func
       <KPIRow items={kpis} colors={[P.text1, P.warn, P.danger, P.copper]} />
       {isDemo && <AIBanner label={isHe?"תובנת AI למלאי":"AI Inventory Insight"} text={ai} />}
       <Card>
-        <table className="w-full text-[12px]"><THead cols={cols} /><tbody>
+        <table className="w-full text-[12px]"><THead cols={[...cols, ""]} /><tbody>
           {items.length === 0 && (
-            <tr><td colSpan={7} className="px-4 py-10 text-center text-[13px]" style={{color:P.text3}}>{isHe?"אין פריטי מלאי עדיין":"No inventory items yet"}</td></tr>
+            <tr><td colSpan={8} className="px-4 py-10 text-center text-[13px]" style={{color:P.text3}}>{isHe?"אין פריטי מלאי עדיין":"No inventory items yet"}</td></tr>
           )}
-          {items.map(it => { const s=ss[it.status]; const pct=it.minStock>0?Math.min((it.onHand/it.minStock)*100,200):100; return (
+          {items.map((it, i) => { const s=ss[it.status]; const pct=it.minStock>0?Math.min((it.onHand/it.minStock)*100,200):100; return (
             <tr key={it.item} className="hover:bg-[#F5F2EF]" style={{borderBottom:`1px solid ${P.border}`}}>
               <td className="px-4 py-2.5 font-medium" style={{color:P.text1}}>{isHe?it.itemHe:it.item}</td>
               <td className="px-4 py-2.5" style={{color:P.text2}}>{it.cat}</td>
@@ -607,10 +842,24 @@ const Inventory = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(func
               <td className="px-4 py-2.5 font-mono text-[11px]" style={{color:P.text2}}>{it.dailyUsage}</td>
               <td className="px-4 py-2.5 text-[11px]" style={{color:P.text3}}>{it.unit}</td>
               <td className="px-4 py-2.5"><Chip label={isHe?s.labelHe:s.label} bg={s.bg} color={s.color}/></td>
+              <td className="px-4 py-2.5">
+                <button onClick={() => setDeleteIdx(i)} className="p-1 rounded-lg transition-colors hover:bg-red-50">
+                  <Trash2 className="w-3.5 h-3.5" style={{color:P.danger}}/>
+                </button>
+              </td>
             </tr>
           );})}
         </tbody></table>
       </Card>
+      {deleteIdx !== null && (
+        <ConfirmDialog
+          isHe={isHe}
+          message="Delete this inventory item? This cannot be undone."
+          messageHe="למחוק פריט מלאי זה? לא ניתן לשחזר פעולה זו."
+          onCancel={() => setDeleteIdx(null)}
+          onConfirm={confirmDelete}
+        />
+      )}
       {showModal && (
         <QuickAddModal isHe={isHe} title="Add Item" titleHe="הוסף פריט"
           onClose={() => setShowModal(false)} onSave={addItem}
@@ -647,8 +896,15 @@ const SiteDiary = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(func
   ] : [];
   const [work, setWork] = useState(isDemo ? DEMO_WORK : []);
   const [showModal, setShowModal] = useState(false);
+  const [deleteIdx, setDeleteIdx] = useState<number | null>(null);
   useEffect(() => { setWork(isDemo ? DEMO_WORK : []); }, [isDemo]);
   useImperativeHandle(ref, () => ({ openAdd: () => setShowModal(true) }));
+
+  function confirmDelete() {
+    if (deleteIdx === null) return;
+    setWork(prev => prev.filter((_, i) => i !== deleteIdx));
+    setDeleteIdx(null);
+  }
 
   function addEntry(values: Record<string, string>) {
     setWork(prev => [{
@@ -676,9 +932,9 @@ const SiteDiary = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(func
         <div className="col-span-2">
           <Card>
             <div className="px-5 pt-4 pb-2"><p className="text-[14px] font-bold" style={{color:P.text1}}>{isHe?"פעילויות עבודה":"Work Activities"}</p></div>
-            <table className="w-full text-[12px]"><THead cols={wcols}/><tbody>
+            <table className="w-full text-[12px]"><THead cols={[...wcols, ""]}/><tbody>
               {work.length === 0 && (
-                <tr><td colSpan={5} className="px-4 py-10 text-center text-[13px]" style={{color:P.text3}}>{isHe?"אין רשומות יומן עדיין":"No diary entries yet"}</td></tr>
+                <tr><td colSpan={6} className="px-4 py-10 text-center text-[13px]" style={{color:P.text3}}>{isHe?"אין רשומות יומן עדיין":"No diary entries yet"}</td></tr>
               )}
               {work.map((a,i)=>(
                 <tr key={i} className="hover:bg-[#F5F2EF]" style={{borderBottom:`1px solid ${P.border}`}}>
@@ -687,6 +943,11 @@ const SiteDiary = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(func
                   <td className="px-4 py-2.5 whitespace-nowrap" style={{color:P.text2}}>{a.crew}</td>
                   <td className="px-4 py-2.5 font-mono font-bold" style={{color:P.text1}}>{a.qty}</td>
                   <td className="px-4 py-2.5" style={{color:a.note.includes("BLOCKED")?P.danger:P.text3}}>{isHe?a.noteHe:a.note}</td>
+                  <td className="px-4 py-2.5">
+                    <button onClick={() => setDeleteIdx(i)} className="p-1 rounded-lg transition-colors hover:bg-red-50">
+                      <Trash2 className="w-3.5 h-3.5" style={{color:P.danger}}/>
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody></table>
@@ -717,6 +978,15 @@ const SiteDiary = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(func
           </div>
         </Card>
       </div>
+      {deleteIdx !== null && (
+        <ConfirmDialog
+          isHe={isHe}
+          message="Delete this diary entry? This cannot be undone."
+          messageHe="למחוק רשומת יומן זו? לא ניתן לשחזר פעולה זו."
+          onCancel={() => setDeleteIdx(null)}
+          onConfirm={confirmDelete}
+        />
+      )}
       {showModal && (
         <QuickAddModal isHe={isHe} title="New Entry" titleHe="רשומה חדשה"
           onClose={() => setShowModal(false)} onSave={addEntry}
@@ -756,8 +1026,15 @@ const Equipment = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(func
   ];
   const [equip, setEquip] = useState(isDemo ? DEMO_EQUIP : []);
   const [showModal, setShowModal] = useState(false);
+  const [deleteIdx, setDeleteIdx] = useState<number | null>(null);
   useEffect(() => { setEquip(isDemo ? DEMO_EQUIP : []); }, [isDemo]);
   useImperativeHandle(ref, () => ({ openAdd: () => setShowModal(true) }));
+
+  function confirmDelete() {
+    if (deleteIdx === null) return;
+    setEquip(prev => prev.filter((_, i) => i !== deleteIdx));
+    setDeleteIdx(null);
+  }
 
   const kpis = isDemo ? kpisRaw : [
     { ...kpisRaw[0], val: String(equip.length) },
@@ -783,11 +1060,11 @@ const Equipment = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(func
       <KPIRow items={kpis} colors={[P.text1, P.good, "#475569", P.danger]} />
       {isDemo && <AIBanner label={isHe?"תובנת AI לצי ציוד":"AI Fleet Insight"} text={ai} />}
       <Card>
-        <table className="w-full text-[12px]"><THead cols={cols}/><tbody>
+        <table className="w-full text-[12px]"><THead cols={[...cols, ""]}/><tbody>
           {equip.length === 0 && (
-            <tr><td colSpan={8} className="px-3 py-10 text-center text-[13px]" style={{color:P.text3}}>{isHe?"אין ציוד עדיין":"No equipment yet"}</td></tr>
+            <tr><td colSpan={9} className="px-3 py-10 text-center text-[13px]" style={{color:P.text3}}>{isHe?"אין ציוד עדיין":"No equipment yet"}</td></tr>
           )}
-          {equip.map(e=>{ const s=ss[e.status]; return (
+          {equip.map((e, i)=>{ const s=ss[e.status]; return (
             <tr key={e.id} className="hover:bg-[#F5F2EF]" style={{borderBottom:`1px solid ${P.border}`}}>
               <td className="px-3 py-2.5 font-mono text-[11px]" style={{color:P.text3}}>{e.id}</td>
               <td className="px-3 py-2.5 font-medium" style={{color:P.text1}}>{isHe?e.descHe:e.desc}</td>
@@ -799,10 +1076,24 @@ const Equipment = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(func
               </td>
               <td className="px-3 py-2.5"><Chip label={e.status} bg={s.bg} color={s.color}/></td>
               <td className="px-3 py-2.5 text-[11px]" style={{color:e.next==="Repair"?P.danger:e.next==="Today"?P.warn:P.text3}}>{e.next}</td>
+              <td className="px-3 py-2.5">
+                <button onClick={() => setDeleteIdx(i)} className="p-1 rounded-lg transition-colors hover:bg-red-50">
+                  <Trash2 className="w-3.5 h-3.5" style={{color:P.danger}}/>
+                </button>
+              </td>
             </tr>
           );})}
         </tbody></table>
       </Card>
+      {deleteIdx !== null && (
+        <ConfirmDialog
+          isHe={isHe}
+          message="Delete this equipment entry? This cannot be undone."
+          messageHe="למחוק פריט ציוד זה? לא ניתן לשחזר פעולה זו."
+          onCancel={() => setDeleteIdx(null)}
+          onConfirm={confirmDelete}
+        />
+      )}
       {showModal && (
         <QuickAddModal isHe={isHe} title="Add Equipment" titleHe="הוסף ציוד"
           onClose={() => setShowModal(false)} onSave={addEquipment}
@@ -839,8 +1130,15 @@ const Subcontractors = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>
   ];
   const [subs, setSubs] = useState(isDemo ? DEMO_SUBS : []);
   const [showModal, setShowModal] = useState(false);
+  const [deleteIdx, setDeleteIdx] = useState<number | null>(null);
   useEffect(() => { setSubs(isDemo ? DEMO_SUBS : []); }, [isDemo]);
   useImperativeHandle(ref, () => ({ openAdd: () => setShowModal(true) }));
+
+  function confirmDelete() {
+    if (deleteIdx === null) return;
+    setSubs(prev => prev.filter((_, i) => i !== deleteIdx));
+    setDeleteIdx(null);
+  }
 
   const kpis = isDemo ? kpisRaw : [
     { ...kpisRaw[0], val: String(subs.length) },
@@ -866,11 +1164,11 @@ const Subcontractors = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>
       <KPIRow items={kpis} colors={[P.text1, P.copper, P.good, P.danger]} />
       {isDemo && <AIBanner label={isHe?"תובנת AI לקבלני משנה":"AI Subcontractor Insight"} text={ai} />}
       <Card>
-        <table className="w-full text-[12px]"><THead cols={cols}/><tbody>
+        <table className="w-full text-[12px]"><THead cols={[...cols, ""]}/><tbody>
           {subs.length === 0 && (
-            <tr><td colSpan={8} className="px-3 py-10 text-center text-[13px]" style={{color:P.text3}}>{isHe?"אין קבלני משנה עדיין":"No subcontractors yet"}</td></tr>
+            <tr><td colSpan={9} className="px-3 py-10 text-center text-[13px]" style={{color:P.text3}}>{isHe?"אין קבלני משנה עדיין":"No subcontractors yet"}</td></tr>
           )}
-          {subs.map(s=>{ const ss=ssStyle[s.status]; const pc=s.perf>=90?P.good:s.perf>=80?P.warn:s.status==="MOBILIZING"?P.text3:P.danger; return (
+          {subs.map((s, i)=>{ const ss=ssStyle[s.status]; const pc=s.perf>=90?P.good:s.perf>=80?P.warn:s.status==="MOBILIZING"?P.text3:P.danger; return (
             <tr key={s.company} className="hover:bg-[#F5F2EF]" style={{borderBottom:`1px solid ${P.border}`}}>
               <td className="px-3 py-2.5 font-semibold" style={{color:P.text1}}>{isHe?s.companyHe:s.company}</td>
               <td className="px-3 py-2.5" style={{color:P.text2}}>{isHe?s.tradeHe:s.trade}</td>
@@ -888,10 +1186,24 @@ const Subcontractors = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>
               </td>
               <td className="px-3 py-2.5 text-center">{s.ncrs>0?<Chip label={String(s.ncrs)} bg={P.dangerBg} color={P.danger}/>:<span style={{color:P.text3}}>—</span>}</td>
               <td className="px-3 py-2.5"><Chip label={s.status} bg={ss.bg} color={ss.color}/></td>
+              <td className="px-3 py-2.5">
+                <button onClick={() => setDeleteIdx(i)} className="p-1 rounded-lg transition-colors hover:bg-red-50">
+                  <Trash2 className="w-3.5 h-3.5" style={{color:P.danger}}/>
+                </button>
+              </td>
             </tr>
           );})}
         </tbody></table>
       </Card>
+      {deleteIdx !== null && (
+        <ConfirmDialog
+          isHe={isHe}
+          message="Delete this subcontractor? This cannot be undone."
+          messageHe="למחוק קבלן משנה זה? לא ניתן לשחזר פעולה זו."
+          onCancel={() => setDeleteIdx(null)}
+          onConfirm={confirmDelete}
+        />
+      )}
       {showModal && (
         <QuickAddModal isHe={isHe} title="Add Subcontractor" titleHe="הוסף קבלן משנה"
           onClose={() => setShowModal(false)} onSave={addSub}
@@ -909,7 +1221,7 @@ const Subcontractors = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>
 
 const TAB_CONTENT: Record<TabId, React.ForwardRefExoticComponent<{ isHe: boolean; isDemo: boolean } & React.RefAttributes<TabHandle>>> = {
   daily: DailyTasks, weekly: WeeklyPlan, monthly: MonthlyPlan,
-  operations: SpecialOps, procurement: Procurement, inventory: Inventory,
+  operations: SpecialOps, permits: Permits, procurement: Procurement, inventory: Inventory,
   diary: SiteDiary, equipment: Equipment, subcontractors: Subcontractors,
 };
 

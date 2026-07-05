@@ -5,8 +5,9 @@ import { useProjects } from "@/contexts/ProjectContext";
 import {
   Bell, Search, Upload, Filter, Grid, List,
   FolderOpen, Folder, FileText, Download, Eye,
-  Lightbulb, ChevronRight, AlertTriangle,
+  Lightbulb, ChevronRight, AlertTriangle, Trash2,
 } from "lucide-react";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 const P = {
   bg: "#EDE8E1", card: "#FAF8F5", border: "#EDE8DF",
@@ -134,8 +135,15 @@ export default function DocumentsPage() {
   const T = TRANSLATIONS[lang];
 
   const [files, setFiles] = useState(isDemo ? DEMO_FILES : []);
+  const [deleteIdx, setDeleteIdx] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => { setFiles(isDemo ? DEMO_FILES : []); }, [isDemo]);
+
+  function confirmDelete() {
+    if (deleteIdx === null) return;
+    setFiles(prev => prev.filter((_, i) => i !== deleteIdx));
+    setDeleteIdx(null);
+  }
 
   const folderCounts = isDemo ? DEMO_FOLDER_COUNTS : [files.length, ...DEMO_FOLDER_COUNTS.slice(1).map(() => 0)];
   const filesCount   = isHe ? `${files.length} קבצים`      : `${files.length} files`;
@@ -308,6 +316,9 @@ export default function DocumentsPage() {
                         <button className="p-1 rounded-lg transition-colors hover:bg-gray-100">
                           <Download className="w-3.5 h-3.5" style={{ color: P.text3 }} />
                         </button>
+                        <button onClick={() => setDeleteIdx(i)} className="p-1 rounded-lg transition-colors hover:bg-red-50">
+                          <Trash2 className="w-3.5 h-3.5" style={{ color: P.danger }} />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -318,6 +329,16 @@ export default function DocumentsPage() {
 
         </main>
       </div>
+
+      {deleteIdx !== null && (
+        <ConfirmDialog
+          isHe={isHe}
+          message={`Delete "${files[deleteIdx]?.name}"? This cannot be undone.`}
+          messageHe={`למחוק את "${files[deleteIdx]?.name}"? לא ניתן לשחזר פעולה זו.`}
+          onCancel={() => setDeleteIdx(null)}
+          onConfirm={confirmDelete}
+        />
+      )}
     </div>
   );
 }

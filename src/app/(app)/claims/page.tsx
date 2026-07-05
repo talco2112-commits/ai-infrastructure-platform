@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useProjects } from "@/contexts/ProjectContext";
-import { Bell, Search, AlertTriangle, Lightbulb, Plus } from "lucide-react";
+import { Bell, Search, AlertTriangle, Lightbulb, Plus, Trash2 } from "lucide-react";
 import { QuickAddModal } from "@/components/QuickAddModal";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 const P = {
   bg: "#EDE8E1", card: "#FAF8F5", border: "#EDE8DF",
@@ -132,7 +133,14 @@ export default function ClaimsPage() {
 
   const [changeOrders, setChangeOrders] = useState(isDemo ? DEMO_CHANGE_ORDERS : []);
   const [showModal, setShowModal] = useState(false);
+  const [deleteIdx, setDeleteIdx] = useState<number | null>(null);
   useEffect(() => { setChangeOrders(isDemo ? DEMO_CHANGE_ORDERS : []); }, [isDemo]);
+
+  function confirmDelete() {
+    if (deleteIdx === null) return;
+    setChangeOrders(prev => prev.filter((_, i) => i !== deleteIdx));
+    setDeleteIdx(null);
+  }
 
   const risks        = isDemo ? DEMO_RISKS : [];
   const kpis         = T.kpis.map(k => isDemo ? k : { ...k, sub: "–" });
@@ -206,14 +214,14 @@ export default function ClaimsPage() {
             <table className="w-full text-[12px]">
               <thead>
                 <tr style={{ borderBottom: `1px solid ${P.border}` }}>
-                  {[T.colCO, T.colDesc, T.colReason, T.colSubmitted, T.colValue, T.colStatus].map(h => (
+                  {[T.colCO, T.colDesc, T.colReason, T.colSubmitted, T.colValue, T.colStatus, ""].map(h => (
                     <th key={h} className="px-4 py-2.5 text-left font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {changeOrders.length === 0 && (
-                  <tr><td colSpan={6} className="px-4 py-10 text-center text-[13px]" style={{ color: P.text3 }}>
+                  <tr><td colSpan={7} className="px-4 py-10 text-center text-[13px]" style={{ color: P.text3 }}>
                     {isHe ? "אין צווי שינוי עדיין" : "No change orders yet"}
                   </td></tr>
                 )}
@@ -237,6 +245,11 @@ export default function ClaimsPage() {
                         style={{ background: statusStyle[co.status].bg, color: statusStyle[co.status].color }}>
                         {co.status}
                       </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <button onClick={() => setDeleteIdx(i)} className="p-1 rounded-lg transition-colors hover:bg-red-50">
+                        <Trash2 className="w-3.5 h-3.5" style={{ color: P.danger }} />
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -299,6 +312,16 @@ export default function ClaimsPage() {
         )}
 
       </div>
+
+      {deleteIdx !== null && (
+        <ConfirmDialog
+          isHe={isHe}
+          message={`Delete change order "${changeOrders[deleteIdx]?.num}"? This cannot be undone.`}
+          messageHe={`למחוק את צו השינוי ${changeOrders[deleteIdx]?.num}? לא ניתן לשחזר פעולה זו.`}
+          onCancel={() => setDeleteIdx(null)}
+          onConfirm={confirmDelete}
+        />
+      )}
 
       {showModal && (
         <QuickAddModal

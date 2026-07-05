@@ -51,9 +51,9 @@ function Ring({ percent, size = 56, stroke = 5.5, color, trackColor }: {
   );
 }
 
-function Card({ children, className }: { children: React.ReactNode; className?: string }) {
+function Card({ children, className, onClick }: { children: React.ReactNode; className?: string; onClick?: () => void }) {
   return (
-    <div className={cn("rounded-2xl", className)}
+    <div className={cn("rounded-2xl", className)} onClick={onClick}
       style={{ background: P.card, border: `1px solid ${P.border}`, boxShadow: "0 2px 12px rgba(28,25,23,0.06)" }}>
       {children}
     </div>
@@ -146,12 +146,12 @@ const weatherDays = [
 ];
 
 const modulesData = [
-  { labelEn:"Documents", labelHe:"מסמכים",    sub:"124 files · 3 new",         subHe:"124 קבצים · 3 חדשים",     icon:Layers,         bg:"#EDE9FF", color:"#5B21B6", alert:false },
-  { labelEn:"Design",    labelHe:"תכנון",      sub:"2 drawing inconsistencies", subHe:"2 אי-התאמות בתוכניות",   icon:Pencil,         bg:"#EDE9FF", color:"#4338CA", alert:true  },
-  { labelEn:"Schedule",  labelHe:"לוח זמנים",  sub:"14d behind critical path",  subHe:"14י מאחורי נתיב קריטי",  icon:Clock,          bg:"#FFFBEB", color:"#B45309", alert:true  },
-  { labelEn:"Finance",   labelHe:"פיננסים",    sub:"₪312M of ₪450M",           subHe:"312M ₪ מתוך 450M ₪",     icon:Banknote,       bg:"#F5EBE0", color:"#8B5A2B", alert:false },
-  { labelEn:"RFIs",      labelHe:"בקשות מידע", sub:"3 overdue · 8 open",        subHe:"3 פגי תוקף · 8 פתוחים",  icon:AlertTriangle,  bg:"#FEF2F2", color:"#B91C1C", alert:true  },
-  { labelEn:"Quality",   labelHe:"איכות",      sub:"6 open NCRs",               subHe:"6 אי-התאמות פתוחות",     icon:ClipboardCheck, bg:"#F0FDF4", color:"#15803D", alert:false },
+  { labelEn:"Documents", labelHe:"מסמכים",    sub:"124 files · 3 new",         subHe:"124 קבצים · 3 חדשים",     icon:Layers,         bg:"#EDE9FF", color:"#5B21B6", alert:false, route:"/documents" },
+  { labelEn:"Design",    labelHe:"תכנון",      sub:"2 drawing inconsistencies", subHe:"2 אי-התאמות בתוכניות",   icon:Pencil,         bg:"#EDE9FF", color:"#4338CA", alert:true,  route:"/design"    },
+  { labelEn:"Schedule",  labelHe:"לוח זמנים",  sub:"14d behind critical path",  subHe:"14י מאחורי נתיב קריטי",  icon:Clock,          bg:"#FFFBEB", color:"#B45309", alert:true,  route:"/schedule"  },
+  { labelEn:"Finance",   labelHe:"פיננסים",    sub:"₪312M of ₪450M",           subHe:"312M ₪ מתוך 450M ₪",     icon:Banknote,       bg:"#F5EBE0", color:"#8B5A2B", alert:false, route:"/finance"   },
+  { labelEn:"RFIs",      labelHe:"בקשות מידע", sub:"3 overdue · 8 open",        subHe:"3 פגי תוקף · 8 פתוחים",  icon:AlertTriangle,  bg:"#FEF2F2", color:"#B91C1C", alert:true,  route:"/rfis"      },
+  { labelEn:"Quality",   labelHe:"איכות",      sub:"6 open NCRs",               subHe:"6 אי-התאמות פתוחות",     icon:ClipboardCheck, bg:"#F0FDF4", color:"#15803D", alert:false, route:"/quality"   },
 ];
 
 /* ════════════════════════════════════════════════════
@@ -289,14 +289,15 @@ function EmptyDashboard({ isHe, project }: { isHe: boolean; project: ReturnType<
         {/* Zero-state KPIs */}
         <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
           {[
-            { label: isHe ? "תקציב מנוצל" : "Budget Spent",       value: "₪0",  sub: project.contractValue ? `${isHe?"מתוך":"of"} ₪${project.contractValue}` : isHe?"אין נתון":"No contract value" },
+            { label: isHe ? "תקציב מנוצל" : "Budget Spent",       value: "₪0",  sub: project.contractValue ? `${isHe?"מתוך":"of"} ₪${project.contractValue}` : isHe?"אין נתון":"No contract value", route: "/finance" },
             (project.scheduleActivities?.length ?? 0) > 0
-              ? { label: isHe ? "לוח זמנים"   : "Schedule",          value: String(project.scheduleActivities.length), sub: isHe ? "פעילויות בלוח הזמנים" : "activities in schedule" }
-              : { label: isHe ? "לוח זמנים"   : "Schedule",          value: "—",   sub: isHe ? "לא הועלה לוח זמנים" : "No schedule uploaded" },
-            { label: isHe ? "נושאים פתוחים" : "Open Issues",       value: "0",   sub: isHe ? "אין נתונים" : "No data yet" },
-            { label: isHe ? "ממתינים לאישור" : "Pending Approvals", value: "0",   sub: isHe ? "אין חשבוניות" : "No invoices" },
+              ? { label: isHe ? "לוח זמנים"   : "Schedule",          value: String(project.scheduleActivities.length), sub: isHe ? "פעילויות בלוח הזמנים" : "activities in schedule", route: "/schedule" }
+              : { label: isHe ? "לוח זמנים"   : "Schedule",          value: "—",   sub: isHe ? "לא הועלה לוח זמנים" : "No schedule uploaded", route: "/schedule" },
+            { label: isHe ? "נושאים פתוחים" : "Open Issues",       value: "0",   sub: isHe ? "אין נתונים" : "No data yet", route: "/rfis" },
+            { label: isHe ? "ממתינים לאישור" : "Pending Approvals", value: "0",   sub: isHe ? "אין חשבוניות" : "No invoices", route: "/billing" },
           ].map(k => (
-            <Card key={k.label} className="p-5">
+            <Card key={k.label} className="p-5 cursor-pointer transition-all hover:shadow-md"
+              onClick={() => router.push(k.route)}>
               <p className="text-[11px] font-bold uppercase tracking-widest mb-4" style={{ color: P.text3 }}>{k.label}</p>
               <p className="text-[36px] font-bold leading-none" style={{ color: P.text3 }}>{k.value}</p>
               <p className="text-[12px] mt-2" style={{ color: P.text3 }}>{k.sub}</p>
@@ -408,16 +409,16 @@ function EmptyDashboard({ isHe, project }: { isHe: boolean; project: ReturnType<
           <CardTitle title={isHe ? "מודולי הפלטפורמה" : "Platform Modules"}/>
           <div className="px-5 pb-5 pt-3 grid grid-cols-3 gap-3">
             {[
-              { en:"Documents", he:"מסמכים",    icon:FolderOpen,     bg:"#EDE9FF", color:"#5B21B6" },
-              { en:"Schedule",  he:"לוח זמנים",  icon:Calendar,       bg:"#FFFBEB", color:P.warn    },
-              { en:"Finance",   he:"פיננסים",    icon:Banknote,       bg:P.copperLight, color:P.copper },
-              { en:"RFIs",      he:"בקשות מידע", icon:AlertTriangle,  bg:"#FEF2F2", color:P.danger  },
-              { en:"Quality",   he:"איכות",      icon:ClipboardCheck, bg:P.goodBg,  color:P.good    },
-              { en:"Billing",   he:"חשבונות",    icon:Package,        bg:"#F3E8FF", color:"#7E22CE" },
+              { en:"Documents", he:"מסמכים",    icon:FolderOpen,     bg:"#EDE9FF", color:"#5B21B6", route:"/documents" },
+              { en:"Schedule",  he:"לוח זמנים",  icon:Calendar,       bg:"#FFFBEB", color:P.warn,    route:"/schedule"  },
+              { en:"Finance",   he:"פיננסים",    icon:Banknote,       bg:P.copperLight, color:P.copper, route:"/finance" },
+              { en:"RFIs",      he:"בקשות מידע", icon:AlertTriangle,  bg:"#FEF2F2", color:P.danger,  route:"/rfis"      },
+              { en:"Quality",   he:"איכות",      icon:ClipboardCheck, bg:P.goodBg,  color:P.good,    route:"/quality"   },
+              { en:"Billing",   he:"חשבונות",    icon:Package,        bg:"#F3E8FF", color:"#7E22CE", route:"/billing"   },
             ].map(mod => {
               const Icon = mod.icon;
               return (
-                <button key={mod.en}
+                <button key={mod.en} onClick={() => router.push(mod.route)}
                   className="flex items-start gap-3 p-4 rounded-xl text-left transition-all"
                   style={{ border: `1px solid ${P.border}` }}
                   onMouseEnter={e => { e.currentTarget.style.background = P.bg; }}
@@ -448,6 +449,7 @@ function EmptyDashboard({ isHe, project }: { isHe: boolean; project: ReturnType<
 ════════════════════════════════════════════════════ */
 
 function FullDashboard({ isHe, projectName }: { isHe: boolean; projectName: string }) {
+  const router = useRouter();
   const t = {
     greeting:      isHe ? "בוקר טוב" : "Good morning",
     projectLine:   isHe ? "שבוע 89 מתוך 156" : "Week 89 of 156",
@@ -540,7 +542,7 @@ function FullDashboard({ isHe, projectName }: { isHe: boolean; projectName: stri
 
         {/* KPIs */}
         <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-          <Card className="p-5">
+          <Card className="p-5 cursor-pointer transition-all hover:shadow-md" onClick={() => router.push("/finance")}>
             <p className="text-[11px] font-bold uppercase tracking-widest mb-4" style={{ color: P.text3 }}>{t.budget}</p>
             <div className="flex items-center gap-4">
               <Ring percent={69} size={84} stroke={12} color="#15803D" trackColor="#EEEAE5"/>
@@ -555,7 +557,7 @@ function FullDashboard({ isHe, projectName }: { isHe: boolean; projectName: stri
             </div>
           </Card>
 
-          <Card className="p-5">
+          <Card className="p-5 cursor-pointer transition-all hover:shadow-md" onClick={() => router.push("/schedule")}>
             <p className="text-[11px] font-bold uppercase tracking-widest mb-4" style={{ color: P.text3 }}>{t.schedule}</p>
             <div className="flex items-center gap-4">
               <Ring percent={57} size={84} stroke={12} color="#D97706" trackColor="#EEEAE5"/>
@@ -570,7 +572,7 @@ function FullDashboard({ isHe, projectName }: { isHe: boolean; projectName: stri
             </div>
           </Card>
 
-          <Card className="p-5">
+          <Card className="p-5 cursor-pointer transition-all hover:shadow-md" onClick={() => router.push("/rfis")}>
             <div className="flex items-start justify-between mb-2">
               <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: P.text3 }}>{t.issues}</p>
               <span className="w-2.5 h-2.5 rounded-full mt-0.5 shrink-0" style={{ background: P.danger }}/>
@@ -583,7 +585,7 @@ function FullDashboard({ isHe, projectName }: { isHe: boolean; projectName: stri
             </div>
           </Card>
 
-          <Card className="p-5">
+          <Card className="p-5 cursor-pointer transition-all hover:shadow-md" onClick={() => router.push("/billing")}>
             <div className="flex items-start justify-between mb-2">
               <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: P.text3 }}>{t.approvals}</p>
               <span className="w-2.5 h-2.5 rounded-full mt-0.5 shrink-0" style={{ background: P.warn }}/>
@@ -807,9 +809,11 @@ function FullDashboard({ isHe, projectName }: { isHe: boolean; projectName: stri
               {modulesData.map(mod => {
                 const Icon = mod.icon;
                 return (
-                  <button key={mod.labelEn}
+                  <button key={mod.labelEn} onClick={() => router.push(mod.route)}
                     className="flex items-start gap-3 p-4 rounded-xl text-left transition-all"
-                    style={{ border:`1px solid ${P.border}` }}>
+                    style={{ border:`1px solid ${P.border}` }}
+                    onMouseEnter={e => { e.currentTarget.style.background = P.bg; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
                     <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background:mod.bg }}>
                       <Icon className="w-[18px] h-[18px]" style={{ color:mod.color }}/>
                     </div>
