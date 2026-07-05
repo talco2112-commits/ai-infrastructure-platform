@@ -1,4 +1,7 @@
-import { cookies } from "next/headers";
+"use client";
+
+import { useState, useEffect } from "react";
+import { useProjects } from "@/contexts/ProjectContext";
 import { Bell, Search, Satellite, RefreshCw, Layers, AlertTriangle, CheckCircle2 } from "lucide-react";
 
 const P = {
@@ -68,14 +71,14 @@ const TRANSLATIONS = {
   },
 };
 
-const zones = [
+const DEMO_ZONES = [
   { id: "A", name: "Zone A – Earthworks",  actual: 89, planned: 85, diff: 4,   status: "AHEAD",          scanDate: "27 Jun 2026", statusColor: P.good,   statusBg: P.goodBg,   activities: "Bulk excavation 92% · Subgrade prep 61%" },
   { id: "B", name: "Zone B – Foundations", actual: 74, planned: 79, diff: -5,  status: "BEHIND",         scanDate: "27 Jun 2026", statusColor: P.warn,   statusBg: P.warnBg,   activities: "Piling Sec.A 65% · Sub-base 15%" },
   { id: "C", name: "Zone C – Structures",  actual: 52, planned: 55, diff: -3,  status: "SLIGHT DELAY",   scanDate: "26 Jun 2026", statusColor: P.warn,   statusBg: P.warnBg,   activities: "Retaining walls 28% · Subgrade 61%" },
   { id: "D", name: "Zone D – Utilities",   actual: 23, planned: 37, diff: -14, status: "CRITICAL DELAY", scanDate: "26 Jun 2026", statusColor: P.danger, statusBg: P.dangerBg, activities: "Utility relocation 23% · Blockage at Ch.2+450" },
 ];
 
-const activityLog = [
+const DEMO_ACTIVITY_LOG = [
   { icon: "scan",  time: "27 Jun 07:14", text: "Drone scan completed – Zone A & B. 847 photos processed. Photogrammetry model updated.",           zone: "A/B" },
   { icon: "alert", time: "26 Jun 16:52", text: "AI detected deviation: Zone D utility trench depth -0.4m below design at Ch.2+380 to Ch.2+450.", zone: "D"   },
   { icon: "ok",    time: "26 Jun 14:30", text: "Bridge 68 pier P7 formwork inspection passed. Concrete pour cleared for 29 Jun.",                 zone: "B"   },
@@ -84,8 +87,8 @@ const activityLog = [
   { icon: "ok",    time: "24 Jun 15:00", text: "Monthly progress photos uploaded – all zones. Owner report package auto-generated.",               zone: "All" },
 ];
 
-const measurementVals = ["428,350 m³", "18,240 m³", "820 t", "61,800 m²", "3,840 LM", "4,620 LM"];
-const measurementPcts = [89, 42, 24, 61, 23, 51];
+const DEMO_MEASUREMENT_VALS = ["428,350 m³", "18,240 m³", "820 t", "61,800 m²", "3,840 LM", "4,620 LM"];
+const DEMO_MEASUREMENT_PCTS = [89, 42, 24, 61, 23, 51];
 
 function Ring({ pct, color, size = 64 }: { pct: number; color: string; size?: number }) {
   const stroke = 5;
@@ -105,11 +108,23 @@ function Ring({ pct, color, size = 64 }: { pct: number; color: string; size?: nu
   );
 }
 
-export default async function SiteProgressPage() {
-  const cookieStore = await cookies();
-  const lang = (cookieStore.get("lang")?.value ?? "en") as "en" | "he";
+export default function SiteProgressPage() {
+  const { active } = useProjects();
+  const isDemo = active.id === "highway-20";
+
+  const [lang, setLang] = useState<"en" | "he">("en");
+  useEffect(() => {
+    const c = document.cookie.split(";").find(s => s.trim().startsWith("lang="))?.split("=")[1]?.trim();
+    if (c === "he") setLang("he");
+  }, []);
   const isHe = lang === "he";
   const T = TRANSLATIONS[lang];
+
+  const zones            = isDemo ? DEMO_ZONES : [];
+  const activityLog      = isDemo ? DEMO_ACTIVITY_LOG : [];
+  const measurementVals  = isDemo ? DEMO_MEASUREMENT_VALS : T.measurements.map(() => "–");
+  const measurementPcts  = isDemo ? DEMO_MEASUREMENT_PCTS : T.measurements.map(() => 0);
+  const lastScanLabel    = isDemo ? T.lastScan : (isHe ? "אין סריקה עדיין" : "No scan yet");
 
   return (
     <div dir={isHe ? "rtl" : "ltr"} className="flex flex-col h-full" style={{ background: P.bg, fontFamily: "Inter, system-ui, sans-serif" }}>
@@ -124,7 +139,7 @@ export default async function SiteProgressPage() {
             <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
             DatumBIM Live
           </div>
-          <span className="text-[11px]" style={{ color: P.text3 }}>{T.lastScan}</span>
+          <span className="text-[11px]" style={{ color: P.text3 }}>{lastScanLabel}</span>
         </div>
         <div className="flex items-center gap-2">
           <button className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-[12px] font-semibold"
@@ -146,6 +161,12 @@ export default async function SiteProgressPage() {
 
         {/* Zone progress grid */}
         <div className="grid grid-cols-2 gap-4 mb-5">
+          {zones.length === 0 && (
+            <div className="col-span-2 rounded-2xl p-8 text-center text-[13px]"
+              style={{ background: P.card, border: `1px solid ${P.border}`, color: P.text3 }}>
+              {isHe ? "אין נתוני התקדמות אזורים עדיין" : "No zone progress data yet"}
+            </div>
+          )}
           {zones.map((z) => (
             <div key={z.id} className="rounded-2xl p-5"
               style={{ background: P.card, border: `1px solid ${P.border}`, boxShadow: "0 2px 12px rgba(28,25,23,0.06)" }}>
@@ -197,6 +218,11 @@ export default async function SiteProgressPage() {
             style={{ background: P.card, border: `1px solid ${P.border}`, boxShadow: "0 2px 12px rgba(28,25,23,0.06)" }}>
             <h3 className="text-[14px] font-bold mb-4" style={{ color: P.text1 }}>{T.activityLogTitle}</h3>
             <div className="flex flex-col gap-3">
+              {activityLog.length === 0 && (
+                <p className="text-[12px] text-center py-6" style={{ color: P.text3 }}>
+                  {isHe ? "אין פעילות עדיין" : "No activity yet"}
+                </p>
+              )}
               {activityLog.map((item, i) => (
                 <div key={i} className="flex items-start gap-3">
                   <div className="w-7 h-7 rounded-xl flex items-center justify-center shrink-0 mt-0.5"

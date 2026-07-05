@@ -1,4 +1,7 @@
-import { cookies } from "next/headers";
+"use client";
+
+import { useState, useEffect } from "react";
+import { useProjects } from "@/contexts/ProjectContext";
 import { Bell, Search, AlertTriangle, Plus, Clock } from "lucide-react";
 
 const P = {
@@ -57,7 +60,7 @@ const TRANSLATIONS = {
 type RFIStatus = "OVERDUE" | "OPEN" | "ANSWERED" | "CLOSED";
 type Priority  = "HIGH" | "MEDIUM" | "LOW";
 
-const rfis: {
+const DEMO_RFIS: {
   num: string; subject: string; discipline: string;
   submitted: string; due: string; daysOpen: number;
   status: RFIStatus; priority: Priority; assignedTo: string;
@@ -92,14 +95,23 @@ const disciplineColor: Record<string, string> = {
   Structural:"#7C3AED", Civil:"#0369A1", MEP:"#0891B2", Traffic:"#047857", Geotech:"#92400E",
 };
 
-export default async function RFIsPage() {
-  const cookieStore = await cookies();
-  const lang = (cookieStore.get("lang")?.value ?? "en") as "en" | "he";
+export default function RFIsPage() {
+  const { active } = useProjects();
+  const isDemo = active.id === "highway-20";
+
+  const [lang, setLang] = useState<"en" | "he">("en");
+  useEffect(() => {
+    const c = document.cookie.split(";").find(s => s.trim().startsWith("lang="))?.split("=")[1]?.trim();
+    if (c === "he") setLang("he");
+  }, []);
   const isHe = lang === "he";
   const T = TRANSLATIONS[lang];
 
-  const statsValues = [47, 8, 3, 28, 8];
-  const statsColors = [P.copper, P.warn, P.danger, P.good, "#78716C"];
+  const rfis         = isDemo ? DEMO_RFIS : [];
+  const statsValues  = isDemo ? [47, 8, 3, 28, 8] : [0, 0, 0, 0, 0];
+  const statsColors  = [P.copper, P.warn, P.danger, P.good, "#78716C"];
+  const tabCounts    = isDemo ? T.tabCounts : T.tabCounts.map(() => 0);
+  const overdueChip  = isDemo ? T.overdueChip : (isHe ? "0 באיחור" : "0 Overdue");
 
   return (
     <div dir={isHe ? "rtl" : "ltr"} className="flex flex-col h-full" style={{ background: P.bg, fontFamily: "Inter, system-ui, sans-serif" }}>
@@ -111,7 +123,7 @@ export default async function RFIsPage() {
           <h1 className="text-[18px] font-bold" style={{ color: P.text1 }}>{T.title}</h1>
           <span className="text-[12px] px-2 py-0.5 rounded-full font-bold"
             style={{ background: P.dangerBg, color: P.danger }}>
-            {T.overdueChip}
+            {overdueChip}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -145,16 +157,18 @@ export default async function RFIsPage() {
         </div>
 
         {/* AI insight */}
-        <div className="flex items-start gap-3 p-4 rounded-2xl mb-4"
-          style={{ background: P.dangerBg, border: `1px solid #FECACA` }}>
-          <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#FEE2E2" }}>
-            <AlertTriangle className="w-3.5 h-3.5" style={{ color: P.danger }} />
+        {isDemo && (
+          <div className="flex items-start gap-3 p-4 rounded-2xl mb-4"
+            style={{ background: P.dangerBg, border: `1px solid #FECACA` }}>
+            <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#FEE2E2" }}>
+              <AlertTriangle className="w-3.5 h-3.5" style={{ color: P.danger }} />
+            </div>
+            <div>
+              <p className="text-[12px] font-bold mb-0.5" style={{ color: P.danger }}>{T.aiLabel}</p>
+              <p className="text-[12.5px]" style={{ color: P.text2 }}>{T.aiText}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-[12px] font-bold mb-0.5" style={{ color: P.danger }}>{T.aiLabel}</p>
-            <p className="text-[12.5px]" style={{ color: P.text2 }}>{T.aiText}</p>
-          </div>
-        </div>
+        )}
 
         {/* Tabs */}
         <div className="flex items-center gap-1 mb-3">
@@ -169,7 +183,7 @@ export default async function RFIsPage() {
               {tab}
               <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
                 style={{ background: i === 0 ? "rgba(255,255,255,0.25)" : P.border, color: i === 0 ? "#fff" : P.text3 }}>
-                {T.tabCounts[i]}
+                {tabCounts[i]}
               </span>
             </button>
           ))}
@@ -187,6 +201,11 @@ export default async function RFIsPage() {
               </tr>
             </thead>
             <tbody>
+              {rfis.length === 0 && (
+                <tr><td colSpan={9} className="px-4 py-10 text-center text-[13px]" style={{ color: P.text3 }}>
+                  {isHe ? "אין בקשות מידע עדיין" : "No RFIs yet"}
+                </td></tr>
+              )}
               {rfis.map((r, i) => (
                 <tr key={i} className="transition-colors hover:bg-[#F5F2EF]"
                   style={{ borderBottom: `1px solid ${P.border}`, opacity: r.status === "CLOSED" ? 0.65 : 1 }}>

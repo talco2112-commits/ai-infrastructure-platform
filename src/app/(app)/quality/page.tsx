@@ -1,4 +1,7 @@
-import { cookies } from "next/headers";
+"use client";
+
+import { useState, useEffect } from "react";
+import { useProjects } from "@/contexts/ProjectContext";
 import { Bell, Search, AlertTriangle, CheckCircle2, XCircle, Pause, Lightbulb, Plus } from "lucide-react";
 
 const P = {
@@ -65,7 +68,7 @@ const TRANSLATIONS = {
 type NCRStatus  = "OPEN" | "IN REVIEW" | "CLOSED" | "PENDING CAR";
 type InspResult = "PASS" | "FAIL" | "HOLD";
 
-const ncrs: {
+const DEMO_NCRS: {
   num: string; description: string; trade: string; location: string;
   opened: string; status: NCRStatus; carRequired: boolean; urgent: boolean;
 }[] = [
@@ -79,7 +82,7 @@ const ncrs: {
   { num:"NCR-018", description:"Concrete cover to rebar: 30mm achieved vs 50mm specified at bridge soffit",                                              trade:"Concrete",   location:"Bridge 68 Span 1 – Soffit",    opened:"01 Jun 2026", status:"CLOSED",      carRequired:true,  urgent:false },
 ];
 
-const inspections = [
+const DEMO_INSPECTIONS = [
   { type:"Pre-pour inspection – Pile Cap P8",       location:"Zone B Pier P8",              inspector:"QC Eng. Avraham", result:"PASS" as InspResult, date:"27 Jun 2026" },
   { type:"Formwork & falsework check – Pier P9",    location:"Zone B Pier P9",              inspector:"QC Eng. Avraham", result:"HOLD" as InspResult, date:"27 Jun 2026" },
   { type:"Compaction test – Sec.A subgrade",        location:"Sec. A Ch.0+800 to Ch.1+000", inspector:"QC Eng. Cohen",   result:"PASS" as InspResult, date:"26 Jun 2026" },
@@ -90,7 +93,7 @@ const inspections = [
   { type:"Drainage pipe joint leakage test",        location:"Sec. B Ch.2+100",             inspector:"QC Eng. Cohen",   result:"PASS" as InspResult, date:"23 Jun 2026" },
 ];
 
-const materialTests = [
+const DEMO_MATERIAL_TESTS = [
   { test:"Concrete cube 28d (Batch #2841)",   spec:"fc'≥30 MPa",    result:"28.4 MPa",  status:"FAIL" as InspResult },
   { test:"Concrete cube 28d (Batch #2849)",   spec:"fc'≥30 MPa",    result:"32.1 MPa",  status:"PASS" as InspResult },
   { test:"Aggregate gradation – 20mm stone",  spec:"IS 1142 Zone C", result:"Zone C",   status:"PASS" as InspResult },
@@ -111,14 +114,26 @@ const inspResultStyle: Record<InspResult, { bg: string; color: string; Icon: Rea
   "HOLD": { bg: P.warnBg,   color: P.warn,   Icon: Pause        },
 };
 
-const kpiVals   = ["6", "3", "2", "48", "94%"];
+const DEMO_KPI_VALS = ["6", "3", "2", "48", "94%"];
 const kpiColors = [P.danger, P.warn, "#1D4ED8", P.copper, P.good];
 
-export default async function QualityPage() {
-  const cookieStore = await cookies();
-  const lang = (cookieStore.get("lang")?.value ?? "en") as "en" | "he";
+export default function QualityPage() {
+  const { active } = useProjects();
+  const isDemo = active.id === "highway-20";
+
+  const [lang, setLang] = useState<"en" | "he">("en");
+  useEffect(() => {
+    const c = document.cookie.split(";").find(s => s.trim().startsWith("lang="))?.split("=")[1]?.trim();
+    if (c === "he") setLang("he");
+  }, []);
   const isHe = lang === "he";
   const T = TRANSLATIONS[lang];
+
+  const ncrs          = isDemo ? DEMO_NCRS : [];
+  const inspections   = isDemo ? DEMO_INSPECTIONS : [];
+  const materialTests = isDemo ? DEMO_MATERIAL_TESTS : [];
+  const kpiVals       = isDemo ? DEMO_KPI_VALS : ["–", "–", "–", "–", "–"];
+  const openNCRsChip  = isDemo ? T.openNCRsChip : (isHe ? "0 NCR פתוחים" : "0 Open NCRs");
 
   return (
     <div dir={isHe ? "rtl" : "ltr"} className="flex flex-col h-full" style={{ background: P.bg, fontFamily: "Inter, system-ui, sans-serif" }}>
@@ -130,7 +145,7 @@ export default async function QualityPage() {
           <h1 className="text-[18px] font-bold" style={{ color: P.text1 }}>{T.title}</h1>
           <span className="text-[12px] px-2 py-0.5 rounded-full font-bold"
             style={{ background: P.dangerBg, color: P.danger }}>
-            {T.openNCRsChip}
+            {openNCRsChip}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -159,16 +174,18 @@ export default async function QualityPage() {
         </div>
 
         {/* AI insight */}
-        <div className="flex items-start gap-3 p-4 rounded-2xl mb-5"
-          style={{ background: P.dangerBg, border: `1px solid #FECACA` }}>
-          <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#FEE2E2" }}>
-            <AlertTriangle className="w-3.5 h-3.5" style={{ color: P.danger }} />
+        {isDemo && (
+          <div className="flex items-start gap-3 p-4 rounded-2xl mb-5"
+            style={{ background: P.dangerBg, border: `1px solid #FECACA` }}>
+            <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#FEE2E2" }}>
+              <AlertTriangle className="w-3.5 h-3.5" style={{ color: P.danger }} />
+            </div>
+            <div>
+              <p className="text-[12px] font-bold mb-0.5" style={{ color: P.danger }}>{T.aiLabel}</p>
+              <p className="text-[12.5px]" style={{ color: P.text2 }}>{T.aiText}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-[12px] font-bold mb-0.5" style={{ color: P.danger }}>{T.aiLabel}</p>
-            <p className="text-[12.5px]" style={{ color: P.text2 }}>{T.aiText}</p>
-          </div>
-        </div>
+        )}
 
         <div className="grid grid-cols-3 gap-5 mb-5">
 
@@ -187,6 +204,11 @@ export default async function QualityPage() {
                 </tr>
               </thead>
               <tbody>
+                {ncrs.length === 0 && (
+                  <tr><td colSpan={7} className="px-4 py-10 text-center text-[13px]" style={{ color: P.text3 }}>
+                    {isHe ? "אין NCR עדיין" : "No NCRs yet"}
+                  </td></tr>
+                )}
                 {ncrs.map((n, i) => (
                   <tr key={i} className="transition-colors hover:bg-[#F5F2EF]"
                     style={{ borderBottom: `1px solid ${P.border}`, opacity: n.status === "CLOSED" ? 0.65 : 1 }}>
@@ -226,6 +248,11 @@ export default async function QualityPage() {
               style={{ background: P.card, border: `1px solid ${P.border}`, boxShadow: "0 2px 12px rgba(28,25,23,0.06)" }}>
               <h3 className="text-[13px] font-bold mb-3" style={{ color: P.text1 }}>{T.materialTitle}</h3>
               <div className="flex flex-col gap-1.5">
+                {materialTests.length === 0 && (
+                  <p className="text-[12px] text-center py-6" style={{ color: P.text3 }}>
+                    {isHe ? "אין תוצאות בדיקות חומרים עדיין" : "No material tests yet"}
+                  </p>
+                )}
                 {materialTests.map((t, i) => {
                   const s = inspResultStyle[t.status];
                   return (
@@ -259,6 +286,11 @@ export default async function QualityPage() {
               </tr>
             </thead>
             <tbody>
+              {inspections.length === 0 && (
+                <tr><td colSpan={5} className="px-4 py-10 text-center text-[13px]" style={{ color: P.text3 }}>
+                  {isHe ? "אין בדיקות עדיין" : "No inspections yet"}
+                </td></tr>
+              )}
               {inspections.map((ins, i) => {
                 const s = inspResultStyle[ins.result];
                 return (

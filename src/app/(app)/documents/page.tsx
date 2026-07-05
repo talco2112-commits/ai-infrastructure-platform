@@ -1,4 +1,7 @@
-import { cookies } from "next/headers";
+"use client";
+
+import { useState, useEffect } from "react";
+import { useProjects } from "@/contexts/ProjectContext";
 import {
   Bell, Search, Upload, Filter, Grid, List,
   FolderOpen, Folder, FileText, Download, Eye,
@@ -84,11 +87,11 @@ const TRANSLATIONS = {
   },
 };
 
-const folderCounts = [156, 12, 34, 8, 38, 47, 29, 21, 15, 19, 11, 0];
+const DEMO_FOLDER_COUNTS = [156, 12, 34, 8, 38, 47, 29, 21, 15, 19, 11, 0];
 
 type Status = "APPROVED" | "IN REVIEW" | "SUPERSEDED" | "DRAFT";
 
-const files: {
+const DEMO_FILES: {
   name: string; rev: string; discipline: string;
   date: string; size: string; status: Status; by: string;
 }[] = [
@@ -118,11 +121,22 @@ const disciplineColor: Record<string, string> = {
   Traffic: "#047857", Geotech: "#92400E",
 };
 
-export default async function DocumentsPage() {
-  const cookieStore = await cookies();
-  const lang = (cookieStore.get("lang")?.value ?? "en") as "en" | "he";
+export default function DocumentsPage() {
+  const { active } = useProjects();
+  const isDemo = active.id === "highway-20";
+
+  const [lang, setLang] = useState<"en" | "he">("en");
+  useEffect(() => {
+    const c = document.cookie.split(";").find(s => s.trim().startsWith("lang="))?.split("=")[1]?.trim();
+    if (c === "he") setLang("he");
+  }, []);
   const isHe = lang === "he";
   const T = TRANSLATIONS[lang];
+
+  const files        = isDemo ? DEMO_FILES : [];
+  const folderCounts = isDemo ? DEMO_FOLDER_COUNTS : DEMO_FOLDER_COUNTS.map(() => 0);
+  const filesCount   = isHe ? `${files.length} קבצים`      : `${files.length} files`;
+  const docsCount    = isHe ? `${folderCounts[0]} מסמכים`  : `${folderCounts[0]} documents`;
 
   return (
     <div dir={isHe ? "rtl" : "ltr"} className="flex flex-col h-full" style={{ background: P.bg, fontFamily: "Inter, system-ui, sans-serif" }}>
@@ -133,7 +147,7 @@ export default async function DocumentsPage() {
         <div className="flex items-center gap-2">
           <h1 className="text-[18px] font-bold" style={{ color: P.text1 }}>{T.title}</h1>
           <span className="text-[13px] px-2 py-0.5 rounded-full font-semibold" style={{ background: P.copperLight, color: P.copper }}>
-            {T.filesCount}
+            {filesCount}
           </span>
         </div>
         <div className="flex items-center gap-3">
@@ -187,7 +201,7 @@ export default async function DocumentsPage() {
             <div className="flex items-center gap-2">
               <span className="text-[13px] font-semibold" style={{ color: P.text2 }}>{T.activeFolderLabel}</span>
               <ChevronRight className="w-3.5 h-3.5" style={{ color: P.text3 }} />
-              <span className="text-[13px]" style={{ color: P.text3 }}>{T.docsCount}</span>
+              <span className="text-[13px]" style={{ color: P.text3 }}>{docsCount}</span>
             </div>
             <div className="flex items-center gap-2">
               <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold transition-colors"
@@ -210,16 +224,18 @@ export default async function DocumentsPage() {
           </div>
 
           {/* AI Insight */}
-          <div className="flex items-start gap-3 p-4 rounded-2xl mb-5"
-            style={{ background: P.warnBg, border: `1px solid #FDE68A` }}>
-            <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#FEF3C7" }}>
-              <AlertTriangle className="w-3.5 h-3.5" style={{ color: P.warn }} />
+          {isDemo && (
+            <div className="flex items-start gap-3 p-4 rounded-2xl mb-5"
+              style={{ background: P.warnBg, border: `1px solid #FDE68A` }}>
+              <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#FEF3C7" }}>
+                <AlertTriangle className="w-3.5 h-3.5" style={{ color: P.warn }} />
+              </div>
+              <div>
+                <p className="text-[12px] font-bold mb-0.5" style={{ color: P.warn }}>{T.aiInsightLabel}</p>
+                <p className="text-[12.5px]" style={{ color: P.text2 }}>{T.aiInsightText}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-[12px] font-bold mb-0.5" style={{ color: P.warn }}>{T.aiInsightLabel}</p>
-              <p className="text-[12.5px]" style={{ color: P.text2 }}>{T.aiInsightText}</p>
-            </div>
-          </div>
+          )}
 
           {/* Table */}
           <div className="rounded-2xl overflow-hidden" style={{ background: P.card, border: `1px solid ${P.border}`, boxShadow: "0 2px 12px rgba(28,25,23,0.06)" }}>
@@ -232,6 +248,11 @@ export default async function DocumentsPage() {
                 </tr>
               </thead>
               <tbody>
+                {files.length === 0 && (
+                  <tr><td colSpan={8} className="px-4 py-10 text-center text-[13px]" style={{ color: P.text3 }}>
+                    {isHe ? "אין מסמכים עדיין — העלה קבצים כדי להתחיל" : "No documents yet — upload files to get started"}
+                  </td></tr>
+                )}
                 {files.map((f, i) => (
                   <tr key={i} style={{ borderBottom: `1px solid ${P.border}` }}
                     className="transition-colors hover:bg-[#F5F2EF]">

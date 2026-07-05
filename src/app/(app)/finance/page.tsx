@@ -1,4 +1,7 @@
-import { cookies } from "next/headers";
+"use client";
+
+import { useState, useEffect } from "react";
+import { useProjects } from "@/contexts/ProjectContext";
 import { Bell, Search, TrendingUp, TrendingDown, AlertTriangle, Lightbulb } from "lucide-react";
 
 const P = {
@@ -76,7 +79,7 @@ const TRANSLATIONS = {
   },
 };
 
-const budgetRows = [
+const DEMO_BUDGET_ROWS = [
   { section: "Earthworks",         sectionHe: "עפר",                contract: 48_500_000,  spent: 47_200_000, pct: 97, status: "On Track"   },
   { section: "Foundations",        sectionHe: "יסודות",             contract: 112_000_000, spent: 68_400_000, pct: 61, status: "On Track"   },
   { section: "Bridge Structures",  sectionHe: "מבני גשר",           contract: 158_000_000, spent: 42_100_000, pct: 27, status: "On Track"   },
@@ -87,7 +90,7 @@ const budgetRows = [
   { section: "Landscaping",        sectionHe: "נוף וגינון",         contract: 8_000_000,   spent: 300_000,    pct: 4,  status: "On Track"   },
 ];
 
-const cashFlow = [
+const DEMO_CASH_FLOW = [
   { month: "Jan", monthHe: "ינו", plan: 28, actual: 31 },
   { month: "Feb", monthHe: "פבר", plan: 32, actual: 29 },
   { month: "Mar", monthHe: "מרץ", plan: 38, actual: 41 },
@@ -96,7 +99,7 @@ const cashFlow = [
   { month: "Jun", monthHe: "יונ", plan: 48, actual: 18.2 },
 ];
 
-const procurement = [
+const DEMO_PROCUREMENT = [
   { supplier: "Tadiran Steel Works",   category: "Structural Steel",     categoryHe: "פלדה מבנית",    po: "₪8,420,000",  status: "DELIVERED"  },
   { supplier: "Vulcan Aggregates Ltd", category: "Crushed Stone & Agg.", categoryHe: "אבן כתושה",    po: "₪3,150,000",  status: "DELIVERED"  },
   { supplier: "Heidelberg Cement IL",  category: "Ready-Mix Concrete",   categoryHe: "בטון מוכן",    po: "₪12,800,000", status: "IN TRANSIT" },
@@ -105,7 +108,7 @@ const procurement = [
   { supplier: "Strad Traffic Systems", category: "Traffic Signals",      categoryHe: "רמזורים",      po: "₪4,100,000",  status: "PENDING"    },
 ];
 
-const invoices = [
+const DEMO_INVOICES = [
   { supplier: "Ambar Engineering",      amount: "₪2,840,000", due: "15 Jun 2026", overdue: 15 },
   { supplier: "Heidelberg Cement IL",   amount: "₪1,920,000", due: "18 Jun 2026", overdue: 12 },
   { supplier: "Tadiran Steel Works",    amount: "₪3,100,000", due: "22 Jun 2026", overdue: 8  },
@@ -129,11 +132,26 @@ function fmt(n: number) {
 
 const MAX_CF = 50;
 
-export default async function FinancePage() {
-  const cookieStore = await cookies();
-  const lang = (cookieStore.get("lang")?.value ?? "en") as "en" | "he";
+export default function FinancePage() {
+  const { active } = useProjects();
+  const isDemo = active.id === "highway-20";
+
+  const [lang, setLang] = useState<"en" | "he">("en");
+  useEffect(() => {
+    const c = document.cookie.split(";").find(s => s.trim().startsWith("lang="))?.split("=")[1]?.trim();
+    if (c === "he") setLang("he");
+  }, []);
   const isHe = lang === "he";
   const T = TRANSLATIONS[lang];
+
+  const budgetRows   = isDemo ? DEMO_BUDGET_ROWS   : [];
+  const cashFlow     = isDemo ? DEMO_CASH_FLOW     : [];
+  const procurement  = isDemo ? DEMO_PROCUREMENT   : [];
+  const invoices     = isDemo ? DEMO_INVOICES      : [];
+  const kpis         = T.kpis.map(k => isDemo ? k : { ...k, val: "–", sub: "–" });
+  const totalContract = isDemo ? "₪450M" : "–";
+  const totalPlanned  = isDemo ? T.totalPlanned : "–";
+  const totalPct      = isDemo ? 69 : 0;
 
   return (
     <div dir={isHe ? "rtl" : "ltr"} className="flex flex-col h-full" style={{ background: P.bg, fontFamily: "Inter, system-ui, sans-serif" }}>
@@ -159,7 +177,7 @@ export default async function FinancePage() {
 
         {/* Top KPIs */}
         <div className="grid grid-cols-5 gap-3 mb-5">
-          {T.kpis.map((k, i) => {
+          {kpis.map((k, i) => {
             const colors = [P.text1, P.copper, P.warn, P.good, P.warn];
             return (
               <div key={k.label} className="rounded-2xl p-4"
@@ -192,6 +210,11 @@ export default async function FinancePage() {
                 </tr>
               </thead>
               <tbody>
+                {budgetRows.length === 0 && (
+                  <tr><td colSpan={5} className="px-5 py-8 text-center text-[13px]" style={{ color: P.text3 }}>
+                    {isHe ? "אין נתוני תקציב עדיין" : "No budget data yet"}
+                  </td></tr>
+                )}
                 {budgetRows.map((r, i) => (
                   <tr key={i} className="transition-colors hover:bg-[#F5F2EF]"
                     style={{ borderBottom: `1px solid ${P.border}` }}>
@@ -224,20 +247,22 @@ export default async function FinancePage() {
                     </td>
                   </tr>
                 ))}
-                <tr style={{ background: "#F5F2EF" }}>
-                  <td className="px-5 py-2.5 font-bold" style={{ color: P.text1 }}>{T.totalRow}</td>
-                  <td className="px-5 py-2.5 font-bold font-mono" style={{ color: P.text1 }}>₪450M</td>
-                  <td className="px-5 py-2.5 font-bold font-mono" style={{ color: P.copper }}>{T.totalPlanned}</td>
-                  <td className="px-5 py-2.5">
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 h-1.5 rounded-full" style={{ background: P.track }}>
-                        <div className="h-full rounded-full" style={{ width: "69%", background: P.copper }} />
+                {budgetRows.length > 0 && (
+                  <tr style={{ background: "#F5F2EF" }}>
+                    <td className="px-5 py-2.5 font-bold" style={{ color: P.text1 }}>{T.totalRow}</td>
+                    <td className="px-5 py-2.5 font-bold font-mono" style={{ color: P.text1 }}>{totalContract}</td>
+                    <td className="px-5 py-2.5 font-bold font-mono" style={{ color: P.copper }}>{totalPlanned}</td>
+                    <td className="px-5 py-2.5">
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 h-1.5 rounded-full" style={{ background: P.track }}>
+                          <div className="h-full rounded-full" style={{ width: `${totalPct}%`, background: P.copper }} />
+                        </div>
+                        <span className="text-[11px] font-bold shrink-0" style={{ color: P.text1 }}>{totalPct}%</span>
                       </div>
-                      <span className="text-[11px] font-bold shrink-0" style={{ color: P.text1 }}>69%</span>
-                    </div>
-                  </td>
-                  <td className="px-5 py-2.5" />
-                </tr>
+                    </td>
+                    <td className="px-5 py-2.5" />
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -247,6 +272,11 @@ export default async function FinancePage() {
             style={{ background: P.card, border: `1px solid ${P.border}`, boxShadow: "0 2px 12px rgba(28,25,23,0.06)" }}>
             <h3 className="text-[14px] font-bold mb-3" style={{ color: P.text1 }}>{T.procurementTitle}</h3>
             <div className="flex flex-col gap-2">
+              {procurement.length === 0 && (
+                <p className="text-[12px] text-center py-6" style={{ color: P.text3 }}>
+                  {isHe ? "אין נתוני רכש עדיין" : "No procurement data yet"}
+                </p>
+              )}
               {procurement.map((p, i) => (
                 <div key={i} className="p-2.5 rounded-xl" style={{ background: P.bg, border: `1px solid ${P.border}` }}>
                   <div className="flex items-center justify-between mb-0.5">
@@ -279,6 +309,11 @@ export default async function FinancePage() {
               </div>
             </div>
             <div className="flex items-end gap-3 h-36">
+              {cashFlow.length === 0 && (
+                <p className="flex-1 text-center text-[12px] self-center" style={{ color: P.text3 }}>
+                  {isHe ? "אין נתוני תזרים מזומנים עדיין" : "No cash flow data yet"}
+                </p>
+              )}
               {cashFlow.map((m) => (
                 <div key={m.month} className="flex-1 flex flex-col items-center gap-1">
                   <div className="w-full flex items-end gap-0.5" style={{ height: 100 }}>
@@ -303,6 +338,11 @@ export default async function FinancePage() {
             style={{ background: P.card, border: `1px solid ${P.border}`, boxShadow: "0 2px 12px rgba(28,25,23,0.06)" }}>
             <h3 className="text-[14px] font-bold mb-3" style={{ color: P.text1 }}>{T.invoicesTitle}</h3>
             <div className="flex flex-col gap-1.5">
+              {invoices.length === 0 && (
+                <p className="text-[12px] text-center py-6" style={{ color: P.text3 }}>
+                  {isHe ? "אין חשבוניות ממתינות" : "No pending invoices yet"}
+                </p>
+              )}
               {invoices.map((inv, i) => (
                 <div key={i} className="flex items-center justify-between p-2.5 rounded-xl"
                   style={{ background: inv.overdue > 0 ? P.dangerBg : P.bg, border: `1px solid ${inv.overdue > 0 ? "#FECACA" : P.border}` }}>
@@ -326,16 +366,18 @@ export default async function FinancePage() {
         </div>
 
         {/* AI insight */}
-        <div className="flex items-start gap-3 p-4 rounded-2xl"
-          style={{ background: P.warnBg, border: `1px solid #FDE68A` }}>
-          <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#FEF3C7" }}>
-            <Lightbulb className="w-3.5 h-3.5" style={{ color: P.warn }} />
+        {isDemo && (
+          <div className="flex items-start gap-3 p-4 rounded-2xl"
+            style={{ background: P.warnBg, border: `1px solid #FDE68A` }}>
+            <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#FEF3C7" }}>
+              <Lightbulb className="w-3.5 h-3.5" style={{ color: P.warn }} />
+            </div>
+            <div>
+              <p className="text-[12px] font-bold mb-0.5" style={{ color: P.warn }}>{T.aiLabel}</p>
+              <p className="text-[12.5px]" style={{ color: P.text2 }}>{T.aiText}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-[12px] font-bold mb-0.5" style={{ color: P.warn }}>{T.aiLabel}</p>
-            <p className="text-[12.5px]" style={{ color: P.text2 }}>{T.aiText}</p>
-          </div>
-        </div>
+        )}
 
       </div>
     </div>

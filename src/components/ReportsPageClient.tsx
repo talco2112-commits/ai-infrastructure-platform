@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useProjects } from "@/contexts/ProjectContext";
 import {
   Bell, Search, Download, Eye, FileText,
   FileBarChart, Loader2, FileSpreadsheet,
@@ -474,10 +475,16 @@ async function generateExcel(typeId: string) {
 }
 
 export function ReportsPageClient({ lang }: { lang: "en" | "he" }) {
+  const { active } = useProjects();
+  const isDemo = active.id === "highway-20";
+
   const isHe = lang === "he";
   const tx   = T[lang];
-  const metrics   = METRICS[lang];
+  const metrics   = (isDemo ? METRICS[lang] : METRICS[lang].map(m => ({ ...m, val: "–", delta: "–" })));
   const keyIssues = KEY_ISSUES[lang];
+  const recentReports = isDemo ? RECENT_REPORTS : [];
+  const latestName   = isDemo ? tx.latestName   : (isHe ? "אין דוחות שנוצרו עדיין" : "No reports generated yet");
+  const latestPeriod = isDemo ? tx.latestPeriod : (isHe ? "העלה קבצים כדי ליצור דוחות" : "Upload files to start generating reports");
 
   const [selectedId, setSelectedId]   = useState("weekly-progress");
   const [exporting, setExporting]     = useState<"pdf" | "excel" | null>(null);
@@ -486,13 +493,15 @@ export function ReportsPageClient({ lang }: { lang: "en" | "he" }) {
   const sheets   = isHe ? selected.sheetsHe : selected.sheetsEn;
 
   const openPDF = useCallback((typeId: string) => {
+    if (!isDemo) return;
     setSelectedId(typeId);
     setExporting("pdf");
     window.open(`/print/${typeId}`, "_blank");
     setTimeout(() => setExporting(null), 1200);
-  }, []);
+  }, [isDemo]);
 
   const openExcel = useCallback(async (typeId: string) => {
+    if (!isDemo) return;
     setSelectedId(typeId);
     setExporting("excel");
     try {
@@ -500,7 +509,7 @@ export function ReportsPageClient({ lang }: { lang: "en" | "he" }) {
     } finally {
       setTimeout(() => setExporting(null), 800);
     }
-  }, []);
+  }, [isDemo]);
 
   return (
     <div dir={isHe ? "rtl" : "ltr"} className="flex flex-col h-full"
@@ -572,19 +581,21 @@ export function ReportsPageClient({ lang }: { lang: "en" | "he" }) {
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: P.text3 }}>{tx.latest}</p>
-                  <h3 className="text-[14px] font-bold" style={{ color: P.text1 }}>{tx.latestName}</h3>
-                  <p className="text-[11px]" style={{ color: P.text3 }}>{tx.latestPeriod}</p>
+                  <h3 className="text-[14px] font-bold" style={{ color: P.text1 }}>{latestName}</h3>
+                  <p className="text-[11px]" style={{ color: P.text3 }}>{latestPeriod}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => openPDF("weekly-progress")}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold"
+                    disabled={!isDemo}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold disabled:opacity-60"
                     style={{ background: P.bg, border: `1px solid ${P.border}`, color: P.text2 }}>
                     <Eye className="w-3 h-3" /> {tx.preview}
                   </button>
                   <button
                     onClick={() => openPDF("weekly-progress")}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold text-white"
+                    disabled={!isDemo}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold text-white disabled:opacity-60"
                     style={{ background: P.copper }}>
                     <Download className="w-3 h-3" /> {tx.download}
                   </button>
@@ -599,12 +610,14 @@ export function ReportsPageClient({ lang }: { lang: "en" | "he" }) {
                   </div>
                 ))}
               </div>
-              <div className="mt-3 p-3 rounded-xl text-[12px]" style={{ background: P.warnBg, border: `1px solid #FDE68A` }}>
-                <p className="font-bold mb-0.5" style={{ color: P.warn }}>{tx.keyIssues}</p>
-                <ul className="list-disc list-inside space-y-0.5" style={{ color: P.text2 }}>
-                  {keyIssues.map((issue, i) => <li key={i}>{issue}</li>)}
-                </ul>
-              </div>
+              {isDemo && (
+                <div className="mt-3 p-3 rounded-xl text-[12px]" style={{ background: P.warnBg, border: `1px solid #FDE68A` }}>
+                  <p className="font-bold mb-0.5" style={{ color: P.warn }}>{tx.keyIssues}</p>
+                  <ul className="list-disc list-inside space-y-0.5" style={{ color: P.text2 }}>
+                    {keyIssues.map((issue, i) => <li key={i}>{issue}</li>)}
+                  </ul>
+                </div>
+              )}
             </div>
 
             {/* Report list table */}
@@ -622,7 +635,12 @@ export function ReportsPageClient({ lang }: { lang: "en" | "he" }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {RECENT_REPORTS.map((r, i) => (
+                  {recentReports.length === 0 && (
+                    <tr><td colSpan={6} className="px-4 py-10 text-center text-[13px]" style={{ color: P.text3 }}>
+                      {isHe ? "אין דוחות שנוצרו עדיין" : "No reports generated yet"}
+                    </td></tr>
+                  )}
+                  {recentReports.map((r, i) => (
                     <tr key={i} className="transition-colors hover:bg-[#F5F2EF]"
                       style={{ borderBottom: `1px solid ${P.border}` }}>
                       <td className="px-4 py-2.5">
@@ -690,7 +708,7 @@ export function ReportsPageClient({ lang }: { lang: "en" | "he" }) {
               <div className="mb-3">
                 <button
                   onClick={() => openPDF(selectedId)}
-                  disabled={exporting !== null}
+                  disabled={exporting !== null || !isDemo}
                   className="w-full py-3 rounded-xl text-[13px] font-bold text-white flex items-center justify-center gap-2 transition-all disabled:opacity-60"
                   style={{
                     background: exporting === "pdf" ? "#6B3E18" : P.copper,
@@ -709,7 +727,7 @@ export function ReportsPageClient({ lang }: { lang: "en" | "he" }) {
               <div>
                 <button
                   onClick={() => openExcel(selectedId)}
-                  disabled={exporting !== null}
+                  disabled={exporting !== null || !isDemo}
                   className="w-full py-3 rounded-xl text-[13px] font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-60"
                   style={{
                     background: P.bg,

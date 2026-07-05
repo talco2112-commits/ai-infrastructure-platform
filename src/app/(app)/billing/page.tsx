@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useProjects } from "@/contexts/ProjectContext";
 import {
   Bell, Plus, Search, Lightbulb, AlertTriangle, X,
   CheckCircle2, Clock, XCircle, FileText,
@@ -843,26 +844,34 @@ function NewBillModal({ isHe, onClose, onSave }: { isHe:boolean; onClose:()=>voi
 type TabId = "all" | "pending" | "overdue" | "paid" | "disputed" | "retention";
 
 export default function BillingPage() {
+  const { active }                = useProjects();
+  const isDemo                    = active.id === "highway-20";
   const [lang, setLang]           = useState<Lang>("en");
   const [activeTab, setActiveTab] = useState<TabId>("all");
   const [search, setSearch]       = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [invoices, setInvoices]   = useState<Invoice[]>(INVOICES);
+  const [invoices, setInvoices]   = useState<Invoice[]>(isDemo ? INVOICES : []);
 
   useEffect(() => {
     const c = document.cookie.split(";").find(s => s.trim().startsWith("lang="))?.split("=")[1]?.trim();
     if (c === "he") setLang("he");
   }, []);
 
+  // ProjectProvider hydrates `active` from localStorage asynchronously after
+  // first paint, so isDemo can flip after this component already mounted.
+  useEffect(() => {
+    setInvoices(isDemo ? INVOICES : []);
+  }, [isDemo]);
+
   const isHe = lang === "he";
 
-  const contractValue   = 148_000_000;
+  const contractValue   = isDemo ? 148_000_000 : (Number(active.contractValue.replace(/,/g, "")) || 0);
   const totalClaimed    = invoices.reduce((s, i) => s + i.claimedAmount, 0);
   const totalCertified  = invoices.reduce((s, i) => s + (i.certifiedAmount ?? 0), 0);
   const totalPaid       = invoices.reduce((s, i) => s + (i.paidAmount ?? 0), 0);
   const totalRetention  = invoices.reduce((s, i) => s + i.retentionHeld, 0);
   const totalOutstanding= totalCertified - totalPaid;
-  const progress        = Math.round((totalClaimed / contractValue) * 100);
+  const progress        = contractValue ? Math.round((totalClaimed / contractValue) * 100) : 0;
 
   const tabs: { id:TabId; labelEn:string; labelHe:string; count:number }[] = [
     { id:"all",       labelEn:"All Invoices",      labelHe:"כל החשבונות",   count:invoices.length },
@@ -1012,17 +1021,19 @@ export default function BillingPage() {
         </Card>
 
         {/* AI Insight */}
-        <div className="flex items-start gap-3 p-4 rounded-2xl"
-          style={{ background:P.warnBg, border:`1px solid #FDE68A` }}>
-          <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
-            style={{ background:"#FEF3C7" }}>
-            <Lightbulb className="w-3.5 h-3.5" style={{ color:P.warn }}/>
+        {isDemo && (
+          <div className="flex items-start gap-3 p-4 rounded-2xl"
+            style={{ background:P.warnBg, border:`1px solid #FDE68A` }}>
+            <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
+              style={{ background:"#FEF3C7" }}>
+              <Lightbulb className="w-3.5 h-3.5" style={{ color:P.warn }}/>
+            </div>
+            <div>
+              <p className="text-[12px] font-bold mb-0.5" style={{ color:P.warn }}>{L.aiLabel}</p>
+              <p className="text-[12.5px]" style={{ color:P.text2 }}>{L.aiText}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-[12px] font-bold mb-0.5" style={{ color:P.warn }}>{L.aiLabel}</p>
-            <p className="text-[12.5px]" style={{ color:P.text2 }}>{L.aiText}</p>
-          </div>
-        </div>
+        )}
 
         {/* Invoice Table Card */}
         <Card>

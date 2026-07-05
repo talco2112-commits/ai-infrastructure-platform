@@ -1,4 +1,7 @@
-import { cookies } from "next/headers";
+"use client";
+
+import { useState, useEffect } from "react";
+import { useProjects } from "@/contexts/ProjectContext";
 import { Bell, Search, AlertTriangle, CheckCircle2, Users, Lightbulb, Plus } from "lucide-react";
 
 const P = {
@@ -75,7 +78,7 @@ const TRANSLATIONS = {
 type ObsType   = "Positive" | "Near Miss" | "Unsafe Act" | "Unsafe Condition";
 type ObsStatus = "OPEN" | "CLOSED" | "IN PROGRESS";
 
-const observations: {
+const DEMO_OBSERVATIONS: {
   type: ObsType; description: string; zone: string;
   reporter: string; date: string; status: ObsStatus;
 }[] = [
@@ -91,7 +94,7 @@ const observations: {
   { type:"Unsafe Condition", description:"Fuel storage improperly bunded – diesel tank Zone D without secondary containment", zone:"D", reporter:"Eng. Cohen",         date:"23 Jun", status:"OPEN"        },
 ];
 
-const toolboxTalks = [
+const DEMO_TOOLBOX_TALKS = [
   { topic: "Working at Height – Scaffold & Formwork Safety",        date: "27 Jun 2026", attendance: 48, conductor: "S.O. Ben-Ami"      },
   { topic: "Lifting Operations – Slinging & Signal Man Procedures", date: "26 Jun 2026", attendance: 35, conductor: "S.O. Dror Katz"    },
   { topic: "Confined Space Entry – Utility Trench Zone D",          date: "25 Jun 2026", attendance: 22, conductor: "Eng. Mizrahi"       },
@@ -99,7 +102,7 @@ const toolboxTalks = [
   { topic: "Heat Stress Management – Summer Work Protocols",        date: "23 Jun 2026", attendance: 63, conductor: "Project Safety Mgr" },
 ];
 
-const incidentData = [
+const DEMO_INCIDENT_DATA = [
   { nearmiss: 1, observations: 12 },
   { nearmiss: 0, observations: 9  },
   { nearmiss: 2, observations: 15 },
@@ -123,11 +126,23 @@ const obsStatusStyle: Record<ObsStatus, { bg: string; color: string }> = {
 const MAX_OBS = 25;
 const kpiColors = [P.good, P.text1, P.danger, P.warn, P.copper];
 
-export default async function SafetyPage() {
-  const cookieStore = await cookies();
-  const lang = (cookieStore.get("lang")?.value ?? "en") as "en" | "he";
+export default function SafetyPage() {
+  const { active } = useProjects();
+  const isDemo = active.id === "highway-20";
+
+  const [lang, setLang] = useState<"en" | "he">("en");
+  useEffect(() => {
+    const c = document.cookie.split(";").find(s => s.trim().startsWith("lang="))?.split("=")[1]?.trim();
+    if (c === "he") setLang("he");
+  }, []);
   const isHe = lang === "he";
   const T = TRANSLATIONS[lang];
+
+  const observations   = isDemo ? DEMO_OBSERVATIONS : [];
+  const toolboxTalks   = isDemo ? DEMO_TOOLBOX_TALKS : [];
+  const incidentData   = isDemo ? DEMO_INCIDENT_DATA : T.months.map(() => ({ nearmiss: 0, observations: 0 }));
+  const kpis           = T.kpis.map(k => isDemo ? k : { ...k, val: "–", sub: null });
+  const ltiFreeChip    = isDemo ? T.ltiFreeChip : (isHe ? "0 ימים ללא פגיעה" : "0 LTI-Free Days");
 
   return (
     <div dir={isHe ? "rtl" : "ltr"} className="flex flex-col h-full" style={{ background: P.bg, fontFamily: "Inter, system-ui, sans-serif" }}>
@@ -139,7 +154,7 @@ export default async function SafetyPage() {
           <h1 className="text-[18px] font-bold" style={{ color: P.text1 }}>{T.title}</h1>
           <span className="text-[12px] px-2 py-0.5 rounded-full font-bold"
             style={{ background: P.goodBg, color: P.good }}>
-            {T.ltiFreeChip}
+            {ltiFreeChip}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -158,7 +173,7 @@ export default async function SafetyPage() {
 
         {/* KPIs */}
         <div className="grid grid-cols-5 gap-3 mb-5">
-          {T.kpis.map((k, i) => (
+          {kpis.map((k, i) => (
             <div key={k.label} className="rounded-2xl p-4 text-center"
               style={{ background: P.card, border: `1px solid ${P.border}`, boxShadow: "0 2px 12px rgba(28,25,23,0.06)" }}>
               <p className="text-[11px] font-bold uppercase tracking-wide mb-1" style={{ color: P.text3 }}>{k.label}</p>
@@ -169,16 +184,18 @@ export default async function SafetyPage() {
         </div>
 
         {/* AI insight */}
-        <div className="flex items-start gap-3 p-4 rounded-2xl mb-5"
-          style={{ background: P.warnBg, border: `1px solid #FDE68A` }}>
-          <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#FEF3C7" }}>
-            <Lightbulb className="w-3.5 h-3.5" style={{ color: P.warn }} />
+        {isDemo && (
+          <div className="flex items-start gap-3 p-4 rounded-2xl mb-5"
+            style={{ background: P.warnBg, border: `1px solid #FDE68A` }}>
+            <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#FEF3C7" }}>
+              <Lightbulb className="w-3.5 h-3.5" style={{ color: P.warn }} />
+            </div>
+            <div>
+              <p className="text-[12px] font-bold mb-0.5" style={{ color: P.warn }}>{T.aiLabel}</p>
+              <p className="text-[12.5px]" style={{ color: P.text2 }}>{T.aiText}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-[12px] font-bold mb-0.5" style={{ color: P.warn }}>{T.aiLabel}</p>
-            <p className="text-[12.5px]" style={{ color: P.text2 }}>{T.aiText}</p>
-          </div>
-        </div>
+        )}
 
         <div className="grid grid-cols-3 gap-5 mb-5">
 
@@ -198,6 +215,11 @@ export default async function SafetyPage() {
                 </tr>
               </thead>
               <tbody>
+                {observations.length === 0 && (
+                  <tr><td colSpan={6} className="px-4 py-10 text-center text-[13px]" style={{ color: P.text3 }}>
+                    {isHe ? "אין תצפיות בטיחות עדיין" : "No safety observations yet"}
+                  </td></tr>
+                )}
                 {observations.map((o, i) => (
                   <tr key={i} className="transition-colors hover:bg-[#F5F2EF]"
                     style={{ borderBottom: `1px solid ${P.border}` }}>
@@ -235,6 +257,11 @@ export default async function SafetyPage() {
             style={{ background: P.card, border: `1px solid ${P.border}`, boxShadow: "0 2px 12px rgba(28,25,23,0.06)" }}>
             <h3 className="text-[14px] font-bold mb-3" style={{ color: P.text1 }}>{T.toolboxTitle}</h3>
             <div className="flex flex-col gap-3">
+              {toolboxTalks.length === 0 && (
+                <p className="text-[12px] text-center py-6" style={{ color: P.text3 }}>
+                  {isHe ? "אין שיחות כלים השבוע" : "No toolbox talks yet"}
+                </p>
+              )}
               {toolboxTalks.map((t, i) => (
                 <div key={i} className="p-3 rounded-xl" style={{ background: P.bg, border: `1px solid ${P.border}` }}>
                   <p className="text-[12px] font-semibold leading-snug mb-1.5" style={{ color: P.text1 }}>{t.topic}</p>

@@ -1,4 +1,7 @@
-import { cookies } from "next/headers";
+"use client";
+
+import { useState, useEffect } from "react";
+import { useProjects } from "@/contexts/ProjectContext";
 import { Bell, Search, AlertTriangle, Plus } from "lucide-react";
 
 const P = {
@@ -56,7 +59,7 @@ const TRANSLATIONS = {
 
 type SubStatus = "APPROVED" | "UNDER REVIEW" | "REJECTED" | "RESUBMIT" | "PENDING";
 
-const submittals: {
+const DEMO_SUBMITTALS: {
   num: string; title: string; discipline: string; rev: string;
   submitted: string; due: string; daysRemaining: number; status: SubStatus;
 }[] = [
@@ -85,13 +88,20 @@ const statusStyle: Record<SubStatus, { bg: string; color: string }> = {
   "PENDING":      { bg: "#F5F5F4",  color: "#78716C" },
 };
 
-export default async function DesignPage() {
-  const cookieStore = await cookies();
-  const lang = (cookieStore.get("lang")?.value ?? "en") as "en" | "he";
+export default function DesignPage() {
+  const { active } = useProjects();
+  const isDemo = active.id === "highway-20";
+
+  const [lang, setLang] = useState<"en" | "he">("en");
+  useEffect(() => {
+    const c = document.cookie.split(";").find(s => s.trim().startsWith("lang="))?.split("=")[1]?.trim();
+    if (c === "he") setLang("he");
+  }, []);
   const isHe = lang === "he";
   const T = TRANSLATIONS[lang];
 
-  const statsValues = [38, 14, 17, 4, 3];
+  const submittals  = isDemo ? DEMO_SUBMITTALS : [];
+  const statsValues = isDemo ? [38, 14, 17, 4, 3] : [0, 0, 0, 0, 0];
 
   return (
     <div dir={isHe ? "rtl" : "ltr"} className="flex flex-col h-full" style={{ background: P.bg, fontFamily: "Inter, system-ui, sans-serif" }}>
@@ -152,16 +162,18 @@ export default async function DesignPage() {
         </div>
 
         {/* AI Insight */}
-        <div className="flex items-start gap-3 p-4 rounded-2xl mb-4"
-          style={{ background: P.dangerBg, border: `1px solid #FECACA` }}>
-          <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#FEE2E2" }}>
-            <AlertTriangle className="w-3.5 h-3.5" style={{ color: P.danger }} />
+        {isDemo && (
+          <div className="flex items-start gap-3 p-4 rounded-2xl mb-4"
+            style={{ background: P.dangerBg, border: `1px solid #FECACA` }}>
+            <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#FEE2E2" }}>
+              <AlertTriangle className="w-3.5 h-3.5" style={{ color: P.danger }} />
+            </div>
+            <div>
+              <p className="text-[12px] font-bold mb-0.5" style={{ color: P.danger }}>{T.aiAlertLabel}</p>
+              <p className="text-[12.5px]" style={{ color: P.text2 }}>{T.aiAlertText}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-[12px] font-bold mb-0.5" style={{ color: P.danger }}>{T.aiAlertLabel}</p>
-            <p className="text-[12.5px]" style={{ color: P.text2 }}>{T.aiAlertText}</p>
-          </div>
-        </div>
+        )}
 
         {/* Submittals Table */}
         <div className="rounded-2xl overflow-hidden"
@@ -175,6 +187,11 @@ export default async function DesignPage() {
               </tr>
             </thead>
             <tbody>
+              {submittals.length === 0 && (
+                <tr><td colSpan={8} className="px-4 py-10 text-center text-[13px]" style={{ color: P.text3 }}>
+                  {isHe ? "אין הגשות עדיין" : "No submittals yet"}
+                </td></tr>
+              )}
               {submittals.map((s, i) => (
                 <tr key={i} className="transition-colors hover:bg-[#F5F2EF]"
                   style={{ borderBottom: `1px solid ${P.border}` }}>

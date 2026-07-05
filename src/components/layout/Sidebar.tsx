@@ -21,7 +21,7 @@ const navItems = [
   { href: "/schedule",      icon: CalendarDays,    labelEn: "Schedule",      labelHe: "לוח זמנים"   },
   { href: "/finance",       icon: Banknote,        labelEn: "Finance",       labelHe: "פיננסים"     },
   { href: "/construction",  icon: HardHat,         labelEn: "Construction",  labelHe: "בנייה וביצוע"},
-  { href: "/site-progress", icon: Satellite,       labelEn: "Site Progress", labelHe: "התקדמות"     },
+  { href: "/site-progress", icon: Satellite,       labelEn: "Site Progress", labelHe: "מודל"        },
   { href: "/rfis",          icon: HelpCircle,      labelEn: "RFIs",          labelHe: "בקשות מידע"  },
   { href: "/claims",        icon: Scale,           labelEn: "Claims",        labelHe: "תביעות"      },
   { href: "/safety",        icon: Shield,          labelEn: "Safety",        labelHe: "בטיחות"      },

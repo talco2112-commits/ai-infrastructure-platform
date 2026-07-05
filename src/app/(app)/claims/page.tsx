@@ -1,4 +1,7 @@
-import { cookies } from "next/headers";
+"use client";
+
+import { useState, useEffect } from "react";
+import { useProjects } from "@/contexts/ProjectContext";
 import { Bell, Search, AlertTriangle, Lightbulb, Plus } from "lucide-react";
 
 const P = {
@@ -68,7 +71,7 @@ type COStatus = "APPROVED" | "UNDER REVIEW" | "PENDING" | "REJECTED";
 type COCategory = "Unforeseen condition" | "Client-requested" | "Design change" | "Force majeure";
 type RiskRating = "HIGH" | "MEDIUM" | "LOW";
 
-const changeOrders: {
+const DEMO_CHANGE_ORDERS: {
   num: string; desc: string; reason: COCategory;
   submitted: string; value: number; status: COStatus;
 }[] = [
@@ -82,7 +85,7 @@ const changeOrders: {
   { num:"CO-008", desc:"Stone pitching erosion protection – slope failure Zone C",      reason:"Force majeure",        submitted:"15 Jun 2026", value:195_000,   status:"PENDING"      },
 ];
 
-const risks: {
+const DEMO_RISKS: {
   id: string; description: string; probability: string; impact: string;
   rating: RiskRating; exposure: string; mitigation: string;
 }[] = [
@@ -114,16 +117,23 @@ const categoryColor: Record<COCategory, string> = {
 
 function fmt(n: number) { return `₪${(n / 1_000_000).toFixed(2)}M`; }
 
-export default async function ClaimsPage() {
-  const cookieStore = await cookies();
-  const lang = (cookieStore.get("lang")?.value ?? "en") as "en" | "he";
+export default function ClaimsPage() {
+  const { active } = useProjects();
+  const isDemo = active.id === "highway-20";
+
+  const [lang, setLang] = useState<"en" | "he">("en");
+  useEffect(() => {
+    const c = document.cookie.split(";").find(s => s.trim().startsWith("lang="))?.split("=")[1]?.trim();
+    if (c === "he") setLang("he");
+  }, []);
   const isHe = lang === "he";
   const T = TRANSLATIONS[lang];
 
-  const total = changeOrders.reduce((s, c) => s + c.value, 0);
-  const approved = changeOrders.filter(c => c.status === "APPROVED").reduce((s, c) => s + c.value, 0);
-  const kpiVals = ["8", fmt(approved), "2", "₪7.0M"];
-  const kpiColors = [P.copper, P.good, P.warn, P.danger];
+  const changeOrders = isDemo ? DEMO_CHANGE_ORDERS : [];
+  const risks        = isDemo ? DEMO_RISKS : [];
+  const kpis         = T.kpis.map(k => isDemo ? k : { ...k, sub: "–" });
+  const kpiVals      = isDemo ? ["8", fmt(changeOrders.filter(c => c.status === "APPROVED").reduce((s, c) => s + c.value, 0)), "2", "₪7.0M"] : ["–", "–", "–", "–"];
+  const kpiColors    = [P.copper, P.good, P.warn, P.danger];
 
   return (
     <div dir={isHe ? "rtl" : "ltr"} className="flex flex-col h-full" style={{ background: P.bg, fontFamily: "Inter, system-ui, sans-serif" }}>
@@ -150,7 +160,7 @@ export default async function ClaimsPage() {
 
         {/* KPIs */}
         <div className="grid grid-cols-4 gap-3 mb-5">
-          {T.kpis.map((k, i) => (
+          {kpis.map((k, i) => (
             <div key={k.label} className="rounded-2xl p-4"
               style={{ background: P.card, border: `1px solid ${P.border}`, boxShadow: "0 2px 12px rgba(28,25,23,0.06)" }}>
               <p className="text-[11px] font-bold uppercase tracking-wide mb-1" style={{ color: P.text3 }}>{k.label}</p>
@@ -177,6 +187,11 @@ export default async function ClaimsPage() {
                 </tr>
               </thead>
               <tbody>
+                {changeOrders.length === 0 && (
+                  <tr><td colSpan={6} className="px-4 py-10 text-center text-[13px]" style={{ color: P.text3 }}>
+                    {isHe ? "אין צווי שינוי עדיין" : "No change orders yet"}
+                  </td></tr>
+                )}
                 {changeOrders.map((co, i) => (
                   <tr key={i} className="transition-colors hover:bg-[#F5F2EF]"
                     style={{ borderBottom: `1px solid ${P.border}` }}>
@@ -209,6 +224,11 @@ export default async function ClaimsPage() {
             style={{ background: P.card, border: `1px solid ${P.border}`, boxShadow: "0 2px 12px rgba(28,25,23,0.06)" }}>
             <h3 className="text-[14px] font-bold mb-3" style={{ color: P.text1 }}>{T.riskTitle}</h3>
             <div className="flex flex-col gap-3">
+              {risks.length === 0 && (
+                <p className="text-[12px] text-center py-6" style={{ color: P.text3 }}>
+                  {isHe ? "אין סיכונים ברשומה עדיין" : "No risks on register yet"}
+                </p>
+              )}
               {risks.map((r) => (
                 <div key={r.id} className="p-3 rounded-xl"
                   style={{ background: P.bg, border: `1px solid ${P.border}` }}>
@@ -240,16 +260,18 @@ export default async function ClaimsPage() {
         </div>
 
         {/* AI insight */}
-        <div className="flex items-start gap-3 p-4 rounded-2xl mt-5"
-          style={{ background: P.warnBg, border: `1px solid #FDE68A` }}>
-          <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#FEF3C7" }}>
-            <Lightbulb className="w-3.5 h-3.5" style={{ color: P.warn }} />
+        {isDemo && (
+          <div className="flex items-start gap-3 p-4 rounded-2xl mt-5"
+            style={{ background: P.warnBg, border: `1px solid #FDE68A` }}>
+            <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#FEF3C7" }}>
+              <Lightbulb className="w-3.5 h-3.5" style={{ color: P.warn }} />
+            </div>
+            <div>
+              <p className="text-[12px] font-bold mb-0.5" style={{ color: P.warn }}>{T.aiLabel}</p>
+              <p className="text-[12.5px]" style={{ color: P.text2 }}>{T.aiText}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-[12px] font-bold mb-0.5" style={{ color: P.warn }}>{T.aiLabel}</p>
-            <p className="text-[12.5px]" style={{ color: P.text2 }}>{T.aiText}</p>
-          </div>
-        </div>
+        )}
 
       </div>
     </div>
