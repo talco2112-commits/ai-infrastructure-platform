@@ -1,10 +1,11 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 
-const LOGO = "/לוגו עם כיתוב חום רקע קרם.png";
+const LOGO_DEFAULT = "/לוגו עם כיתוב חום רקע קרם.png";
 
 export function LogoAnimation({
   size = 44,          // controls HEIGHT; width is derived from aspect ratio
+  src = LOGO_DEFAULT,
   onComplete,
   holdMs = 0,
   showFinalImage = true,
@@ -12,6 +13,7 @@ export function LogoAnimation({
   className,
 }: {
   size?: number;
+  src?: string;
   onComplete?: () => void;
   holdMs?: number;
   showFinalImage?: boolean;
@@ -26,7 +28,7 @@ export function LogoAnimation({
   // Step 1: load image → compute display dimensions from aspect ratio
   useEffect(() => {
     const img = new Image();
-    img.src = LOGO;
+    img.src = src;
     img.onload = () => {
       const w = Math.round(size * (img.naturalWidth / img.naturalHeight));
       setDims({ w, h: size });
@@ -48,7 +50,7 @@ export function LogoAnimation({
     ctx.scale(dpr, dpr);
 
     const img = new Image();
-    img.src = LOGO;
+    img.src = src;
 
     img.onload = () => {
       // Sample at proportional resolution
@@ -172,7 +174,7 @@ export function LogoAnimation({
       />
       {showFinalImage && (
         <img
-          src={LOGO}
+          src={src}
           alt="InfrAI"
           style={{
             position: "absolute", inset: 0,

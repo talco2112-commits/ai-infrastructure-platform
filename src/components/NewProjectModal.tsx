@@ -68,7 +68,7 @@ function DropZone({
   files: UploadedFile[];
   onChange: (f: UploadedFile[]) => void;
   isHe: boolean;
-  icon: React.FC<{className?:string}>;
+  icon: React.FC<{className?:string; style?: React.CSSProperties}>;
   onRawFiles?: (raw: File[]) => void;
 }) {
   const [drag, setDrag] = useState(false);
