@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useProjects } from "@/contexts/ProjectContext";
 import { Bell, Search, AlertTriangle, Plus, Clock } from "lucide-react";
+import { QuickAddModal } from "@/components/QuickAddModal";
 
 const P = {
   bg: "#EDE8E1", card: "#FAF8F5", border: "#EDE8DF",
@@ -107,11 +108,38 @@ export default function RFIsPage() {
   const isHe = lang === "he";
   const T = TRANSLATIONS[lang];
 
-  const rfis         = isDemo ? DEMO_RFIS : [];
-  const statsValues  = isDemo ? [47, 8, 3, 28, 8] : [0, 0, 0, 0, 0];
+  const [rfis, setRfis]     = useState(isDemo ? DEMO_RFIS : []);
+  const [showModal, setShowModal] = useState(false);
+  useEffect(() => { setRfis(isDemo ? DEMO_RFIS : []); }, [isDemo]);
+
   const statsColors  = [P.copper, P.warn, P.danger, P.good, "#78716C"];
-  const tabCounts    = isDemo ? T.tabCounts : T.tabCounts.map(() => 0);
-  const overdueChip  = isDemo ? T.overdueChip : (isHe ? "0 באיחור" : "0 Overdue");
+  const statsValues  = isDemo ? [47, 8, 3, 28, 8] : [
+    rfis.length,
+    rfis.filter(r => r.status === "OPEN").length,
+    rfis.filter(r => r.status === "OVERDUE").length,
+    rfis.filter(r => r.status === "ANSWERED").length,
+    rfis.filter(r => r.status === "CLOSED").length,
+  ];
+  const tabCounts    = isDemo ? T.tabCounts : statsValues;
+  const overdueCount = isDemo ? 3 : rfis.filter(r => r.status === "OVERDUE").length;
+  const overdueChip  = isHe ? `${overdueCount} באיחור` : `${overdueCount} Overdue`;
+
+  function addRfi(values: Record<string, string>) {
+    const now = new Date();
+    const num = `RFI-${String(rfis.length + 1).padStart(3, "0")}`;
+    setRfis(prev => [{
+      num,
+      subject: values.subject || "",
+      discipline: values.discipline || "Civil",
+      submitted: now.toLocaleDateString(isHe ? "he-IL" : "en-GB", { day: "2-digit", month: "short" }),
+      due: values.due ? new Date(values.due).toLocaleDateString(isHe ? "he-IL" : "en-GB", { day: "2-digit", month: "short" }) : "",
+      daysOpen: 0,
+      status: "OPEN" as RFIStatus,
+      priority: (values.priority as Priority) || "MEDIUM",
+      assignedTo: values.assignedTo || "",
+    }, ...prev]);
+    setShowModal(false);
+  }
 
   return (
     <div dir={isHe ? "rtl" : "ltr"} className="flex flex-col h-full" style={{ background: P.bg, fontFamily: "Inter, system-ui, sans-serif" }}>
@@ -132,7 +160,8 @@ export default function RFIsPage() {
             <Search className="w-3.5 h-3.5" style={{ color: P.text3 }} />
             <span style={{ color: P.text3 }}>{T.searchPlaceholder}</span>
           </div>
-          <button className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-[12px] font-semibold text-white"
+          <button onClick={() => setShowModal(true)}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-[12px] font-semibold text-white"
             style={{ background: P.copper }}>
             <Plus className="w-3 h-3" /> {T.newRFI}
           </button>
@@ -246,6 +275,32 @@ export default function RFIsPage() {
         </div>
 
       </div>
+
+      {showModal && (
+        <QuickAddModal
+          isHe={isHe}
+          title="New RFI" titleHe="בקשת מידע חדשה"
+          onClose={() => setShowModal(false)}
+          onSave={addRfi}
+          fields={[
+            { key: "subject", label: "Subject", labelHe: "נושא", type: "text", required: true },
+            { key: "discipline", label: "Discipline", labelHe: "תחום", type: "select", options: [
+              { value: "Structural", label: "Structural", labelHe: "קונסטרוקציה" },
+              { value: "Civil", label: "Civil", labelHe: "אזרחית" },
+              { value: "MEP", label: "MEP", labelHe: "מ.מ.ח" },
+              { value: "Traffic", label: "Traffic", labelHe: "תנועה" },
+              { value: "Geotech", label: "Geotech", labelHe: "גאוטכני" },
+            ]},
+            { key: "priority", label: "Priority", labelHe: "עדיפות", type: "select", options: [
+              { value: "HIGH", label: "High", labelHe: "גבוהה" },
+              { value: "MEDIUM", label: "Medium", labelHe: "בינונית" },
+              { value: "LOW", label: "Low", labelHe: "נמוכה" },
+            ]},
+            { key: "due", label: "Due Date", labelHe: "תאריך יעד", type: "date" },
+            { key: "assignedTo", label: "Assigned To", labelHe: "מוקצה ל", type: "text" },
+          ]}
+        />
+      )}
     </div>
   );
 }

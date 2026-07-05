@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useProjects } from "@/contexts/ProjectContext";
 import {
   Bell, Search, Upload, Filter, Grid, List,
@@ -133,10 +133,29 @@ export default function DocumentsPage() {
   const isHe = lang === "he";
   const T = TRANSLATIONS[lang];
 
-  const files        = isDemo ? DEMO_FILES : [];
-  const folderCounts = isDemo ? DEMO_FOLDER_COUNTS : DEMO_FOLDER_COUNTS.map(() => 0);
+  const [files, setFiles] = useState(isDemo ? DEMO_FILES : []);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => { setFiles(isDemo ? DEMO_FILES : []); }, [isDemo]);
+
+  const folderCounts = isDemo ? DEMO_FOLDER_COUNTS : [files.length, ...DEMO_FOLDER_COUNTS.slice(1).map(() => 0)];
   const filesCount   = isHe ? `${files.length} קבצים`      : `${files.length} files`;
   const docsCount    = isHe ? `${folderCounts[0]} מסמכים`  : `${folderCounts[0]} documents`;
+
+  function fmtSize(bytes: number) {
+    if (bytes >= 1_000_000) return `${(bytes / 1_000_000).toFixed(1)} MB`;
+    return `${Math.max(1, Math.round(bytes / 1_000))} KB`;
+  }
+
+  function handleUpload(fileList: FileList | null) {
+    if (!fileList || fileList.length === 0) return;
+    const today = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+    const newRows = Array.from(fileList).map(f => ({
+      name: f.name, rev: "Rev.A", discipline: "Civil",
+      date: today, size: fmtSize(f.size), status: "DRAFT" as Status, by: "You",
+    }));
+    setFiles(prev => [...newRows, ...prev]);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
 
   return (
     <div dir={isHe ? "rtl" : "ltr"} className="flex flex-col h-full" style={{ background: P.bg, fontFamily: "Inter, system-ui, sans-serif" }}>
@@ -216,10 +235,13 @@ export default function DocumentsPage() {
                 style={{ background: P.copper, color: "#fff" }}>
                 <List className="w-3 h-3" />
               </button>
-              <button className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-[12px] font-semibold text-white"
+              <button onClick={() => fileInputRef.current?.click()}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-[12px] font-semibold text-white"
                 style={{ background: P.copper }}>
                 <Upload className="w-3 h-3" /> {T.upload}
               </button>
+              <input ref={fileInputRef} type="file" multiple className="hidden"
+                onChange={e => handleUpload(e.target.files)} />
             </div>
           </div>
 

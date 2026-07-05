@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useProjects } from "@/contexts/ProjectContext";
 import { Bell, Search, AlertTriangle, Lightbulb, Plus } from "lucide-react";
+import { QuickAddModal } from "@/components/QuickAddModal";
 
 const P = {
   bg: "#EDE8E1", card: "#FAF8F5", border: "#EDE8DF",
@@ -129,11 +130,34 @@ export default function ClaimsPage() {
   const isHe = lang === "he";
   const T = TRANSLATIONS[lang];
 
-  const changeOrders = isDemo ? DEMO_CHANGE_ORDERS : [];
+  const [changeOrders, setChangeOrders] = useState(isDemo ? DEMO_CHANGE_ORDERS : []);
+  const [showModal, setShowModal] = useState(false);
+  useEffect(() => { setChangeOrders(isDemo ? DEMO_CHANGE_ORDERS : []); }, [isDemo]);
+
   const risks        = isDemo ? DEMO_RISKS : [];
   const kpis         = T.kpis.map(k => isDemo ? k : { ...k, sub: "–" });
-  const kpiVals      = isDemo ? ["8", fmt(changeOrders.filter(c => c.status === "APPROVED").reduce((s, c) => s + c.value, 0)), "2", "₪7.0M"] : ["–", "–", "–", "–"];
+  const kpiVals      = isDemo
+    ? ["8", fmt(changeOrders.filter(c => c.status === "APPROVED").reduce((s, c) => s + c.value, 0)), "2", "₪7.0M"]
+    : [
+        String(changeOrders.length),
+        fmt(changeOrders.filter(c => c.status === "APPROVED").reduce((s, c) => s + c.value, 0)),
+        String(changeOrders.filter(c => c.status === "UNDER REVIEW").length),
+        "–",
+      ];
   const kpiColors    = [P.copper, P.good, P.warn, P.danger];
+
+  function addChangeOrder(values: Record<string, string>) {
+    const num = `CO-${String(changeOrders.length + 1).padStart(3, "0")}`;
+    setChangeOrders(prev => [{
+      num,
+      desc: values.desc || "",
+      reason: (values.reason as COCategory) || "Client-requested",
+      submitted: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+      value: Number(values.value) || 0,
+      status: "PENDING" as COStatus,
+    }, ...prev]);
+    setShowModal(false);
+  }
 
   return (
     <div dir={isHe ? "rtl" : "ltr"} className="flex flex-col h-full" style={{ background: P.bg, fontFamily: "Inter, system-ui, sans-serif" }}>
@@ -145,7 +169,8 @@ export default function ClaimsPage() {
           <h1 className="text-[18px] font-bold" style={{ color: P.text1 }}>{T.title}</h1>
         </div>
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-[12px] font-semibold text-white"
+          <button onClick={() => setShowModal(true)}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-[12px] font-semibold text-white"
             style={{ background: P.copper }}>
             <Plus className="w-3 h-3" /> {T.newCO}
           </button>
@@ -274,6 +299,25 @@ export default function ClaimsPage() {
         )}
 
       </div>
+
+      {showModal && (
+        <QuickAddModal
+          isHe={isHe}
+          title="New Change Order" titleHe="צו שינוי חדש"
+          onClose={() => setShowModal(false)}
+          onSave={addChangeOrder}
+          fields={[
+            { key: "desc", label: "Description", labelHe: "תיאור", type: "textarea", required: true },
+            { key: "reason", label: "Reason", labelHe: "סיבה", type: "select", options: [
+              { value: "Unforeseen condition", label: "Unforeseen condition", labelHe: "תנאי בלתי צפוי" },
+              { value: "Client-requested", label: "Client-requested", labelHe: "בקשת לקוח" },
+              { value: "Design change", label: "Design change", labelHe: "שינוי תכנון" },
+              { value: "Force majeure", label: "Force majeure", labelHe: "כוח עליון" },
+            ]},
+            { key: "value", label: "Value (₪)", labelHe: "שווי (₪)", type: "number", required: true },
+          ]}
+        />
+      )}
     </div>
   );
 }

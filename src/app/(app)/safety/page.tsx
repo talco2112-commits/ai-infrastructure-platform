@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useProjects } from "@/contexts/ProjectContext";
 import { Bell, Search, AlertTriangle, CheckCircle2, Users, Lightbulb, Plus } from "lucide-react";
+import { QuickAddModal } from "@/components/QuickAddModal";
 
 const P = {
   bg: "#EDE8E1", card: "#FAF8F5", border: "#EDE8DF",
@@ -138,11 +139,26 @@ export default function SafetyPage() {
   const isHe = lang === "he";
   const T = TRANSLATIONS[lang];
 
-  const observations   = isDemo ? DEMO_OBSERVATIONS : [];
+  const [observations, setObservations] = useState(isDemo ? DEMO_OBSERVATIONS : []);
+  const [showModal, setShowModal] = useState(false);
+  useEffect(() => { setObservations(isDemo ? DEMO_OBSERVATIONS : []); }, [isDemo]);
+
   const toolboxTalks   = isDemo ? DEMO_TOOLBOX_TALKS : [];
   const incidentData   = isDemo ? DEMO_INCIDENT_DATA : T.months.map(() => ({ nearmiss: 0, observations: 0 }));
   const kpis           = T.kpis.map(k => isDemo ? k : { ...k, val: "–", sub: null });
   const ltiFreeChip    = isDemo ? T.ltiFreeChip : (isHe ? "0 ימים ללא פגיעה" : "0 LTI-Free Days");
+
+  function addObservation(values: Record<string, string>) {
+    setObservations(prev => [{
+      type: (values.type as ObsType) || "Positive",
+      description: values.description || "",
+      zone: values.zone || "",
+      reporter: values.reporter || "",
+      date: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short" }),
+      status: "OPEN" as ObsStatus,
+    }, ...prev]);
+    setShowModal(false);
+  }
 
   return (
     <div dir={isHe ? "rtl" : "ltr"} className="flex flex-col h-full" style={{ background: P.bg, fontFamily: "Inter, system-ui, sans-serif" }}>
@@ -158,7 +174,8 @@ export default function SafetyPage() {
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-[12px] font-semibold text-white"
+          <button onClick={() => setShowModal(true)}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-[12px] font-semibold text-white"
             style={{ background: P.copper }}>
             <Plus className="w-3 h-3" /> {T.reportObs}
           </button>
@@ -309,6 +326,26 @@ export default function SafetyPage() {
         </div>
 
       </div>
+
+      {showModal && (
+        <QuickAddModal
+          isHe={isHe}
+          title="Report Observation" titleHe="דווח תצפית"
+          onClose={() => setShowModal(false)}
+          onSave={addObservation}
+          fields={[
+            { key: "type", label: "Type", labelHe: "סוג", type: "select", required: true, options: [
+              { value: "Positive", label: "Positive", labelHe: "חיובי" },
+              { value: "Near Miss", label: "Near Miss", labelHe: "כמעט-תאונה" },
+              { value: "Unsafe Act", label: "Unsafe Act", labelHe: "פעולה מסוכנת" },
+              { value: "Unsafe Condition", label: "Unsafe Condition", labelHe: "מצב מסוכן" },
+            ]},
+            { key: "description", label: "Description", labelHe: "תיאור", type: "textarea", required: true },
+            { key: "zone", label: "Zone", labelHe: "אזור", type: "text" },
+            { key: "reporter", label: "Reporter", labelHe: "מדווח", type: "text" },
+          ]}
+        />
+      )}
     </div>
   );
 }

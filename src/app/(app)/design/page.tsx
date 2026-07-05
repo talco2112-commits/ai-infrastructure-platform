@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useProjects } from "@/contexts/ProjectContext";
 import { Bell, Search, AlertTriangle, Plus } from "lucide-react";
+import { QuickAddModal } from "@/components/QuickAddModal";
 
 const P = {
   bg: "#EDE8E1", card: "#FAF8F5", border: "#EDE8DF",
@@ -100,8 +101,32 @@ export default function DesignPage() {
   const isHe = lang === "he";
   const T = TRANSLATIONS[lang];
 
-  const submittals  = isDemo ? DEMO_SUBMITTALS : [];
-  const statsValues = isDemo ? [38, 14, 17, 4, 3] : [0, 0, 0, 0, 0];
+  const [submittals, setSubmittals] = useState(isDemo ? DEMO_SUBMITTALS : []);
+  const [showModal, setShowModal] = useState(false);
+  useEffect(() => { setSubmittals(isDemo ? DEMO_SUBMITTALS : []); }, [isDemo]);
+
+  const statsValues = isDemo ? [38, 14, 17, 4, 3] : [
+    submittals.length,
+    submittals.filter(s => s.status === "APPROVED").length,
+    submittals.filter(s => s.status === "UNDER REVIEW").length,
+    submittals.filter(s => s.status === "REJECTED" || s.status === "RESUBMIT").length,
+    submittals.filter(s => s.status === "PENDING").length,
+  ];
+
+  function addSubmittal(values: Record<string, string>) {
+    const num = `SUB-${String(submittals.length + 1).padStart(3, "0")}`;
+    setSubmittals(prev => [{
+      num,
+      title: values.title || "",
+      discipline: values.discipline || "Civil",
+      rev: "Rev.A",
+      submitted: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+      due: values.due ? new Date(values.due).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "",
+      daysRemaining: values.due ? Math.round((new Date(values.due).getTime() - Date.now()) / 86400000) : 21,
+      status: "PENDING" as SubStatus,
+    }, ...prev]);
+    setShowModal(false);
+  }
 
   return (
     <div dir={isHe ? "rtl" : "ltr"} className="flex flex-col h-full" style={{ background: P.bg, fontFamily: "Inter, system-ui, sans-serif" }}>
@@ -155,7 +180,8 @@ export default function DesignPage() {
             </button>
           ))}
           <div className="flex-1" />
-          <button className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[12px] font-semibold text-white"
+          <button onClick={() => setShowModal(true)}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[12px] font-semibold text-white"
             style={{ background: P.copper }}>
             <Plus className="w-3 h-3" /> {T.newSubmittal}
           </button>
@@ -230,6 +256,25 @@ export default function DesignPage() {
         </div>
 
       </div>
+
+      {showModal && (
+        <QuickAddModal
+          isHe={isHe}
+          title="New Submittal" titleHe="הגשה חדשה"
+          onClose={() => setShowModal(false)}
+          onSave={addSubmittal}
+          fields={[
+            { key: "title", label: "Submittal Title", labelHe: "כותרת ההגשה", type: "text", required: true },
+            { key: "discipline", label: "Discipline", labelHe: "תחום", type: "select", options: [
+              { value: "Structural", label: "Structural", labelHe: "קונסטרוקציה" },
+              { value: "Civil", label: "Civil", labelHe: "אזרחית" },
+              { value: "MEP", label: "MEP", labelHe: "מ.מ.ח" },
+              { value: "Traffic", label: "Traffic", labelHe: "תנועה" },
+            ]},
+            { key: "due", label: "Due Date", labelHe: "תאריך יעד", type: "date" },
+          ]}
+        />
+      )}
     </div>
   );
 }

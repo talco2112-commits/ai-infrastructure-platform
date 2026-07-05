@@ -290,7 +290,9 @@ function EmptyDashboard({ isHe, project }: { isHe: boolean; project: ReturnType<
         <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
           {[
             { label: isHe ? "תקציב מנוצל" : "Budget Spent",       value: "₪0",  sub: project.contractValue ? `${isHe?"מתוך":"of"} ₪${project.contractValue}` : isHe?"אין נתון":"No contract value" },
-            { label: isHe ? "לוח זמנים"   : "Schedule",            value: "—",   sub: isHe ? "לא הועלה לוח זמנים" : "No schedule uploaded" },
+            (project.scheduleActivities?.length ?? 0) > 0
+              ? { label: isHe ? "לוח זמנים"   : "Schedule",          value: String(project.scheduleActivities.length), sub: isHe ? "פעילויות בלוח הזמנים" : "activities in schedule" }
+              : { label: isHe ? "לוח זמנים"   : "Schedule",          value: "—",   sub: isHe ? "לא הועלה לוח זמנים" : "No schedule uploaded" },
             { label: isHe ? "נושאים פתוחים" : "Open Issues",       value: "0",   sub: isHe ? "אין נתונים" : "No data yet" },
             { label: isHe ? "ממתינים לאישור" : "Pending Approvals", value: "0",   sub: isHe ? "אין חשבוניות" : "No invoices" },
           ].map(k => (

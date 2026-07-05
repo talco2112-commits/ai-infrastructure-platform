@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useProjects } from "@/contexts/ProjectContext";
 import { Bell, Search, AlertTriangle, CheckCircle2, XCircle, Pause, Lightbulb, Plus } from "lucide-react";
+import { QuickAddModal } from "@/components/QuickAddModal";
 
 const P = {
   bg: "#EDE8E1", card: "#FAF8F5", border: "#EDE8DF",
@@ -129,11 +130,30 @@ export default function QualityPage() {
   const isHe = lang === "he";
   const T = TRANSLATIONS[lang];
 
-  const ncrs          = isDemo ? DEMO_NCRS : [];
+  const [ncrs, setNcrs] = useState(isDemo ? DEMO_NCRS : []);
+  const [showModal, setShowModal] = useState(false);
+  useEffect(() => { setNcrs(isDemo ? DEMO_NCRS : []); }, [isDemo]);
+
   const inspections   = isDemo ? DEMO_INSPECTIONS : [];
   const materialTests = isDemo ? DEMO_MATERIAL_TESTS : [];
-  const kpiVals       = isDemo ? DEMO_KPI_VALS : ["–", "–", "–", "–", "–"];
-  const openNCRsChip  = isDemo ? T.openNCRsChip : (isHe ? "0 NCR פתוחים" : "0 Open NCRs");
+  const openCount     = ncrs.filter(n => n.status === "OPEN").length;
+  const kpiVals       = isDemo ? DEMO_KPI_VALS : [String(openCount), "–", "–", "–", "–"];
+  const openNCRsChip  = isDemo ? T.openNCRsChip : (isHe ? `${openCount} NCR פתוחים` : `${openCount} Open NCRs`);
+
+  function addNcr(values: Record<string, string>) {
+    const num = `NCR-${String(ncrs.length + 1).padStart(3, "0")}`;
+    setNcrs(prev => [{
+      num,
+      description: values.description || "",
+      trade: values.trade || "Concrete",
+      location: values.location || "",
+      opened: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+      status: "OPEN" as NCRStatus,
+      carRequired: values.carRequired === "yes",
+      urgent: false,
+    }, ...prev]);
+    setShowModal(false);
+  }
 
   return (
     <div dir={isHe ? "rtl" : "ltr"} className="flex flex-col h-full" style={{ background: P.bg, fontFamily: "Inter, system-ui, sans-serif" }}>
@@ -149,7 +169,8 @@ export default function QualityPage() {
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-[12px] font-semibold text-white"
+          <button onClick={() => setShowModal(true)}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-[12px] font-semibold text-white"
             style={{ background: P.copper }}>
             <Plus className="w-3 h-3" /> {T.newNCR}
           </button>
@@ -314,6 +335,30 @@ export default function QualityPage() {
         </div>
 
       </div>
+
+      {showModal && (
+        <QuickAddModal
+          isHe={isHe}
+          title="New NCR" titleHe="NCR חדש"
+          onClose={() => setShowModal(false)}
+          onSave={addNcr}
+          fields={[
+            { key: "description", label: "Description", labelHe: "תיאור", type: "textarea", required: true },
+            { key: "trade", label: "Trade", labelHe: "מקצוע", type: "select", options: [
+              { value: "Concrete", label: "Concrete", labelHe: "בטון" },
+              { value: "Steel Fix", label: "Steel Fix", labelHe: "ברזל" },
+              { value: "Paving", label: "Paving", labelHe: "אספלט" },
+              { value: "Drainage", label: "Drainage", labelHe: "ניקוז" },
+              { value: "Earthworks", label: "Earthworks", labelHe: "עפר" },
+            ]},
+            { key: "location", label: "Location", labelHe: "מיקום", type: "text" },
+            { key: "carRequired", label: "CAR Required", labelHe: "נדרש CAR", type: "select", options: [
+              { value: "yes", label: "Yes", labelHe: "כן" },
+              { value: "no", label: "No", labelHe: "לא" },
+            ]},
+          ]}
+        />
+      )}
     </div>
   );
 }
