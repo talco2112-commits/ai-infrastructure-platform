@@ -8,7 +8,6 @@ const FAT_JAR = path.join(__dirname, "java", "target", "schedule-parser-1.0.0.ja
 
 function findJava() {
   const candidates = [
-    "java",
     path.join(process.env.JAVA_HOME || "", "bin", "java"),
   ];
   // Scan common Windows JDK install locations
@@ -29,12 +28,11 @@ function findJava() {
   }
   for (const c of candidates) {
     if (!c) continue;
-    if (c === "java") return c;
     if (existsSync(c)) return c;
   }
-  throw new Error(
-    "Java not found. Install OpenJDK 21:\n  winget install Microsoft.OpenJDK.21\nThen restart the parser service."
-  );
+  // Last resort: rely on PATH (only works if the shell that launched
+  // this process has java on it).
+  return "java";
 }
 
 async function parseScheduleFile(filePath) {
