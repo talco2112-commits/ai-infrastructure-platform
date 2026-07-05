@@ -8,7 +8,8 @@ import {
   Banknote, Lightbulb, Satellite, ClipboardCheck,
   RefreshCw, ExternalLink, ArrowUpRight, Layers, Pencil,
   Upload, Calendar, FileText, FileSpreadsheet, Image,
-  Milestone, FolderOpen, Package, Plus,
+  Milestone, FolderOpen, Plus,
+  HardHat, Scale, Shield, Receipt, Target, FileBarChart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TaskWidget } from "@/components/TaskWidget";
@@ -131,13 +132,6 @@ const alerts: { level:"critical"|"warning"|"info"; title:string; titleHe:string;
   { level:"info",     title:"AI Weekly Report ready",               titleHe:"דוח AI שבועי מוכן",                desc:"Automated insights for Week 89",     descHe:"תובנות אוטומטיות לשבוע 89"          },
 ];
 
-const datubimZones = [
-  { name:"Zone A", nameHe:"אזור A", label:"Earthworks",   labelHe:"עבודות עפר",    scanned:89, planned:85, delta:+4 },
-  { name:"Zone B", nameHe:"אזור B", label:"Foundations",  labelHe:"יסודות",         scanned:74, planned:79, delta:-5 },
-  { name:"Zone C", nameHe:"אזור C", label:"Structures",   labelHe:"קונסטרוקציה",   scanned:52, planned:55, delta:-3 },
-  { name:"Zone D", nameHe:"אזור D", label:"Finishes",     labelHe:"גמרים",          scanned:18, planned:22, delta:-4 },
-];
-
 const weatherDays = [
   { day:"Today",    dayHe:"היום",    icon:"sun"   as const, temp:"31°", label:"Clear",         labelHe:"בהיר",        risk:undefined,               riskHe:undefined            },
   { day:"Saturday", dayHe:"שבת",     icon:"sun"   as const, temp:"33°", label:"Clear",         labelHe:"בהיר",        risk:undefined,               riskHe:undefined            },
@@ -146,12 +140,19 @@ const weatherDays = [
 ];
 
 const modulesData = [
-  { labelEn:"Documents", labelHe:"מסמכים",    sub:"124 files · 3 new",         subHe:"124 קבצים · 3 חדשים",     icon:Layers,         bg:"#EDE9FF", color:"#5B21B6", alert:false, route:"/documents" },
-  { labelEn:"Design",    labelHe:"תכנון",      sub:"2 drawing inconsistencies", subHe:"2 אי-התאמות בתוכניות",   icon:Pencil,         bg:"#EDE9FF", color:"#4338CA", alert:true,  route:"/design"    },
-  { labelEn:"Schedule",  labelHe:"לוח זמנים",  sub:"14d behind critical path",  subHe:"14י מאחורי נתיב קריטי",  icon:Clock,          bg:"#FFFBEB", color:"#B45309", alert:true,  route:"/schedule"  },
-  { labelEn:"Finance",   labelHe:"פיננסים",    sub:"₪312M of ₪450M",           subHe:"312M ₪ מתוך 450M ₪",     icon:Banknote,       bg:"#F5EBE0", color:"#8B5A2B", alert:false, route:"/finance"   },
-  { labelEn:"RFIs",      labelHe:"בקשות מידע", sub:"3 overdue · 8 open",        subHe:"3 פגי תוקף · 8 פתוחים",  icon:AlertTriangle,  bg:"#FEF2F2", color:"#B91C1C", alert:true,  route:"/rfis"      },
-  { labelEn:"Quality",   labelHe:"איכות",      sub:"6 open NCRs",               subHe:"6 אי-התאמות פתוחות",     icon:ClipboardCheck, bg:"#F0FDF4", color:"#15803D", alert:false, route:"/quality"   },
+  { labelEn:"Documents",     labelHe:"מסמכים",        sub:"124 files · 3 new",         subHe:"124 קבצים · 3 חדשים",         icon:Layers,         bg:"#EDE9FF", color:"#5B21B6", alert:false, route:"/documents"     },
+  { labelEn:"Design",        labelHe:"תכנון",          sub:"2 drawing inconsistencies", subHe:"2 אי-התאמות בתוכניות",       icon:Pencil,         bg:"#EDE9FF", color:"#4338CA", alert:true,  route:"/design"        },
+  { labelEn:"Schedule",      labelHe:"לוח זמנים",      sub:"14d behind critical path",  subHe:"14י מאחורי נתיב קריטי",      icon:Clock,          bg:"#FFFBEB", color:"#B45309", alert:true,  route:"/schedule"      },
+  { labelEn:"Finance",       labelHe:"פיננסים",        sub:"₪312M of ₪450M",           subHe:"312M ₪ מתוך 450M ₪",         icon:Banknote,       bg:"#F5EBE0", color:"#8B5A2B", alert:false, route:"/finance"       },
+  { labelEn:"Construction",  labelHe:"בנייה וביצוע",   sub:"12 tasks blocked · Zone D", subHe:"12 משימות חסומות · אזור D", icon:HardHat,        bg:"#FEF3C7", color:"#92400E", alert:true,  route:"/construction"  },
+  { labelEn:"Site Progress", labelHe:"מודל",           sub:"Zone D 5% behind model",    subHe:"אזור D 5% מתחת למודל",       icon:Satellite,      bg:"#ECFDF5", color:"#065F46", alert:true,  route:"/site-progress" },
+  { labelEn:"RFIs",          labelHe:"בקשות מידע",     sub:"3 overdue · 8 open",        subHe:"3 פגי תוקף · 8 פתוחים",      icon:AlertTriangle,  bg:"#FEF2F2", color:"#B91C1C", alert:true,  route:"/rfis"          },
+  { labelEn:"Claims",        labelHe:"תביעות",         sub:"2 change orders pending",   subHe:"2 צווי שינוי ממתינים",       icon:Scale,          bg:"#FDF4FF", color:"#86198F", alert:false, route:"/claims"        },
+  { labelEn:"Safety",        labelHe:"בטיחות",         sub:"142 days without LTI",      subHe:"142 ימים ללא פגיעה",         icon:Shield,         bg:"#F0FDF4", color:"#166534", alert:false, route:"/safety"        },
+  { labelEn:"Quality",       labelHe:"איכות",          sub:"6 open NCRs",               subHe:"6 אי-התאמות פתוחות",         icon:ClipboardCheck, bg:"#F0FDF4", color:"#15803D", alert:false, route:"/quality"       },
+  { labelEn:"Billing",       labelHe:"חשבונות",        sub:"1 invoice overdue",         subHe:"חשבונית אחת באיחור",         icon:Receipt,        bg:"#F3E8FF", color:"#7E22CE", alert:true,  route:"/billing"       },
+  { labelEn:"Goals",         labelHe:"יעדים",          sub:"2 goals at risk",           subHe:"2 יעדים בסיכון",             icon:Target,         bg:"#EEF2FF", color:"#4F46E5", alert:true,  route:"/goals"         },
+  { labelEn:"Reports",       labelHe:"דוחות",          sub:"Weekly report ready",       subHe:"דוח שבועי מוכן",             icon:FileBarChart,   bg:"#EFF6FF", color:"#1D4ED8", alert:false, route:"/reports"       },
 ];
 
 /* ════════════════════════════════════════════════════
@@ -409,12 +410,19 @@ function EmptyDashboard({ isHe, project }: { isHe: boolean; project: ReturnType<
           <CardTitle title={isHe ? "מודולי הפלטפורמה" : "Platform Modules"}/>
           <div className="px-5 pb-5 pt-3 grid grid-cols-3 gap-3">
             {[
-              { en:"Documents", he:"מסמכים",    icon:FolderOpen,     bg:"#EDE9FF", color:"#5B21B6", route:"/documents" },
-              { en:"Schedule",  he:"לוח זמנים",  icon:Calendar,       bg:"#FFFBEB", color:P.warn,    route:"/schedule"  },
-              { en:"Finance",   he:"פיננסים",    icon:Banknote,       bg:P.copperLight, color:P.copper, route:"/finance" },
-              { en:"RFIs",      he:"בקשות מידע", icon:AlertTriangle,  bg:"#FEF2F2", color:P.danger,  route:"/rfis"      },
-              { en:"Quality",   he:"איכות",      icon:ClipboardCheck, bg:P.goodBg,  color:P.good,    route:"/quality"   },
-              { en:"Billing",   he:"חשבונות",    icon:Package,        bg:"#F3E8FF", color:"#7E22CE", route:"/billing"   },
+              { en:"Documents",     he:"מסמכים",      icon:FolderOpen,     bg:"#EDE9FF", color:"#5B21B6", route:"/documents"     },
+              { en:"Design",        he:"תכנון",        icon:Pencil,         bg:"#EDE9FF", color:"#4338CA", route:"/design"        },
+              { en:"Schedule",      he:"לוח זמנים",    icon:Calendar,       bg:"#FFFBEB", color:P.warn,    route:"/schedule"      },
+              { en:"Finance",       he:"פיננסים",      icon:Banknote,       bg:P.copperLight, color:P.copper, route:"/finance"    },
+              { en:"Construction",  he:"בנייה וביצוע", icon:HardHat,        bg:"#FEF3C7", color:"#92400E", route:"/construction"  },
+              { en:"Site Progress", he:"מודל",         icon:Satellite,      bg:"#ECFDF5", color:"#065F46", route:"/site-progress" },
+              { en:"RFIs",          he:"בקשות מידע",   icon:AlertTriangle,  bg:"#FEF2F2", color:P.danger,  route:"/rfis"          },
+              { en:"Claims",        he:"תביעות",       icon:Scale,          bg:"#FDF4FF", color:"#86198F", route:"/claims"        },
+              { en:"Safety",        he:"בטיחות",       icon:Shield,         bg:"#F0FDF4", color:"#166534", route:"/safety"        },
+              { en:"Quality",       he:"איכות",        icon:ClipboardCheck, bg:P.goodBg,  color:P.good,    route:"/quality"       },
+              { en:"Billing",       he:"חשבונות",      icon:Receipt,        bg:"#F3E8FF", color:"#7E22CE", route:"/billing"       },
+              { en:"Goals",         he:"יעדים",        icon:Target,         bg:"#EEF2FF", color:"#4F46E5", route:"/goals"         },
+              { en:"Reports",       he:"דוחות",        icon:FileBarChart,   bg:"#EFF6FF", color:"#1D4ED8", route:"/reports"       },
             ].map(mod => {
               const Icon = mod.icon;
               return (
@@ -468,7 +476,7 @@ function FullDashboard({ isHe, projectName }: { isHe: boolean; projectName: stri
     alerts:        isHe ? "התראות פעילות" : "Active Alerts",
     approvalsTitle:isHe ? "ממתינים לאישור" : "Pending Approvals",
     scheduleTitle: isHe ? "מצב לוח זמנים" : "Schedule Status",
-    siteTitle:     isHe ? "התקדמות אתר" : "Site Progress",
+    siteTitle:     isHe ? "מודל" : "Site Progress",
     datumLive:     isHe ? "DatumBIM חי" : "DatumBIM Live",
     datumRefresh:  isHe ? "היום 07:30" : "Today 07:30",
     datumOpen:     isHe ? "פתח DatumBIM" : "Open DatumBIM",
@@ -476,7 +484,6 @@ function FullDashboard({ isHe, projectName }: { isHe: boolean; projectName: stri
     datumView:     isHe ? "צפה במודל תלת-מימדי" : "View 3D model",
     weatherTitle:  isHe ? "תחזית מזג אוויר" : "Weather Forecast",
     modulesTitle:  isHe ? "מודולי הפלטפורמה" : "Platform Modules",
-    planned:       isHe ? "מתוכנן" : "Planned",
     critical:      isHe ? "קריטי" : "critical",
   };
 
@@ -740,31 +747,7 @@ function FullDashboard({ isHe, projectName }: { isHe: boolean; projectName: stri
                 </button>
               </div>
             </div>
-            <div className="px-6 py-4 grid grid-cols-2 gap-3">
-              {datubimZones.map(zone => (
-                <div key={zone.name} className="p-4 rounded-xl flex items-center gap-4"
-                  style={{ background: P.bg, border: `1px solid ${P.border}` }}>
-                  <Ring percent={zone.scanned} size={64} stroke={6} color={zone.delta>=0?P.good:P.danger}/>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <div>
-                        <p className="text-[12px] font-bold" style={{ color: P.text1 }}>{isHe?zone.nameHe:zone.name}</p>
-                        <p className="text-[11px]" style={{ color: P.text3 }}>{isHe?zone.labelHe:zone.label}</p>
-                      </div>
-                      <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-lg"
-                        style={{ background:zone.delta>=0?P.goodBg:"#FEF2F2", color:zone.delta>=0?P.good:P.danger }}>
-                        {zone.delta>0?`+${zone.delta}%`:`${zone.delta}%`}
-                      </span>
-                    </div>
-                    <p className="text-[11px] font-medium" style={{ color: P.text3 }}>{t.planned}: {zone.planned}%</p>
-                    <div className="mt-1.5 w-full rounded-full h-1" style={{ background: P.track }}>
-                      <div className="h-1 rounded-full opacity-40" style={{ width:`${zone.planned}%`, background:P.text3 }}/>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="px-6 pb-6">
+            <div className="px-6 pb-6 pt-4">
               <AiInsight>
                 {isHe
                   ? "אזור B נמוך ב-5% מתחזית המודל. צילומי הרחפן מראים שהקינוף טרם הוסר."
