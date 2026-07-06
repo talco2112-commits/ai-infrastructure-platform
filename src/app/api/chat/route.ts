@@ -3,9 +3,19 @@ import { NextRequest } from "next/server";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-const SYSTEM_PROMPT = `You are InfrAI Assistant — the embedded AI for the Highway 20 Northern Extension project management platform. You have full access to all project data and must answer questions concisely and professionally in the same language the user writes in (Hebrew or English).
+interface Milestone { id: string; name: string; nameHe: string; date: string }
+interface ScheduleActivity {
+  name: string; start: string; finish: string; pct: number;
+  isMilestone: boolean; isCritical: boolean; totalSlack: number;
+}
+interface ProjectPayload {
+  id: string; name: string; nameHe: string; type: string; client: string;
+  location: string; contractValue: string; startDate: string; endDate: string;
+  pm: string; scheduleFiles: number; contractFiles: number; boqFiles: number;
+  drawingFiles: number; milestones: Milestone[]; scheduleActivities: ScheduleActivity[];
+}
 
-## Project Overview
+const DEMO_PROJECT_BLOCK = `## Project Overview
 Project: Highway 20 – Northern Extension (כביש 20 – הרחבה צפונית)
 Client: Israel National Roads Company (חברת נתיבי ישראל)
 Contractor: DatumBuild Group
@@ -130,27 +140,84 @@ SUB-007 overdue 5 days — Bridge 68 abutment bearing schedule.
 
 ## Procurement risks
 DELAYED: Elco Bridge Systems expansion joints (₪2.2M) — could impact Bridge 68 timeline.
-PENDING: Roadway Asphalt Co. asphalt (₪5.6M) and Strad Traffic signals (₪4.1M).
+PENDING: Roadway Asphalt Co. asphalt (₪5.6M) and Strad Traffic signals (₪4.1M).`;
+
+function buildProjectBlock(project: ProjectPayload): string {
+  if (project.id === "highway-20") {
+    return `### Project: ${project.name} (${project.nameHe}) [id: ${project.id}]\n${DEMO_PROJECT_BLOCK}`;
+  }
+
+  const totalFiles = project.scheduleFiles + project.contractFiles + project.boqFiles + project.drawingFiles;
+  const activities = project.scheduleActivities ?? [];
+  const milestones = project.milestones ?? [];
+
+  const scheduleSection = activities.length === 0
+    ? "No schedule has been uploaded yet."
+    : activities.slice(0, 40).map((a) =>
+        `- ${a.name}: ${a.start} → ${a.finish} | ${a.pct}% complete${a.isCritical ? " | CRITICAL PATH" : ""}${a.isMilestone ? " | MILESTONE" : ""}${a.totalSlack != null ? ` | total slack ${a.totalSlack}d` : ""}`
+      ).join("\n");
+
+  const milestonesSection = milestones.length === 0
+    ? "No milestones defined yet."
+    : milestones.map((m) => `- ${m.name} (${m.nameHe}): ${m.date}`).join("\n");
+
+  return `### Project: ${project.name}${project.nameHe ? ` (${project.nameHe})` : ""} [id: ${project.id}]
+Type: ${project.type || "—"}
+Client: ${project.client || "Not set"}
+Location: ${project.location || "Not set"}
+Contract value: ${project.contractValue ? `₪${project.contractValue}` : "Not set"}
+Duration: ${project.startDate || "?"} – ${project.endDate || "?"}
+Project Manager: ${project.pm || "Not set"}
+
+Documents: ${totalFiles} files uploaded (${project.scheduleFiles} schedule, ${project.contractFiles} contract, ${project.boqFiles} BOQ, ${project.drawingFiles} drawing).
+
+Schedule:
+${scheduleSection}
+
+Milestones:
+${milestonesSection}`;
+}
+
+function buildSystemPrompt(projects: ProjectPayload[], activeProjectId?: string): string {
+  const activeProject = projects.find((p) => p.id === activeProjectId);
+  const blocks = projects.map(buildProjectBlock).join("\n\n---\n\n");
+
+  return `You are InfrAI Assistant — the embedded AI for a multi-project construction/infrastructure management platform. You have access to data for ALL of the user's projects, listed below, and must answer questions concisely and professionally in the same language the user writes in (Hebrew or English).
+
+The user currently has "${activeProject?.name ?? projects[0]?.name ?? "no project"}" open. If the user asks a question without naming a specific project (e.g. "what's delaying my project", "show open RFIs"), assume they mean the currently open project. If they ask about a specific named project, or ask to compare/summarize across projects, use the relevant project(s) below.
+
+=== PROJECTS (${projects.length}) ===
+
+${blocks}
+
+=== END PROJECTS ===
 
 ---
 IMPORTANT RULES:
 - Answer in the SAME LANGUAGE the user used (Hebrew → respond in Hebrew, English → respond in English)
+- Only reference the data given above for each project — never invent budgets, RFIs, contractors, zones, NCRs, or any other figures that are not listed for that project.
+- If the user asks about data that hasn't been uploaded yet for a real (non-demo) project, say so plainly and suggest they upload it via the relevant module page — never fabricate numbers to fill the gap.
+- If the user asks about a project that isn't in the list above, say you don't have access to it.
 - Be concise and use bullet points for lists
-- When asked for recommendations, be direct and specific (name persons, amounts, dates)
-- You have ALL the data above — never say you don't have access to the data
+- When asked for recommendations on the demo project, be direct and specific (name persons, amounts, dates)
 - Format numbers with ₪ and commas where appropriate
 - Keep answers under 300 words unless the user explicitly asks for detail`;
+}
 
 type ConversationMessage = { role: "user" | "assistant"; content: string };
 
 export async function POST(req: NextRequest) {
   try {
-    const { messages }: { messages: ConversationMessage[] } = await req.json();
+    const { messages, projects, activeProjectId }: {
+      messages: ConversationMessage[];
+      projects?: ProjectPayload[];
+      activeProjectId?: string;
+    } = await req.json();
 
     const stream = client.messages.stream({
       model: "claude-sonnet-4-6",
       max_tokens: 1024,
-      system: SYSTEM_PROMPT,
+      system: buildSystemPrompt(projects ?? [], activeProjectId),
       messages: messages.map((m) => ({
         role: m.role,
         content: m.content,

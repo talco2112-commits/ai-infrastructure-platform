@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Send, Zap, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useProjects } from "@/contexts/ProjectContext";
 
 type Role = "user" | "assistant";
 interface Message { role: Role; content: string }
@@ -49,6 +50,7 @@ export function AiPrompter({ lang = "en" }: { lang?: "en" | "he" }) {
 
   const isHe       = lang === "he";
   const suggestions = isHe ? suggestionsHe : suggestionsEn;
+  const { projects, active } = useProjects();
 
   useEffect(() => {
     if (open) setTimeout(() => inputRef.current?.focus(), 100);
@@ -78,7 +80,7 @@ export function AiPrompter({ lang = "en" }: { lang?: "en" | "he" }) {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: next }),
+        body: JSON.stringify({ messages: next, projects, activeProjectId: active.id }),
         signal: controller.signal,
       });
 
