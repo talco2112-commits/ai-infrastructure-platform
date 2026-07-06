@@ -8,6 +8,7 @@ import Link from "next/link";
 import {
   ArrowRight, Zap, FolderOpen, CalendarDays, Banknote,
   Satellite, Pencil, CheckCircle, Scale, Lightbulb, Languages,
+  HardHat, AlertTriangle, Shield, ClipboardCheck, Receipt, Target, FileBarChart,
 } from "lucide-react";
 
 const L = {
@@ -50,7 +51,7 @@ const T = {
     scene2Desc:  "Executive team reviewing live project KPIs during a board meeting — no spreadsheets, no manual prep",
     platformTag:   "Platform",
     platformTitle: "Everything a PM needs, finally in one place",
-    platformDesc:  "Six specialized modules. One unified AI layer. Zero switching between tools",
+    platformDesc:  "13 specialized modules. One unified AI layer. Zero switching between tools",
     processTag:   "Process",
     processTitle: "Up and running in one day",
     intTag:   "Integrations",
@@ -101,7 +102,7 @@ const T = {
     scene2Desc:  "צוות ניהול בכיר סוקר KPI חיים של פרויקטים בישיבת הדירקטוריון — ללא גיליונות אלקטרוניים",
     platformTag:   "פלטפורמה",
     platformTitle: "כל מה שמנהל פרויקט צריך, סוף סוף במקום אחד",
-    platformDesc:  "שישה מודולים מתמחים, שכבת AI אחת מאוחדת, אפס החלפה בין כלים",
+    platformDesc:  "13 מודולים מתמחים, שכבת AI אחת מאוחדת, אפס החלפה בין כלים",
     processTag:   "תהליך",
     processTitle: "פעיל ומוכן תוך יום אחד",
     intTag:   "אינטגרציות",
@@ -156,18 +157,60 @@ const solutions = [
     descHe: "מעקב תקציב מול ביצוע, אימות כמויות מול כתב הכמויות, ניהול רכש — מחובר ל-SAP או Priority",
     kickEn: "AI detects cost overruns and invoice anomalies before they become claims",
     kickHe: "AI מזהה חריגות עלות ואנומליות בחשבוניות לפני שהופכות לתביעות" },
+  { icon: HardHat,      iconCls: "text-amber-800",  iconBg: "rgba(146,64,14,0.1)",
+    titleEn: "Construction", titleHe: "בנייה וביצוע",
+    descEn: "Run daily, weekly, and monthly site plans, permits, procurement, inventory, and the site diary — all in one execution hub",
+    descHe: "ניהול תוכניות יומיות, שבועיות וחודשיות, היתרים, רכש, מלאי ויומן אתר — הכל במרכז ביצוע אחד",
+    kickEn: "AI flags blocked tasks and predicts which crews will fall behind before it happens",
+    kickHe: "AI מזהה משימות חסומות וחוזה אילו צוותים ייכנסו לאיחור לפני שזה קורה" },
   { icon: Satellite,    iconCls: "text-emerald-700", iconBg: "rgba(4,120,87,0.1)",
-    titleEn: "Site Progress", titleHe: "התקדמות אתר",
-    descEn: "Connect DatumBIM drone scans to your schedule. Compare photogrammetry data to your BIM model",
-    descHe: "חיבור סריקות רחפן DatumBIM ללוח הזמנים — השוואת נתוני פוטוגרמטריה למודל ה-BIM",
-    kickEn: "AI compares drone imagery to BIM model and predicts completion dates per zone",
-    kickHe: "AI משווה תמונות רחפן למודל BIM וחוזה תאריכי סיום לפי אזור" },
-  { icon: Scale,        iconCls: "text-red-700",    iconBg: "rgba(185,28,28,0.1)",
-    titleEn: "Claims & Risk", titleHe: "תביעות וסיכונים",
-    descEn: "Track every RFI, change order, and contractual event. AI monitors for risk signals before small issues escalate",
-    descHe: "מעקב אחר כל בקשת מידע, פקודת שינוי ואירוע חוזי — AI עוקב אחר אותות סיכון לפני שמסלימים",
+    titleEn: "Site Progress", titleHe: "מודל",
+    descEn: "Connect DatumBIM drone scans to your schedule. A live 3D photogrammetry model of your site, always current",
+    descHe: "חיבור סריקות רחפן DatumBIM ללוח הזמנים — מודל תלת-ממד חי ועדכני של האתר",
+    kickEn: "AI compares each new drone scan to the model and surfaces deviations automatically",
+    kickHe: "AI משווה כל סריקת רחפן חדשה למודל ומעלה סטיות באופן אוטומטי" },
+  { icon: AlertTriangle, iconCls: "text-red-700",   iconBg: "rgba(185,28,28,0.1)",
+    titleEn: "RFIs", titleHe: "בקשות מידע",
+    descEn: "Submit, track, and resolve every RFI with full history and discipline routing — never lose one in email",
+    descHe: "הגשה, מעקב וסגירה של כל בקשת מידע עם היסטוריה מלאה וניתוב לפי תחום — בלי לאבד אף אחת באימייל",
+    kickEn: "AI drafts RFI responses from your drawings and flags overdue ones before they delay the schedule",
+    kickHe: "AI מנסח תשובות לבקשות מידע מתוך התוכניות ומסמן איחורים לפני שהם פוגעים בלוח הזמנים" },
+  { icon: Scale,        iconCls: "text-fuchsia-800", iconBg: "rgba(134,25,143,0.1)",
+    titleEn: "Claims", titleHe: "תביעות",
+    descEn: "Track every change order and contractual event. AI monitors for risk signals before small issues escalate",
+    descHe: "מעקב אחר כל פקודת שינוי ואירוע חוזי — AI עוקב אחר אותות סיכון לפני שמסלימים",
     kickEn: "AI identifies contractual risk patterns and drafts preliminary claim documentation",
     kickHe: "AI מזהה דפוסי סיכון חוזיים ומכין תיעוד תביעה ראשוני" },
+  { icon: Shield,       iconCls: "text-green-800",  iconBg: "rgba(22,101,52,0.1)",
+    titleEn: "Safety", titleHe: "בטיחות",
+    descEn: "Log safety observations, toolbox talks, and incident statistics site-wide, in real time",
+    descHe: "תיעוד תצפיות בטיחות, שיחות בטיחות ונתוני תאונות בכל האתר, בזמן אמת",
+    kickEn: "AI spots unsafe-condition patterns by zone and shift before they become incidents",
+    kickHe: "AI מזהה דפוסי תנאים לא בטוחים לפי אזור ומשמרת לפני שהופכים לתאונות" },
+  { icon: ClipboardCheck, iconCls: "text-green-700", iconBg: "rgba(21,128,61,0.1)",
+    titleEn: "Quality", titleHe: "איכות",
+    descEn: "Manage NCRs, corrective actions, and inspection logs with full traceability to the spec",
+    descHe: "ניהול אי-התאמות, פעולות מתקנות ויומני בדיקה עם התאמה מלאה למפרט",
+    kickEn: "AI cross-checks test results against spec tolerances and opens NCRs automatically",
+    kickHe: "AI בודק תוצאות בדיקה מול סבילות המפרט ופותח אי-התאמות אוטומטית" },
+  { icon: Receipt,      iconCls: "text-purple-700", iconBg: "rgba(126,34,206,0.1)",
+    titleEn: "Billing", titleHe: "חשבונות",
+    descEn: "Generate monthly bills, track retention, and manage payment certificates against the contract",
+    descHe: "הפקת חשבונות חודשיים, מעקב עיכבון וניהול תעודות תשלום מול החוזה",
+    kickEn: "AI verifies claimed quantities against the BoQ before you submit",
+    kickHe: "AI מוודא כמויות נתבעות מול כתב הכמויות לפני ההגשה" },
+  { icon: Target,       iconCls: "text-indigo-700", iconBg: "rgba(79,70,229,0.1)",
+    titleEn: "Goals", titleHe: "יעדים",
+    descEn: "Set team goals, track progress toward them, and capture lessons learned from what worked and what didn't",
+    descHe: "הגדרת יעדי צוות, מעקב אחר ההתקדמות ותיעוד לקחים ממה שעבד וממה שלא",
+    kickEn: "AI surfaces which goals are at risk and what past lessons apply",
+    kickHe: "AI מעלה אילו יעדים בסיכון ואילו לקחים מהעבר רלוונטיים" },
+  { icon: FileBarChart, iconCls: "text-blue-700",   iconBg: "rgba(29,78,216,0.1)",
+    titleEn: "Reports", titleHe: "דוחות",
+    descEn: "Weekly progress, financial, safety, and owner reports — generated automatically, exportable in one click",
+    descHe: "דוחות התקדמות שבועיים, פיננסיים, בטיחות ובעלים — נוצרים אוטומטית וניתנים לייצוא בלחיצה אחת",
+    kickEn: "Ask InfrAI for a PDF, Word, or PowerPoint report and it builds it from your live project data",
+    kickHe: "בקש מ-InfrAI דוח PDF, Word או PowerPoint — הוא בונה אותו מנתוני הפרויקט החיים" },
 ];
 
 const steps = [
@@ -395,31 +438,38 @@ export default function LandingPage() {
                 app.infrai.io/dashboard
               </div>
             </div>
-            <div className="flex gap-0 overflow-hidden" dir="ltr" style={{ background: L.bg, height: 400 }}>
+            <div className="flex gap-0 overflow-hidden" dir="ltr" style={{ background: L.bg, height: 480 }}>
 
               {/* Sidebar */}
-              <div className="w-36 shrink-0 flex flex-col py-2 px-2 gap-0.5" style={{ background: "#1A1512" }}>
+              <div className="w-36 shrink-0 flex flex-col py-2 px-2" style={{ background: "#1A1512" }}>
                 <div className="flex items-center gap-1.5 px-2 py-2 mb-1">
                   <div className="w-5 h-5 rounded shrink-0 flex items-center justify-center text-white text-[8px] font-bold" style={{ background: L.copper }}>AI</div>
                   <span className="text-[11px] font-bold text-white" style={{ fontFamily: FONT_EN }}>InfrAI</span>
                 </div>
-                <div className="px-2 py-1.5 rounded-lg mb-1" style={{ background: "rgba(255,255,255,0.05)" }}>
-                  <p className="text-[8px] font-bold uppercase" style={{ color: "#78716C" }}>Active Project</p>
-                  <p className="text-[9px] font-semibold truncate" style={{ color: "#D6D0CA" }}>Highway 20 – North</p>
+                <div className="px-2 py-1.5 rounded-lg mb-1.5" style={{ background: "rgba(255,255,255,0.05)" }}>
+                  <p className="text-[7px] font-bold uppercase" style={{ color: "#78716C" }}>Active Project</p>
+                  <p className="text-[8.5px] font-semibold truncate" style={{ color: "#D6D0CA" }}>Highway 20 – North</p>
                 </div>
                 {[
-                  { label: "Dashboard", active: true },
-                  { label: "Documents",  active: false },
-                  { label: "Schedule",   active: false },
-                  { label: "Finance",    active: false },
+                  { label: "Dashboard",    active: true  },
+                  { label: "Documents",    active: false },
+                  { label: "Design",       active: false },
+                  { label: "Schedule",     active: false },
+                  { label: "Finance",      active: false },
+                  { label: "Construction", active: false },
                   { label: "Site Progress", active: false },
-                  { label: "RFIs",       active: false },
-                  { label: "Claims",     active: false },
+                  { label: "RFIs",         active: false },
+                  { label: "Claims",       active: false },
+                  { label: "Safety",       active: false },
+                  { label: "Quality",      active: false },
+                  { label: "Billing",      active: false },
+                  { label: "Goals",        active: false },
+                  { label: "Reports",      active: false },
                 ].map(({ label, active }) => (
-                  <div key={label} className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg"
+                  <div key={label} className="flex items-center gap-1.5 px-2 py-[3px] rounded-lg"
                     style={{ background: active ? L.copper : "transparent" }}>
                     <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: active ? "#fff" : "rgba(255,255,255,0.25)" }} />
-                    <span className="text-[10px] font-medium" style={{ color: active ? "#fff" : "#78716C", fontFamily: FONT_EN }}>{label}</span>
+                    <span className="text-[9px] font-medium" style={{ color: active ? "#fff" : "#78716C", fontFamily: FONT_EN }}>{label}</span>
                   </div>
                 ))}
               </div>
@@ -431,7 +481,7 @@ export default function LandingPage() {
                 <div className="flex items-center justify-between px-3 py-2 rounded-xl shrink-0" style={{ background: L.card }}>
                   <div>
                     <p className="text-[10px] font-bold" style={{ color: L.text1, fontFamily: FONT_EN }}>Good morning, David</p>
-                    <p className="text-[9px]" style={{ color: L.text3, fontFamily: FONT_EN }}>Highway 20 – North Extension · Day 284 of 500</p>
+                    <p className="text-[9px]" style={{ color: L.text3, fontFamily: FONT_EN }}>Highway 20 – North Extension · Week 89 of 156</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-[9px] font-medium px-2 py-0.5 rounded-full" style={{ background: "#FEF3C7", color: "#92400E", fontFamily: FONT_EN }}>2 Alerts</span>
@@ -439,13 +489,22 @@ export default function LandingPage() {
                   </div>
                 </div>
 
+                {/* AI Daily Brief */}
+                <div className="flex items-start gap-2 rounded-xl px-3 py-2 shrink-0"
+                  style={{ background: `linear-gradient(135deg, ${L.copper}, #6B3E18)` }}>
+                  <Zap className="w-3 h-3 text-white shrink-0 mt-0.5" />
+                  <p className="text-[8.5px] leading-snug" style={{ color: "rgba(255,255,255,0.9)", fontFamily: FONT_EN }}>
+                    Schedule is <b>14 days behind</b>, driven by utility relocation in Zone D. 7 pending approvals worth ₪4.2M.
+                  </p>
+                </div>
+
                 {/* KPI row */}
                 <div className="grid grid-cols-4 gap-2 shrink-0">
                   {[
-                    { label: "Budget Used",    value: "₪312M",  sub: "of ₪450M",    pct: 69,  color: "#15803D", ring: true  },
-                    { label: "Schedule",       value: "57%",    sub: "On track",     pct: 57,  color: "#D97706", ring: true  },
-                    { label: "Open Issues",    value: "23",     sub: "4 critical",   color: "#B91C1C", ring: false },
-                    { label: "Pending Approv", value: "7",      sub: "2 urgent",     color: "#B45309", ring: false },
+                    { label: "Budget Spent",   value: "₪102M",  sub: "of ₪148M contract", pct: 69,  color: "#15803D", ring: true  },
+                    { label: "Schedule",       value: "57%",    sub: "14 days behind",    pct: 57,  color: "#D97706", ring: true  },
+                    { label: "Open Issues",    value: "23",     sub: "8 critical",        color: "#B91C1C", ring: false },
+                    { label: "Pending Approv", value: "7",      sub: "₪4.2M total",       color: "#B45309", ring: false },
                   ].map((k) => (
                     <div key={k.label} className="rounded-xl p-2.5" style={{ background: L.card }}>
                       <p className="text-[8px] font-bold uppercase tracking-wide mb-1.5" style={{ color: L.text3, fontFamily: FONT_EN }}>{k.label}</p>
@@ -472,62 +531,48 @@ export default function LandingPage() {
                 {/* Detail cards */}
                 <div className="grid grid-cols-3 gap-2 flex-1 min-h-0">
 
-                  {/* Critical path */}
+                  {/* Today's Tasks */}
                   <div className="rounded-xl p-2.5 overflow-hidden" style={{ background: L.card }}>
-                    <p className="text-[9px] font-bold uppercase tracking-wide mb-2" style={{ color: L.text3, fontFamily: FONT_EN }}>Critical Path</p>
+                    <p className="text-[9px] font-bold uppercase tracking-wide mb-2" style={{ color: L.text3, fontFamily: FONT_EN }}>Today&apos;s Tasks</p>
                     {[
-                      { label: "Utility relocation",  status: "late",    days: "-14d" },
-                      { label: "Pile foundations",    status: "at-risk",  days: "-3d"  },
-                      { label: "Bridge deck form",    status: "on-track", days: "0"    },
-                      { label: "Deck slab pour",      status: "on-track", days: "+2d"  },
+                      { label: "Review structural drawings Rev.C", tag: "Design" },
+                      { label: "Approve 4 supplier invoices",       tag: "Finance" },
+                      { label: "RFI response – conduit routing",    tag: "RFI"     },
+                      { label: "Submit weekly progress report",     tag: "Reports" },
                     ].map((item) => (
                       <div key={item.label} className="flex items-center justify-between py-1" style={{ borderBottom: `1px solid ${L.border}` }}>
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: item.status === "late" ? "#B91C1C" : item.status === "at-risk" ? "#D97706" : "#15803D" }} />
-                          <span className="text-[9px]" style={{ color: L.text2, fontFamily: FONT_EN }}>{item.label}</span>
-                        </div>
-                        <span className="text-[8px] font-bold" style={{ color: item.status === "late" ? "#B91C1C" : item.status === "at-risk" ? "#D97706" : "#15803D", fontFamily: FONT_EN }}>{item.days}</span>
+                        <span className="text-[8.5px] truncate" style={{ color: L.text2, fontFamily: FONT_EN }}>{item.label}</span>
+                        <span className="text-[7.5px] font-bold shrink-0 ms-1.5" style={{ color: L.copper, fontFamily: FONT_EN }}>{item.tag}</span>
                       </div>
                     ))}
                   </div>
 
-                  {/* Budget by zone */}
+                  {/* Active Alerts */}
                   <div className="rounded-xl p-2.5 overflow-hidden" style={{ background: L.card }}>
-                    <p className="text-[9px] font-bold uppercase tracking-wide mb-2" style={{ color: L.text3, fontFamily: FONT_EN }}>Budget by Zone</p>
+                    <p className="text-[9px] font-bold uppercase tracking-wide mb-2" style={{ color: L.text3, fontFamily: FONT_EN }}>Active Alerts</p>
                     {[
-                      { zone: "Zone A – Bridge",   pct: 82, over: false },
-                      { zone: "Zone B – Road",     pct: 61, over: false },
-                      { zone: "Zone C – Drainage", pct: 108, over: true  },
-                      { zone: "Zone D – Utilities", pct: 44, over: false },
-                    ].map((z) => (
-                      <div key={z.zone} className="mb-1.5">
-                        <div className="flex justify-between mb-0.5">
-                          <span className="text-[8.5px]" style={{ color: L.text2, fontFamily: FONT_EN }}>{z.zone}</span>
-                          <span className="text-[8px] font-bold" style={{ color: z.over ? "#B91C1C" : L.text3, fontFamily: FONT_EN }}>{z.pct}%</span>
-                        </div>
-                        <div className="h-1.5 rounded-full overflow-hidden" style={{ background: L.bg }}>
-                          <div className="h-full rounded-full" style={{ width: `${Math.min(z.pct, 100)}%`, background: z.over ? "#B91C1C" : "#15803D" }} />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Recent activity */}
-                  <div className="rounded-xl p-2.5 overflow-hidden" style={{ background: L.card }}>
-                    <p className="text-[9px] font-bold uppercase tracking-wide mb-2" style={{ color: L.text3, fontFamily: FONT_EN }}>Recent Activity</p>
-                    {[
-                      { text: "RFI-042 submitted",       time: "2h ago",  dot: "#D97706" },
-                      { text: "Drone scan uploaded",     time: "5h ago",  dot: "#15803D" },
-                      { text: "Invoice #312 approved",   time: "Yesterday", dot: "#15803D" },
-                      { text: "Design rev. D uploaded",  time: "2d ago",  dot: L.copper  },
-                      { text: "Zone C over-budget alert", time: "2d ago", dot: "#B91C1C" },
+                      { label: "Utility relocation 14 days behind", level: "critical" },
+                      { label: "3 RFIs unanswered over 7 days",     level: "warning"  },
+                      { label: "Concrete supplier delivery at risk", level: "warning" },
                     ].map((a) => (
-                      <div key={a.text} className="flex items-start gap-1.5 py-1" style={{ borderBottom: `1px solid ${L.border}` }}>
-                        <div className="w-1.5 h-1.5 rounded-full shrink-0 mt-1" style={{ background: a.dot }} />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[8.5px] leading-tight truncate" style={{ color: L.text2, fontFamily: FONT_EN }}>{a.text}</p>
-                          <p className="text-[7.5px]" style={{ color: L.text3, fontFamily: FONT_EN }}>{a.time}</p>
-                        </div>
+                      <div key={a.label} className="flex items-start gap-1.5 py-1" style={{ borderBottom: `1px solid ${L.border}` }}>
+                        <div className="w-1.5 h-1.5 rounded-full shrink-0 mt-1" style={{ background: a.level === "critical" ? "#B91C1C" : "#D97706" }} />
+                        <span className="text-[8.5px] leading-tight" style={{ color: L.text2, fontFamily: FONT_EN }}>{a.label}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Pending Approvals */}
+                  <div className="rounded-xl p-2.5 overflow-hidden" style={{ background: L.card }}>
+                    <p className="text-[9px] font-bold uppercase tracking-wide mb-2" style={{ color: L.text3, fontFamily: FONT_EN }}>Pending Approvals</p>
+                    {[
+                      { label: "Steel supplier invoice",       amount: "₪1,200,000", urgent: true  },
+                      { label: "Subcontractor – excavation",   amount: "₪890,000",   urgent: false },
+                      { label: "Material procurement – rebar", amount: "₪650,000",   urgent: false },
+                    ].map((a) => (
+                      <div key={a.label} className="flex items-center justify-between py-1" style={{ borderBottom: `1px solid ${L.border}` }}>
+                        <span className="text-[8.5px] truncate" style={{ color: L.text2, fontFamily: FONT_EN }}>{a.label}</span>
+                        <span className="text-[7.5px] font-bold shrink-0 ms-1.5" style={{ color: a.urgent ? "#B91C1C" : L.text3, fontFamily: FONT_EN }}>{a.amount}</span>
                       </div>
                     ))}
                   </div>
@@ -754,7 +799,7 @@ export default function LandingPage() {
       <footer className="py-10 px-6" style={{ background: L.card, borderTop: `1px solid ${L.border}` }}>
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center">
-            <LogoAnimation size={52} />
+            <LogoAnimation size={52} src="/לוגו חום בלי רקע.png" />
           </div>
           <div className="flex items-center gap-8">
             {t.footerLinks.map((item) => (
