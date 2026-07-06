@@ -1,7 +1,51 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest } from "next/server";
+import { generateReportBuffer, ReportPayload } from "@/lib/reportGenerators";
+
+export const runtime = "nodejs";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+const GENERATE_DOCUMENT_TOOL: Anthropic.Tool = {
+  name: "generate_document",
+  description:
+    "Generate a downloadable report/summary/presentation file about the project(s), built only from the real project data given in context. " +
+    "Call this whenever the user asks you to create, export, or download a PDF report, Word/docx summary, or PowerPoint/pptx presentation. " +
+    "Do not describe the document's content as plain chat text instead of calling this tool — always call the tool to actually produce the file. " +
+    "IMPORTANT: PDF export only supports Latin/English characters (no Hebrew glyphs) — write PDF section content in English even if the conversation is in Hebrew. " +
+    "DOCX and PPTX fully support Hebrew — write their content in whichever language the user is conversing in.",
+  input_schema: {
+    type: "object",
+    properties: {
+      format: { type: "string", enum: ["pdf", "docx", "pptx"], description: "Output file format" },
+      title: { type: "string", description: "Document/presentation title" },
+      subtitle: { type: "string", description: "Optional subtitle, e.g. project name and date" },
+      sections: {
+        type: "array",
+        description: "Ordered content sections. For pptx, each section becomes one slide.",
+        items: {
+          type: "object",
+          properties: {
+            heading: { type: "string" },
+            paragraph: { type: "string", description: "Optional flowing paragraph text" },
+            bullets: { type: "array", items: { type: "string" }, description: "Optional bullet list" },
+            table: {
+              type: "object",
+              description: "Optional simple table",
+              properties: {
+                headers: { type: "array", items: { type: "string" } },
+                rows: { type: "array", items: { type: "array", items: { type: "string" } } },
+              },
+              required: ["headers", "rows"],
+            },
+          },
+          required: ["heading"],
+        },
+      },
+    },
+    required: ["format", "title", "sections"],
+  },
+};
 
 interface Milestone { id: string; name: string; nameHe: string; date: string }
 interface ScheduleActivity {
@@ -201,7 +245,8 @@ IMPORTANT RULES:
 - Be concise and use bullet points for lists
 - When asked for recommendations on the demo project, be direct and specific (name persons, amounts, dates)
 - Format numbers with ₪ and commas where appropriate
-- Keep answers under 300 words unless the user explicitly asks for detail`;
+- Keep answers under 300 words unless the user explicitly asks for detail
+- If the user asks for a PDF report, Word/docx summary, or PowerPoint/pptx presentation, use the generate_document tool to actually produce it — populate its sections from the real project data above, don't just describe what it would contain`;
 }
 
 type ConversationMessage = { role: "user" | "assistant"; content: string };
@@ -216,8 +261,9 @@ export async function POST(req: NextRequest) {
 
     const stream = client.messages.stream({
       model: "claude-sonnet-4-6",
-      max_tokens: 1024,
+      max_tokens: 4096,
       system: buildSystemPrompt(projects ?? [], activeProjectId),
+      tools: [GENERATE_DOCUMENT_TOOL],
       messages: messages.map((m) => ({
         role: m.role,
         content: m.content,
@@ -236,6 +282,25 @@ export async function POST(req: NextRequest) {
             controller.enqueue(encoder.encode(event.delta.text));
           }
         }
+
+        const finalMessage = await stream.finalMessage();
+        const toolUse = finalMessage.content.find(
+          (b): b is Anthropic.ToolUseBlock => b.type === "tool_use" && b.name === "generate_document"
+        );
+
+        if (toolUse) {
+          try {
+            const payload = toolUse.input as ReportPayload;
+            const { buffer, mime, ext } = await generateReportBuffer(payload);
+            const safeName = payload.title.replace(/[^\p{L}\p{N}\s-]/gu, "").trim().replace(/\s+/g, "-").slice(0, 60) || "report";
+            const fileInfo = { name: `${safeName}.${ext}`, mime, data: buffer.toString("base64") };
+            controller.enqueue(encoder.encode(`\n\n[[FILE_JSON_START]]${JSON.stringify(fileInfo)}[[FILE_JSON_END]]`));
+          } catch (genErr: unknown) {
+            const msg = genErr instanceof Error ? genErr.message : "Unknown error";
+            controller.enqueue(encoder.encode(`\n\n[Error generating document: ${msg}]`));
+          }
+        }
+
         controller.close();
       },
       cancel() {

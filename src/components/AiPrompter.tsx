@@ -1,12 +1,33 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Send, Zap, ChevronDown } from "lucide-react";
+import { Send, Zap, ChevronDown, FileDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useProjects } from "@/contexts/ProjectContext";
 
 type Role = "user" | "assistant";
 interface Message { role: Role; content: string }
+interface GeneratedFile { name: string; mime: string; data: string }
+
+const FILE_MARKER_RE = /\[\[FILE_JSON_START\]\]([\s\S]*?)\[\[FILE_JSON_END\]\]/;
+
+function parseMessageContent(content: string): { text: string; file: GeneratedFile | null } {
+  const match = content.match(FILE_MARKER_RE);
+  if (!match) return { text: content, file: null };
+  let file: GeneratedFile | null = null;
+  try { file = JSON.parse(match[1]); } catch { file = null; }
+  const text = content.replace(FILE_MARKER_RE, "").trim();
+  return { text, file };
+}
+
+function downloadGeneratedFile(file: GeneratedFile) {
+  const link = document.createElement("a");
+  link.href = `data:${file.mime};base64,${file.data}`;
+  link.download = file.name;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
 
 const suggestionsEn = [
   "What is delaying Bridge 68?",
@@ -14,6 +35,7 @@ const suggestionsEn = [
   "Which budget sections are over plan?",
   "What activities are on the critical path?",
   "Summarize today's safety issues",
+  "Create a PDF progress report",
 ];
 
 const suggestionsHe = [
@@ -22,6 +44,7 @@ const suggestionsHe = [
   "אילו מקטעי תקציב חרגו מהתוכנית?",
   "אילו פעילויות נמצאות במסלול הקריטי?",
   "סכם את בעיות הבטיחות של היום",
+  "צור דוח התקדמות ב-Word",
 ];
 
 function TypingDots() {
@@ -222,35 +245,51 @@ export function AiPrompter({ lang = "en" }: { lang?: "en" | "he" }) {
               </div>
             )}
 
-            {messages.map((msg, i) => (
-              <div
-                key={i}
-                className={cn("flex items-start gap-2.5", msg.role === "user" ? "justify-end" : "justify-start")}
-              >
-                {msg.role === "assistant" && (
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#8B5A2B" }}>
-                    <Zap className="w-3 h-3 text-white" />
-                  </div>
-                )}
+            {messages.map((msg, i) => {
+              const { text, file } = msg.role === "assistant" ? parseMessageContent(msg.content) : { text: msg.content, file: null };
+              const displayText = text || (file ? (isHe ? "המסמך מוכן להורדה:" : "Your document is ready:") : "");
+              return (
                 <div
-                  className={cn(
-                    "max-w-[85%] px-3.5 py-2.5 rounded-xl text-[13px] leading-relaxed whitespace-pre-line",
-                    msg.role === "user" ? "rounded-tr-sm text-white" : "rounded-tl-sm"
-                  )}
-                  style={
-                    msg.role === "user"
-                      ? { background: "#8B5A2B" }
-                      : { background: "#FAF8F5", border: "1px solid #EDE8DF", color: "#1C1917" }
-                  }
+                  key={i}
+                  className={cn("flex items-start gap-2.5", msg.role === "user" ? "justify-end" : "justify-start")}
                 >
-                  {msg.content || (streaming && i === messages.length - 1 ? "" : "—")}
-                  {/* blinking cursor while streaming last assistant message */}
-                  {streaming && msg.role === "assistant" && i === messages.length - 1 && (
-                    <span className="inline-block w-0.5 h-3.5 ml-0.5 align-middle animate-pulse" style={{ background: "#8B5A2B" }} />
+                  {msg.role === "assistant" && (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#8B5A2B" }}>
+                      <Zap className="w-3 h-3 text-white" />
+                    </div>
                   )}
+                  <div
+                    className={cn(
+                      "max-w-[85%] px-3.5 py-2.5 rounded-xl text-[13px] leading-relaxed whitespace-pre-line",
+                      msg.role === "user" ? "rounded-tr-sm text-white" : "rounded-tl-sm"
+                    )}
+                    style={
+                      msg.role === "user"
+                        ? { background: "#8B5A2B" }
+                        : { background: "#FAF8F5", border: "1px solid #EDE8DF", color: "#1C1917" }
+                    }
+                  >
+                    {displayText || (streaming && i === messages.length - 1 ? "" : "—")}
+                    {/* blinking cursor while streaming last assistant message */}
+                    {streaming && msg.role === "assistant" && i === messages.length - 1 && !file && (
+                      <span className="inline-block w-0.5 h-3.5 ml-0.5 align-middle animate-pulse" style={{ background: "#8B5A2B" }} />
+                    )}
+                    {file && (
+                      <button
+                        onClick={() => downloadGeneratedFile(file)}
+                        className="mt-2.5 flex items-center gap-2 px-3 py-2 rounded-lg text-[12.5px] font-semibold w-full transition-colors"
+                        style={{ background: "#F5EBE0", color: "#6B3E18", border: "1px solid #EDE0D8" }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = "#EDE0D8")}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = "#F5EBE0")}
+                      >
+                        <FileDown className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">{file.name}</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             {streaming && messages[messages.length - 1]?.role !== "assistant" && (
               <div className="flex items-start gap-2.5">
