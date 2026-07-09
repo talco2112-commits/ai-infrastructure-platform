@@ -51,7 +51,7 @@ const milestones: { ms: string; msHe: string; date: string; owner: string; statu
   { ms:"Complete Bridge P8 concrete pour",        msHe:"השלמת יציקת בטון כן P8",             date:"8 Jul",  owner:"Eng. Cohen",    status:"AT RISK"     },
   { ms:"Complete pile drilling Zone C (42 piles)",msHe:"השלמת קידוח יסודות אזור C (42 יתד)",date:"13 Jul", owner:"Drill Co.",     status:"ON TRACK"    },
   { ms:"Zone D utility trench complete 50%",      msHe:"השלמת 50% תעלת תשתיות אזור D",      date:"15 Jul", owner:"Eng. Ben-Ami",  status:"AT RISK"     },
-  { ms:"Bridge deck formwork segment 5A",         msHe:"קינוף מקטע גשר 5A",                  date:"16 Jul", owner:"Foreman Dror",  status:"NOT STARTED" },
+  { ms:"Bridge deck formwork segment 5A",         msHe:"טפסנות מקטע גשר 5A",                  date:"16 Jul", owner:"Foreman Dror",  status:"NOT STARTED" },
   { ms:"Section B road base start",               msHe:"תחילת שכבת בסיס קטע B",              date:"18 Jul", owner:"Crew F – Peretz",status:"NOT STARTED"},
   { ms:"Bridge P8 deck pour",                     msHe:"יציקת סיפון גשר P8",                 date:"22 Jul", owner:"Eng. Cohen",    status:"NOT STARTED" },
   { ms:"Drainage installation Zone A complete",   msHe:"השלמת מערכת ניקוז אזור A",           date:"31 Jul", owner:"Crew G – Katz", status:"ACHIEVED"    },
@@ -59,7 +59,7 @@ const milestones: { ms: string; msHe: string; date: string; owner: string; statu
 
 const monthlyActivities: { activity: string; actHe: string; zone: string; planned: string; actual: string; variance: string; status: ActStatus2 }[] = [
   { activity:"Bridge pier concrete (P7, P8, P9)",      actHe:"יציקת כני גשר (P7, P8, P9)",        zone:"B", planned:"3 pours",  actual:"1 pour",    variance:"-2 pours", status:"AT RISK"  },
-  { activity:"Bridge deck formwork (seg. 5A–6A)",      actHe:"קינוף סיפון גשר (מקטע 5A–6A)",      zone:"B", planned:"560 m²",   actual:"0 m²",      variance:"—",        status:"NOT STARTED" as ActStatus2 },
+  { activity:"Bridge deck formwork (seg. 5A–6A)",      actHe:"טפסנות סיפון גשר (מקטע 5A–6A)",      zone:"B", planned:"560 m²",   actual:"0 m²",      variance:"—",        status:"NOT STARTED" as ActStatus2 },
   { activity:"Pile drilling completion",               actHe:"השלמת קידוח יסודות",                  zone:"C", planned:"42 piles", actual:"34 piles",  variance:"-8 piles", status:"ON TRACK" },
   { activity:"Earthworks – Zone C cut & fill",         actHe:"עפר – כריה ומילוי אזור C",           zone:"C", planned:"12,000 m³",actual:"6,800 m³",  variance:"-5,200",   status:"ON TRACK" },
   { activity:"Zone D utility trench excav. & install", actHe:"חפירה והתקנת תשתיות אזור D",         zone:"D", planned:"800 lm",   actual:"0 lm",      variance:"-800 lm",  status:"BEHIND"   },

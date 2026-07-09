@@ -108,12 +108,12 @@ const DailyTasks = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(fun
   const DEMO_TASKS: { id:string;task:string;taskHe:string;zone:string;crew:string;priority:Pr;start:string;end:string;status:S }[] = [
     { id:"DT-001",task:"Concrete pour – Bridge pier P7",          taskHe:"יציקת בטון – כן גשר P7",          zone:"B",crew:"Crew A – Levy",    priority:"CRITICAL",start:"06:00",end:"14:00",status:"IN PROGRESS"},
     { id:"DT-002",task:"Rebar fabrication – Zone C pile cage",    taskHe:"עיבוד ברזל – כלוב קידוח אזור C",  zone:"C",crew:"Crew B – Peretz",  priority:"HIGH",   start:"06:00",end:"15:00",status:"IN PROGRESS"},
-    { id:"DT-003",task:"Formwork stripping – Bridge deck 4A",     taskHe:"פירוק קינוף – מקטע גשר 4A",       zone:"B",crew:"Crew C – Dror",    priority:"HIGH",   start:"07:00",end:"13:00",status:"COMPLETE"   },
+    { id:"DT-003",task:"Formwork stripping – Bridge deck 4A",     taskHe:"פירוק טפסנות – מקטע גשר 4A",       zone:"B",crew:"Crew C – Dror",    priority:"HIGH",   start:"07:00",end:"13:00",status:"COMPLETE"   },
     { id:"DT-004",task:"Earthworks cut – Ch.3+400 to Ch.3+600",  taskHe:"חפירה – ק\"מ 3+400 עד 3+600",      zone:"C",crew:"Crew D – Cohen",   priority:"HIGH",   start:"06:00",end:"16:00",status:"IN PROGRESS"},
     { id:"DT-005",task:"Utility trench – Zone D Section 2",       taskHe:"תעלת תשתיות – אזור D קטע 2",      zone:"D",crew:"Crew E – Ben-Ami", priority:"CRITICAL",start:"07:00",end:"17:00",status:"BLOCKED"    },
     { id:"DT-006",task:"Road base compaction – Section A",        taskHe:"דחיסת שכבת בסיס – קטע A",         zone:"A",crew:"Crew F – Mizrahi", priority:"MEDIUM", start:"07:00",end:"15:30",status:"COMPLETE"   },
     { id:"DT-007",task:"Install drainage culvert – STA 0+220",    taskHe:"התקנת תעלת ניקוז – עמדה 0+220",   zone:"A",crew:"Crew G – Katz",    priority:"MEDIUM", start:"08:00",end:"14:00",status:"COMPLETE"   },
-    { id:"DT-008",task:"Pre-pour survey – Pier P8 formwork",      taskHe:"מדידה לפני יציקה – קינוף כן P8",  zone:"B",crew:"Surveyor Shapira", priority:"HIGH",   start:"09:00",end:"11:00",status:"COMPLETE"   },
+    { id:"DT-008",task:"Pre-pour survey – Pier P8 formwork",      taskHe:"מדידה לפני יציקה – טפסנות כן P8",  zone:"B",crew:"Surveyor Shapira", priority:"HIGH",   start:"09:00",end:"11:00",status:"COMPLETE"   },
     { id:"DT-009",task:"Retaining wall backfill – Zone C sec.3",  taskHe:"מילוי קיר תומך – אזור C קטע 3",  zone:"C",crew:"Crew B – Peretz",  priority:"MEDIUM", start:"13:00",end:"17:00",status:"PENDING"    },
     { id:"DT-010",task:"Fuel storage relocation – Zone D",        taskHe:"העברת מיכל דלק – אזור D",         zone:"D",crew:"HSE – Ben-Ami",    priority:"CRITICAL",start:"08:00",end:"10:00",status:"BLOCKED"    },
     { id:"DT-011",task:"Pile drilling – Positions 29–34",         taskHe:"קידוח יסודות – עמדות 29–34",      zone:"C",crew:"Drill – Goldberg", priority:"HIGH",   start:"06:00",end:"18:00",status:"IN PROGRESS"},
@@ -228,7 +228,7 @@ const WeeklyPlan = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(fun
   const DEMO_ACTIVITIES: {id:string;activity:string;actHe:string;zone:string;week:string;duration:string;status:S}[] = [
     {id:"A-001",activity:"Concrete pour – Bridge pier P7",          actHe:"יציקת בטון – כן P7",           zone:"B",week:"W89",duration:"1d", status:"IN PROGRESS"},
     {id:"A-002",activity:"Pile drilling – positions 29–34",         actHe:"קידוח יסודות 29–34",            zone:"C",week:"W89",duration:"2d", status:"IN PROGRESS"},
-    {id:"A-003",activity:"Formwork erection – P8 (North)",          actHe:"הקמת קינוף – P8 (צפון)",        zone:"B",week:"W89",duration:"2d", status:"IN PROGRESS"},
+    {id:"A-003",activity:"Formwork erection – P8 (North)",          actHe:"הקמת טפסנות – P8 (צפון)",        zone:"B",week:"W89",duration:"2d", status:"IN PROGRESS"},
     {id:"A-004",activity:"Road base compaction – Sec. A",           actHe:"דחיסת בסיס – קטע A",            zone:"A",week:"W89",duration:"3d", status:"IN PROGRESS"},
     {id:"A-005",activity:"Utility trench – Zone D sec. 2",          actHe:"חפירת תשתיות – אזור D קטע 2",  zone:"D",week:"W89",duration:"4d", status:"AT RISK"    },
     {id:"A-006",activity:"Pile cage fabrication #22–28",            actHe:"ייצור כלוב קידוח #22–28",       zone:"C",week:"W89",duration:"1d", status:"COMPLETE"   },
@@ -344,7 +344,7 @@ const MonthlyPlan = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(fu
     {ms:"Complete Bridge P8 concrete pour",        msHe:"השלמת יציקת בטון כן P8",    date:"8 Jul",  owner:"Eng. Cohen",   status:"AT RISK"    },
     {ms:"Complete pile drilling Zone C (42 piles)",msHe:"השלמת קידוח יסודות אזור C", date:"13 Jul", owner:"Drill Co.",    status:"ON TRACK"   },
     {ms:"Zone D utility trench 50%",               msHe:"50% תעלת תשתיות אזור D",    date:"15 Jul", owner:"Eng. Ben-Ami", status:"AT RISK"    },
-    {ms:"Bridge deck formwork segment 5A",         msHe:"קינוף מקטע גשר 5A",         date:"16 Jul", owner:"Foreman Dror", status:"NOT STARTED"},
+    {ms:"Bridge deck formwork segment 5A",         msHe:"טפסנות מקטע גשר 5A",         date:"16 Jul", owner:"Foreman Dror", status:"NOT STARTED"},
     {ms:"Section B road base start",               msHe:"תחילת שכבת בסיס קטע B",     date:"18 Jul", owner:"Crew F",       status:"NOT STARTED"},
     {ms:"Bridge P8 deck pour",                     msHe:"יציקת סיפון גשר P8",        date:"22 Jul", owner:"Eng. Cohen",   status:"NOT STARTED"},
     {ms:"Drainage installation Zone A complete",   msHe:"השלמת מערכת ניקוז אזור A",  date:"31 Jul", owner:"Crew G",       status:"ACHIEVED"   },
@@ -437,7 +437,7 @@ const SpecialOps = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(fun
   const DEMO_OPS: {id:string;type:string;typeHe:string;desc:string;descHe:string;zone:string;datetime:string;permit:string;status:OS}[] = [
     {id:"OP-048",type:"Night Shift",   typeHe:"משמרת לילה",  desc:"Concrete pour – Bridge pier P7",          descHe:"יציקת בטון – כן גשר P7",          zone:"B",datetime:"1 Jul 22:00",  permit:"NS-2026-31",status:"COMPLETE"        },
     {id:"OP-049",type:"Crane Lift",    typeHe:"הרמת עגורן",  desc:"Steel cage lift – 18t positions 27–28",   descHe:"הרמת כלוב פלדה – 18 טון עמדות 27–28",zone:"C",datetime:"2 Jul 07:00",permit:"CL-2026-44",status:"ACTIVE"          },
-    {id:"OP-050",type:"Night Shift",   typeHe:"משמרת לילה",  desc:"Zone B – P7 formwork stripping",          descHe:"פירוק קינוף P7 אזור B",            zone:"B",datetime:"2 Jul 22:00",  permit:"NS-2026-32",status:"ACTIVE"          },
+    {id:"OP-050",type:"Night Shift",   typeHe:"משמרת לילה",  desc:"Zone B – P7 formwork stripping",          descHe:"פירוק טפסנות P7 אזור B",            zone:"B",datetime:"2 Jul 22:00",  permit:"NS-2026-32",status:"ACTIVE"          },
     {id:"OP-051",type:"Concrete Pour", typeHe:"יציקת בטון",  desc:"Bridge pier P8 – 185m³",                  descHe:"יציקת כן גשר P8 – 185 מ\"ק",       zone:"B",datetime:"3 Jul 06:00",  permit:"CP-2026-18",status:"PENDING APPROVAL"},
     {id:"OP-052",type:"Blasting",      typeHe:"פיצוץ",       desc:"Rock blasting – Zone D corridor sec.3",   descHe:"פיצוץ סלע – פרוזדור אזור D קטע 3", zone:"D",datetime:"5 Jul 09:00",  permit:"BL-2026-09",status:"PENDING APPROVAL"},
     {id:"OP-053",type:"Lane Closure",  typeHe:"סגירת נתיב",  desc:"Full closure Route 20N – falsework rem.", descHe:"סגירת כביש 20N – פינוי שלד גשר",   zone:"B",datetime:"6 Jul 00:00",  permit:"LC-2026-14",status:"PENDING APPROVAL"},
@@ -667,7 +667,7 @@ const Procurement = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(fu
     {po:"PO-2024-182",material:"Rebar 20mm HY deformed bars",      matHe:"ברזל 20 מ\"מ",           supplier:"Haifa Steel Ltd.",  qty:"48.5",  unit:"t",   value:"₪485,000",   delivery:"26 Jun",status:"DELAYED"   },
     {po:"PO-2024-183",material:"Ready-mix concrete C35/45",        matHe:"בטון מוכן C35/45",        supplier:"Nesher Ready-Mix",  qty:"320",   unit:"m³",  value:"₪192,000",   delivery:"2 Jul", status:"CONFIRMED" },
     {po:"PO-2024-184",material:"Prestressed strand 15.2mm",        matHe:"כבל פרסטרס 15.2 מ\"מ",   supplier:"Elco Industries",   qty:"2.4",   unit:"t",   value:"₪216,000",   delivery:"5 Jul", status:"IN TRANSIT"},
-    {po:"PO-2024-185",material:"Structural formwork H20 beams",    matHe:"קורות קינוף H20",         supplier:"Doka Israel",       qty:"840",   unit:"lm",  value:"₪126,000",   delivery:"3 Jul", status:"IN TRANSIT"},
+    {po:"PO-2024-185",material:"Structural formwork H20 beams",    matHe:"קורות טפסנות H20",         supplier:"Doka Israel",       qty:"840",   unit:"lm",  value:"₪126,000",   delivery:"3 Jul", status:"IN TRANSIT"},
     {po:"PO-2024-186",material:"Waterproof membrane – Bridge deck",matHe:"ממברנה אטום גשר",         supplier:"Sika Israel",       qty:"1,200", unit:"m²",  value:"₪84,000",    delivery:"8 Jul", status:"CONFIRMED" },
     {po:"PO-2024-187",material:"Portland cement CEM I 52.5",      matHe:"מלט פורטלנד CEM I 52.5",  supplier:"Nesher Cement",     qty:"120",   unit:"t",   value:"₪62,400",    delivery:"4 Jul", status:"PENDING"   },
     {po:"PO-2024-189",material:"Shotcrete accelerator (bulk)",     matHe:"מאיץ שוטקריט",            supplier:"Basf Construction", qty:"8",     unit:"t",   value:"₪48,000",    delivery:"1 Jul", status:"DELIVERED" },
@@ -765,14 +765,14 @@ const Inventory = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(func
     ? [{ label:"שורות חומרים", val:"64" }, { label:"התראות מלאי", val:"5" }, { label:"מלאי קריטי", val:"2" }, { label:"שווי כולל", val:"4.2M ₪" }]
     : [{ label:"Material Lines", val:"64" }, { label:"Low Stock Alerts", val:"5" }, { label:"Critical Stock", val:"2" }, { label:"Total Value", val:"₪4.2M" }];
   const ai = isHe
-    ? "ברזל 20 מ\"מ יגיע לאפס ב-5 יולי בצריכה הנוכחית. מלאי מלט יהיה קריטי ב-4 יולי. לוחות קינוף בעודף (167%) — שקול החזרה לספק."
+    ? "ברזל 20 מ\"מ יגיע לאפס ב-5 יולי בצריכה הנוכחית. מלאי מלט יהיה קריטי ב-4 יולי. לוחות טפסנות בעודף (167%) — שקול החזרה לספק."
     : "Rebar 20mm hits zero on 5 July at current consumption. Cement stock critical on 4 July. Formwork panels overstocked (167%) — consider returning surplus.";
   type IS = "OK"|"LOW"|"CRITICAL"|"OVERSTOCK";
   const DEMO_ITEMS: {item:string;itemHe:string;cat:string;onHand:number;minStock:number;dailyUsage:number;unit:string;status:IS}[] = [
     {item:"Rebar 20mm HY",         itemHe:"ברזל 20 מ\"מ",     cat:"Rebar",    onHand:24,   minStock:72,   dailyUsage:12,  unit:"t",   status:"CRITICAL" },
     {item:"Portland Cement CEM I", itemHe:"מלט פורטלנד",      cat:"Cement",   onHand:38,   minStock:60,   dailyUsage:8,   unit:"t",   status:"LOW"      },
     {item:"Rebar 12mm HY",         itemHe:"ברזל 12 מ\"מ",     cat:"Rebar",    onHand:18,   minStock:30,   dailyUsage:4,   unit:"t",   status:"LOW"      },
-    {item:"Formwork H20 Beams",    itemHe:"קורות קינוף H20",  cat:"Formwork", onHand:1680, minStock:400,  dailyUsage:20,  unit:"lm",  status:"OVERSTOCK"},
+    {item:"Formwork H20 Beams",    itemHe:"קורות טפסנות H20",  cat:"Formwork", onHand:1680, minStock:400,  dailyUsage:20,  unit:"lm",  status:"OVERSTOCK"},
     {item:"Shotcrete Accelerator", itemHe:"מאיץ שוטקריט",     cat:"Admixtures",onHand:8.5, minStock:5,    dailyUsage:1.2, unit:"t",   status:"OK"       },
     {item:"Waterproof Membrane",   itemHe:"ממברנה אטום",       cat:"Waterproof",onHand:480, minStock:200,  dailyUsage:30,  unit:"m²",  status:"OK"       },
     {item:"Diesel Fuel",           itemHe:"סולר",              cat:"Fuel",     onHand:28400,minStock:10000,dailyUsage:4200,unit:"L",   status:"OK"       },
@@ -883,7 +883,7 @@ const SiteDiary = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(func
   const DEMO_WORK: {zone:string;activity:string;actHe:string;crew:string;qty:string;note:string;noteHe:string}[] = [
     {zone:"A",activity:"Road base compaction – Sec. A",    actHe:"דחיסת שכבת בסיס – קטע A",    crew:"Crew F – Mizrahi",  qty:"500 m",  note:"Passed compaction test (98% MDD)", noteHe:"עבר בדיקת דחיסה (98% MDD)"},
     {zone:"B",activity:"Concrete pour – Bridge pier P7",   actHe:"יציקת בטון – כן גשר P7",     crew:"Crew A – Levy",     qty:"87 m³",  note:"Pour ongoing, est. complete 16:00",noteHe:"יציקה בביצוע, צפי סיום 16:00"},
-    {zone:"B",activity:"Formwork stripping – deck 4A",     actHe:"פירוק קינוף – מקטע גשר 4A",  crew:"Crew C – Dror",     qty:"180 m²", note:"Complete",                        noteHe:"הושלם"},
+    {zone:"B",activity:"Formwork stripping – deck 4A",     actHe:"פירוק טפסנות – מקטע גשר 4A",  crew:"Crew C – Dror",     qty:"180 m²", note:"Complete",                        noteHe:"הושלם"},
     {zone:"C",activity:"Pile drilling – positions 29–34",  actHe:"קידוח יסודות – עמדות 29–34", crew:"Drill – Goldberg",  qty:"6 piles",note:"4 of 6 complete",                 noteHe:"4 מתוך 6 הושלמו"},
     {zone:"D",activity:"Utility trench – Section 2",       actHe:"חפירת תשתיות – קטע 2",       crew:"Crew E – Ben-Ami",  qty:"0 m",    note:"BLOCKED – land access dispute",    noteHe:"חסום – סכסוך גישה לקרקע"},
   ];
@@ -1117,7 +1117,7 @@ const Subcontractors = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>
   type SS2 = "ACTIVE"|"ON HOLD"|"MOBILIZING";
   const DEMO_SUBS: {company:string;companyHe:string;trade:string;tradeHe:string;workers:number;contract:string;perf:number;schedule:"ahead"|"on-track"|"behind";ncrs:number;status:SS2}[] = [
     {company:"Ambar Excavations Ltd.",   companyHe:"אמבר חפירות",        trade:"Earthworks",        tradeHe:"עפר",          workers:42,contract:"₪12.4M",perf:71,schedule:"behind",  ncrs:2,status:"ACTIVE"    },
-    {company:"Gal Civil Engineering",    companyHe:"גל הנדסה אזרחית",    trade:"Concrete & Formwork",tradeHe:"בטון וקינוף", workers:38,contract:"₪18.7M",perf:94,schedule:"ahead",   ncrs:0,status:"ACTIVE"    },
+    {company:"Gal Civil Engineering",    companyHe:"גל הנדסה אזרחית",    trade:"Concrete & Formwork",tradeHe:"בטון וטפסנות", workers:38,contract:"₪18.7M",perf:94,schedule:"ahead",   ncrs:0,status:"ACTIVE"    },
     {company:"Goldberg Drilling Co.",    companyHe:"חברת קידוח גולדברג", trade:"Piling & Foundations",tradeHe:"יסודות",      workers:22,contract:"₪9.2M", perf:88,schedule:"on-track",ncrs:1,status:"ACTIVE"    },
     {company:"Stern Traffic Management",companyHe:"שטרן ניהול תנועה",   trade:"Traffic Control",    tradeHe:"ניהול תנועה", workers:14,contract:"₪3.1M", perf:96,schedule:"on-track",ncrs:0,status:"ACTIVE"    },
     {company:"Mizrahi MEP Services",    companyHe:"מזרחי שירותי מ.מ.ח", trade:"MEP",                tradeHe:"מ.מ.ח",        workers:29,contract:"₪7.8M", perf:79,schedule:"behind",  ncrs:1,status:"ACTIVE"    },

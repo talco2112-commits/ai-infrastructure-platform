@@ -49,7 +49,7 @@ const subcontractors: {
   ncrs: number; status: SubStatus;
 }[] = [
   { company:"Ambar Excavations Ltd.",       companyHe:"אמבר חפירות בע\"מ",       trade:"Earthworks & Excavation",    tradeHe:"עפר וחפירות",            workers:42, contract:"₪12.4M", perf:71, schedule:"behind",   ncrs:2, status:"ACTIVE"     },
-  { company:"Gal Civil Engineering",        companyHe:"גל הנדסה אזרחית",         trade:"Concrete & Formwork",        tradeHe:"בטון וקינוף",             workers:38, contract:"₪18.7M", perf:94, schedule:"ahead",    ncrs:0, status:"ACTIVE"     },
+  { company:"Gal Civil Engineering",        companyHe:"גל הנדסה אזרחית",         trade:"Concrete & Formwork",        tradeHe:"בטון וטפסנות",             workers:38, contract:"₪18.7M", perf:94, schedule:"ahead",    ncrs:0, status:"ACTIVE"     },
   { company:"Goldberg Drilling Co.",        companyHe:"חברת קידוח גולדברג",      trade:"Piling & Foundations",       tradeHe:"יסודות וקידוח",           workers:22, contract:"₪9.2M",  perf:88, schedule:"on-track", ncrs:1, status:"ACTIVE"     },
   { company:"Stern Traffic Management",    companyHe:"שטרן ניהול תנועה",         trade:"Traffic Control",            tradeHe:"ניהול תנועה",             workers:14, contract:"₪3.1M",  perf:96, schedule:"on-track", ncrs:0, status:"ACTIVE"     },
   { company:"Mizrahi MEP Services",        companyHe:"מזרחי שירותי מ.מ.ח",      trade:"Mechanical, Elec. & Plumb.", tradeHe:"מ.מ.ח",                   workers:29, contract:"₪7.8M",  perf:79, schedule:"behind",   ncrs:1, status:"ACTIVE"     },

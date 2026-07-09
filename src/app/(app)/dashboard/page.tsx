@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import {
-  Bell, Search, TrendingDown, TrendingUp, Minus,
+  Bell, Search, TrendingDown, TrendingUp,
   AlertTriangle, AlertCircle, Info, CheckCircle2,
   Clock, Sun, Cloud, CloudRain, Zap, ChevronRight,
   Banknote, Lightbulb, Satellite, ClipboardCheck,
@@ -120,7 +120,7 @@ const approvalItems = [
 const scheduleItems: { name:string; nameHe:string; percent:number; status:Status; delta:string; deltaHe:string }[] = [
   { name:"Earthworks – Zone C",      nameHe:"עבודות עפר – אזור C",  percent:85, status:"good",    delta:"",           deltaHe:""          },
   { name:"Pile foundations",         nameHe:"יסודות קידוח",          percent:72, status:"warning", delta:"2d delay",   deltaHe:"2י עיכוב"  },
-  { name:"Bridge deck formwork",     nameHe:"שיפוע גשר – קינוף",     percent:45, status:"good",    delta:"",           deltaHe:""          },
+  { name:"Bridge deck formwork",     nameHe:"טפסנות סיפון גשר",     percent:45, status:"good",    delta:"",           deltaHe:""          },
   { name:"Utility relocation",       nameHe:"העברת תשתיות",          percent:23, status:"danger",  delta:"14d behind", deltaHe:"14י איחור" },
   { name:"Road base layer – Sec. A", nameHe:"שכבת בסיס – קטע A",    percent:61, status:"good",    delta:"",           deltaHe:""          },
 ];
@@ -294,8 +294,8 @@ function EmptyDashboard({ isHe, project }: { isHe: boolean; project: ReturnType<
             (project.scheduleActivities?.length ?? 0) > 0
               ? { label: isHe ? "לוח זמנים"   : "Schedule",          value: String(project.scheduleActivities.length), sub: isHe ? "פעילויות בלוח הזמנים" : "activities in schedule", route: "/schedule" }
               : { label: isHe ? "לוח זמנים"   : "Schedule",          value: "—",   sub: isHe ? "לא הועלה לוח זמנים" : "No schedule uploaded", route: "/schedule" },
-            { label: isHe ? "נושאים פתוחים" : "Open Issues",       value: "0",   sub: isHe ? "אין נתונים" : "No data yet", route: "/rfis" },
-            { label: isHe ? "ממתינים לאישור" : "Pending Approvals", value: "0",   sub: isHe ? "אין חשבוניות" : "No invoices", route: "/billing" },
+            { label: isHe ? "בטיחות" : "Safety",  value: "—",   sub: isHe ? "אין נתונים" : "No data yet", route: "/safety" },
+            { label: isHe ? "איכות" : "Quality",  value: "—",   sub: isHe ? "אין נתונים" : "No data yet", route: "/quality" },
           ].map(k => (
             <Card key={k.label} className="p-5 cursor-pointer transition-all hover:shadow-md"
               onClick={() => router.push(k.route)}>
@@ -468,10 +468,10 @@ function FullDashboard({ isHe, projectName }: { isHe: boolean; projectName: stri
     budget:        isHe ? "תקציב מנוצל" : "Budget Spent",
     budgetSub:     isHe ? "מתוך 148M ₪ חוזה" : "of ₪148M contract",
     schedule:      isHe ? "לוח זמנים" : "Schedule",
-    issues:        isHe ? "נושאים פתוחים" : "Open Issues",
-    issuesSub:     isHe ? "8 קריטי · 15 בינוני" : "8 critical · 15 medium",
-    approvals:     isHe ? "ממתינים לאישור" : "Pending Approvals",
-    approvalsSub:  isHe ? "סך 4.2M ₪" : "₪4.2M total value",
+    safety:        isHe ? "בטיחות" : "Safety",
+    safetySub:     isHe ? "ימים ללא פגיעה" : "days without LTI",
+    quality:       isHe ? "איכות" : "Quality",
+    qualitySub:    isHe ? "אי-התאמות פתוחות" : "open NCRs",
     tasks:         isHe ? "משימות היום" : "Today's Tasks",
     alerts:        isHe ? "התראות פעילות" : "Active Alerts",
     approvalsTitle:isHe ? "ממתינים לאישור" : "Pending Approvals",
@@ -579,29 +579,29 @@ function FullDashboard({ isHe, projectName }: { isHe: boolean; projectName: stri
             </div>
           </Card>
 
-          <Card className="p-5 cursor-pointer transition-all hover:shadow-md" onClick={() => router.push("/rfis")}>
+          <Card className="p-5 cursor-pointer transition-all hover:shadow-md" onClick={() => router.push("/safety")}>
             <div className="flex items-start justify-between mb-2">
-              <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: P.text3 }}>{t.issues}</p>
-              <span className="w-2.5 h-2.5 rounded-full mt-0.5 shrink-0" style={{ background: P.danger }}/>
+              <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: P.text3 }}>{t.safety}</p>
+              <span className="w-2.5 h-2.5 rounded-full mt-0.5 shrink-0" style={{ background: P.good }}/>
             </div>
-            <p className="text-[42px] font-bold leading-none tracking-tight" style={{ color: P.text1 }}>23</p>
-            <p className="text-[12px] mt-2" style={{ color: P.text3 }}>{t.issuesSub}</p>
-            <div className="flex items-center gap-1 mt-3 text-[12px] font-semibold" style={{ color: P.danger }}>
+            <p className="text-[42px] font-bold leading-none tracking-tight" style={{ color: P.text1 }}>142</p>
+            <p className="text-[12px] mt-2" style={{ color: P.text3 }}>{t.safetySub}</p>
+            <div className="flex items-center gap-1 mt-3 text-[12px] font-semibold" style={{ color: P.good }}>
               <TrendingUp className="w-3 h-3 shrink-0"/>
-              {isHe ? "+4 השבוע" : "+4 this week"}
+              {isHe ? "ציון בטיחות 94/100" : "Safety score 94/100"}
             </div>
           </Card>
 
-          <Card className="p-5 cursor-pointer transition-all hover:shadow-md" onClick={() => router.push("/billing")}>
+          <Card className="p-5 cursor-pointer transition-all hover:shadow-md" onClick={() => router.push("/quality")}>
             <div className="flex items-start justify-between mb-2">
-              <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: P.text3 }}>{t.approvals}</p>
+              <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: P.text3 }}>{t.quality}</p>
               <span className="w-2.5 h-2.5 rounded-full mt-0.5 shrink-0" style={{ background: P.warn }}/>
             </div>
-            <p className="text-[42px] font-bold leading-none tracking-tight" style={{ color: P.text1 }}>7</p>
-            <p className="text-[12px] mt-2" style={{ color: P.text3 }}>{t.approvalsSub}</p>
+            <p className="text-[42px] font-bold leading-none tracking-tight" style={{ color: P.text1 }}>6</p>
+            <p className="text-[12px] mt-2" style={{ color: P.text3 }}>{t.qualitySub}</p>
             <div className="flex items-center gap-1 mt-3 text-[12px] font-semibold" style={{ color: P.warn }}>
-              <Minus className="w-3 h-3 shrink-0"/>
-              {isHe ? "ישן ביותר: 5 ימים" : "Oldest: 5 days"}
+              <AlertTriangle className="w-3 h-3 shrink-0"/>
+              {isHe ? "3 דורשים CAR" : "3 require CAR"}
             </div>
           </Card>
         </div>
@@ -750,7 +750,7 @@ function FullDashboard({ isHe, projectName }: { isHe: boolean; projectName: stri
             <div className="px-6 pb-6 pt-4">
               <AiInsight>
                 {isHe
-                  ? "אזור B נמוך ב-5% מתחזית המודל. צילומי הרחפן מראים שהקינוף טרם הוסר."
+                  ? "אזור B נמוך ב-5% מתחזית המודל. צילומי הרחפן מראים שהטפסנות טרם הוסרה."
                   : "Zone B is 5% below model prediction. Drone imagery shows foundation formwork not yet stripped."}
               </AiInsight>
             </div>

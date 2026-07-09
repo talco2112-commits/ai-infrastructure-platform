@@ -51,7 +51,7 @@ type WeekActivity = {
 const week89: WeekActivity[] = [
   { id:"A-001", activity:"Concrete pour – Bridge pier P7",            actHe:"יציקת בטון – כן P7",             zone:"B", crew:"Crew A",    duration:"1d",  predecessor:"—",    status:"IN PROGRESS" },
   { id:"A-002", activity:"Pile drilling – positions 29–34",           actHe:"קידוח יסודות 29–34",             zone:"C", crew:"Drill Co.", duration:"2d",  predecessor:"—",    status:"IN PROGRESS" },
-  { id:"A-003", activity:"Formwork erection – P8 (North)",            actHe:"הקמת קינוף – P8 (צפון)",         zone:"B", crew:"Crew C",    duration:"2d",  predecessor:"A-001",status:"IN PROGRESS" },
+  { id:"A-003", activity:"Formwork erection – P8 (North)",            actHe:"הקמת טפסנות – P8 (צפון)",         zone:"B", crew:"Crew C",    duration:"2d",  predecessor:"A-001",status:"IN PROGRESS" },
   { id:"A-004", activity:"Road base compaction – Sec. A",             actHe:"דחיסת בסיס – קטע A",             zone:"A", crew:"Crew F",    duration:"3d",  predecessor:"—",    status:"IN PROGRESS" },
   { id:"A-005", activity:"Utility trench excavation – Zone D sec. 2", actHe:"חפירת תשתיות – אזור D קטע 2",   zone:"D", crew:"Crew E",    duration:"4d",  predecessor:"—",    status:"AT RISK"     },
   { id:"A-006", activity:"Pile cage fabrication #22–28",              actHe:"ייצור כלוב קידוח #22–28",       zone:"C", crew:"Crew B",    duration:"1d",  predecessor:"—",    status:"COMPLETE"    },
@@ -65,7 +65,7 @@ const week90: WeekActivity[] = [
   { id:"B-001", activity:"Concrete pour – Bridge pier P8",            actHe:"יציקת בטון – כן P8",             zone:"B", crew:"Crew A",    duration:"1d",  predecessor:"A-010",status:"NOT STARTED" },
   { id:"B-002", activity:"Pile drilling – positions 35–42",           actHe:"קידוח יסודות 35–42",             zone:"C", crew:"Drill Co.", duration:"3d",  predecessor:"A-002",status:"NOT STARTED" },
   { id:"B-003", activity:"Earthworks Zone D – if unblocked",          actHe:"עפר אזור D – אם מוסר חסם",      zone:"D", crew:"Crew E",    duration:"5d",  predecessor:"A-005",status:"AT RISK"     },
-  { id:"B-004", activity:"Bridge deck formwork – segment 5A",         actHe:"קינוף גשר – מקטע 5A",            zone:"B", crew:"Crew C",    duration:"3d",  predecessor:"B-001",status:"NOT STARTED" },
+  { id:"B-004", activity:"Bridge deck formwork – segment 5A",         actHe:"טפסנות גשר – מקטע 5A",            zone:"B", crew:"Crew C",    duration:"3d",  predecessor:"B-001",status:"NOT STARTED" },
   { id:"B-005", activity:"Road base – Section B installation",        actHe:"שכבת בסיס – קטע B",              zone:"A", crew:"Crew F",    duration:"4d",  predecessor:"A-004",status:"NOT STARTED" },
 ];
 
