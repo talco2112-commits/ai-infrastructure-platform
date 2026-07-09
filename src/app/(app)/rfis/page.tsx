@@ -3,9 +3,11 @@
 import { useState, useEffect } from "react";
 import { useProjects } from "@/contexts/ProjectContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Bell, Search, AlertTriangle, Plus, Clock, Trash2 } from "lucide-react";
+import { useDisciplines } from "@/contexts/DisciplineContext";
+import { Bell, Search, AlertTriangle, Plus, Clock, Trash2, Settings2 } from "lucide-react";
 import { QuickAddModal } from "@/components/QuickAddModal";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { DisciplineManagerModal } from "@/components/DisciplineManagerModal";
 
 const P = {
   bg: "#EDE8E1", card: "#FAF8F5", border: "#EDE8DF",
@@ -68,19 +70,19 @@ const DEMO_RFIS: {
   submitted: string; due: string; daysOpen: number;
   status: RFIStatus; priority: Priority; assignedTo: string;
 }[] = [
-  { num:"RFI-041", subject:"Pile cap rebar layout at pier P7 – interference with anchor bolts",       discipline:"Structural", submitted:"12 Jun", due:"19 Jun", daysOpen:18, status:"OVERDUE",  priority:"HIGH",   assignedTo:"Eng. Shapira"   },
-  { num:"RFI-042", subject:"Utility crossing detail at Ch.2+450 – vertical clearance insufficient",   discipline:"Civil",      submitted:"14 Jun", due:"21 Jun", daysOpen:16, status:"OVERDUE",  priority:"HIGH",   assignedTo:"Eng. Mizrahi"   },
-  { num:"RFI-043", subject:"Drainage pipe invert levels – Sec.B inconsistency with survey data",      discipline:"Civil",      submitted:"16 Jun", due:"30 Jun", daysOpen:14, status:"OPEN",     priority:"MEDIUM", assignedTo:"Eng. Levi"      },
-  { num:"RFI-044", subject:"Electrical conduit routing in bridge deck – conflict with post-tension",   discipline:"MEP",        submitted:"18 Jun", due:"02 Jul", daysOpen:12, status:"OPEN",     priority:"MEDIUM", assignedTo:"Eng. Ben-David" },
-  { num:"RFI-045", subject:"Expansion joint specification – Bridge 68 EJ-300 vs EJ-350 rating",       discipline:"Structural", submitted:"19 Jun", due:"26 Jun", daysOpen:11, status:"OPEN",     priority:"HIGH",   assignedTo:"Eng. Shapira"   },
-  { num:"RFI-046", subject:"Pavement marking colour specification – retroreflectivity class",          discipline:"Traffic",    submitted:"20 Jun", due:"04 Jul", daysOpen:10, status:"OPEN",     priority:"LOW",    assignedTo:"Eng. Cohen"     },
-  { num:"RFI-047", subject:"Guardrail post spacing near culvert headwall – structural interaction",    discipline:"Civil",      submitted:"22 Jun", due:"06 Jul", daysOpen:8,  status:"OPEN",     priority:"MEDIUM", assignedTo:"Eng. Levi"      },
-  { num:"RFI-040", subject:"Bridge abutment backfill compaction specification – Zone 1 vs Zone 2",    discipline:"Civil",      submitted:"08 Jun", due:"22 Jun", daysOpen:22, status:"ANSWERED", priority:"MEDIUM", assignedTo:"Eng. Mizrahi"   },
-  { num:"RFI-039", subject:"Rock anchor grout mix design – Zone D hard rock formation",               discipline:"Geotech",    submitted:"05 Jun", due:"19 Jun", daysOpen:25, status:"ANSWERED", priority:"HIGH",   assignedTo:"Eng. Abramov"   },
-  { num:"RFI-038", subject:"Asphalt binder grade change – PG 70-22 to PG 76-22 justification",       discipline:"Civil",      submitted:"01 Jun", due:"15 Jun", daysOpen:29, status:"ANSWERED", priority:"MEDIUM", assignedTo:"Eng. Cohen"     },
-  { num:"RFI-037", subject:"Culvert headwall footing depth – frost penetration depth conflict",        discipline:"Structural", submitted:"28 May", due:"11 Jun", daysOpen:32, status:"ANSWERED", priority:"LOW",    assignedTo:"Eng. Shapira"   },
-  { num:"RFI-036", subject:"Median barrier type – NJTB vs F-shape – crash test data",                 discipline:"Traffic",    submitted:"20 May", due:"03 Jun", daysOpen:40, status:"CLOSED",   priority:"MEDIUM", assignedTo:"Eng. Ben-David" },
-  { num:"RFI-035", subject:"Pile toe elevation – Zone A bored piles vs driven requirement",            discipline:"Structural", submitted:"15 May", due:"29 May", daysOpen:45, status:"CLOSED",   priority:"HIGH",   assignedTo:"Eng. Shapira"   },
+  { num:"RFI-041", subject:"Pile cap rebar layout at pier P7 – interference with anchor bolts",       discipline:"ST", submitted:"12 Jun", due:"19 Jun", daysOpen:18, status:"OVERDUE",  priority:"HIGH",   assignedTo:"Eng. Shapira"   },
+  { num:"RFI-042", subject:"Utility crossing detail at Ch.2+450 – vertical clearance insufficient",   discipline:"UT", submitted:"14 Jun", due:"21 Jun", daysOpen:16, status:"OVERDUE",  priority:"HIGH",   assignedTo:"Eng. Mizrahi"   },
+  { num:"RFI-043", subject:"Drainage pipe invert levels – Sec.B inconsistency with survey data",      discipline:"DR", submitted:"16 Jun", due:"30 Jun", daysOpen:14, status:"OPEN",     priority:"MEDIUM", assignedTo:"Eng. Levi"      },
+  { num:"RFI-044", subject:"Electrical conduit routing in bridge deck – conflict with post-tension",   discipline:"EL", submitted:"18 Jun", due:"02 Jul", daysOpen:12, status:"OPEN",     priority:"MEDIUM", assignedTo:"Eng. Ben-David" },
+  { num:"RFI-045", subject:"Expansion joint specification – Bridge 68 EJ-300 vs EJ-350 rating",       discipline:"ST", submitted:"19 Jun", due:"26 Jun", daysOpen:11, status:"OPEN",     priority:"HIGH",   assignedTo:"Eng. Shapira"   },
+  { num:"RFI-046", subject:"Pavement marking colour specification – retroreflectivity class",          discipline:"TR", submitted:"20 Jun", due:"04 Jul", daysOpen:10, status:"OPEN",     priority:"LOW",    assignedTo:"Eng. Cohen"     },
+  { num:"RFI-047", subject:"Guardrail post spacing near culvert headwall – structural interaction",    discipline:"HW", submitted:"22 Jun", due:"06 Jul", daysOpen:8,  status:"OPEN",     priority:"MEDIUM", assignedTo:"Eng. Levi"      },
+  { num:"RFI-040", subject:"Bridge abutment backfill compaction specification – Zone 1 vs Zone 2",    discipline:"HW", submitted:"08 Jun", due:"22 Jun", daysOpen:22, status:"ANSWERED", priority:"MEDIUM", assignedTo:"Eng. Mizrahi"   },
+  { num:"RFI-039", subject:"Rock anchor grout mix design – Zone D hard rock formation",               discipline:"GT", submitted:"05 Jun", due:"19 Jun", daysOpen:25, status:"ANSWERED", priority:"HIGH",   assignedTo:"Eng. Abramov"   },
+  { num:"RFI-038", subject:"Asphalt binder grade change – PG 70-22 to PG 76-22 justification",       discipline:"HW", submitted:"01 Jun", due:"15 Jun", daysOpen:29, status:"ANSWERED", priority:"MEDIUM", assignedTo:"Eng. Cohen"     },
+  { num:"RFI-037", subject:"Culvert headwall footing depth – frost penetration depth conflict",        discipline:"ST", submitted:"28 May", due:"11 Jun", daysOpen:32, status:"ANSWERED", priority:"LOW",    assignedTo:"Eng. Shapira"   },
+  { num:"RFI-036", subject:"Median barrier type – NJTB vs F-shape – crash test data",                 discipline:"TR", submitted:"20 May", due:"03 Jun", daysOpen:40, status:"CLOSED",   priority:"MEDIUM", assignedTo:"Eng. Ben-David" },
+  { num:"RFI-035", subject:"Pile toe elevation – Zone A bored piles vs driven requirement",            discipline:"ST", submitted:"15 May", due:"29 May", daysOpen:45, status:"CLOSED",   priority:"HIGH",   assignedTo:"Eng. Shapira"   },
 ];
 
 const statusStyle: Record<RFIStatus, { bg: string; color: string }> = {
@@ -94,9 +96,6 @@ const priorityStyle: Record<Priority, { color: string }> = {
   "MEDIUM": { color: P.warn   },
   "LOW":    { color: P.text3  },
 };
-const disciplineColor: Record<string, string> = {
-  Structural:"#7C3AED", Civil:"#0369A1", MEP:"#0891B2", Traffic:"#047857", Geotech:"#92400E",
-};
 
 export default function RFIsPage() {
   const { active } = useProjects();
@@ -104,10 +103,12 @@ export default function RFIsPage() {
 
   const { lang, isHe } = useLanguage();
   const T = TRANSLATIONS[lang];
+  const { disciplines, styleFor } = useDisciplines();
 
   const [rfis, setRfis]     = useState(isDemo ? DEMO_RFIS : []);
   const [showModal, setShowModal] = useState(false);
   const [deleteIdx, setDeleteIdx] = useState<number | null>(null);
+  const [showDisciplineMgr, setShowDisciplineMgr] = useState(false);
   useEffect(() => { setRfis(isDemo ? DEMO_RFIS : []); }, [isDemo]);
 
   function confirmDelete() {
@@ -134,7 +135,7 @@ export default function RFIsPage() {
     setRfis(prev => [{
       num,
       subject: values.subject || "",
-      discipline: values.discipline || "Civil",
+      discipline: values.discipline || disciplines[0]?.code || "",
       submitted: now.toLocaleDateString(isHe ? "he-IL" : "en-GB", { day: "2-digit", month: "short" }),
       due: values.due ? new Date(values.due).toLocaleDateString(isHe ? "he-IL" : "en-GB", { day: "2-digit", month: "short" }) : "",
       daysOpen: 0,
@@ -168,6 +169,10 @@ export default function RFIsPage() {
             className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-[12px] font-semibold text-white"
             style={{ background: P.copper }}>
             <Plus className="w-3 h-3" /> {T.newRFI}
+          </button>
+          <button onClick={() => setShowDisciplineMgr(true)} title={isHe ? "ניהול תחומים" : "Manage Disciplines"}
+            className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: P.bg, border: `1px solid ${P.border}` }}>
+            <Settings2 className="w-4 h-4" style={{ color: P.text2 }} />
           </button>
           <button className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: P.bg, border: `1px solid ${P.border}` }}>
             <Bell className="w-4 h-4" style={{ color: P.text2 }} />
@@ -248,7 +253,7 @@ export default function RFIsPage() {
                   </td>
                   <td className="px-4 py-3">
                     <span className="text-[10.5px] font-bold px-2 py-0.5 rounded-full text-white"
-                      style={{ background: disciplineColor[r.discipline] ?? "#78716C" }}>
+                      style={{ background: styleFor(r.discipline).color }}>
                       {r.discipline}
                     </span>
                   </td>
@@ -303,13 +308,8 @@ export default function RFIsPage() {
           onSave={addRfi}
           fields={[
             { key: "subject", label: "Subject", labelHe: "נושא", type: "text", required: true },
-            { key: "discipline", label: "Discipline", labelHe: "תחום", type: "select", options: [
-              { value: "Structural", label: "Structural", labelHe: "קונסטרוקציה" },
-              { value: "Civil", label: "Civil", labelHe: "אזרחית" },
-              { value: "MEP", label: "MEP", labelHe: "מ.מ.ח" },
-              { value: "Traffic", label: "Traffic", labelHe: "תנועה" },
-              { value: "Geotech", label: "Geotech", labelHe: "גאוטכני" },
-            ]},
+            { key: "discipline", label: "Discipline", labelHe: "תחום", type: "select",
+              options: disciplines.map(d => ({ value: d.code, label: `${d.code} — ${d.en}`, labelHe: `${d.code} — ${d.he}` })) },
             { key: "priority", label: "Priority", labelHe: "עדיפות", type: "select", options: [
               { value: "HIGH", label: "High", labelHe: "גבוהה" },
               { value: "MEDIUM", label: "Medium", labelHe: "בינונית" },
@@ -319,6 +319,10 @@ export default function RFIsPage() {
             { key: "assignedTo", label: "Assigned To", labelHe: "מוקצה ל", type: "text" },
           ]}
         />
+      )}
+
+      {showDisciplineMgr && (
+        <DisciplineManagerModal isHe={isHe} onClose={() => setShowDisciplineMgr(false)} />
       )}
     </div>
   );

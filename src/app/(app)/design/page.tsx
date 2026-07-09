@@ -3,10 +3,12 @@
 import { useState, useEffect, useMemo } from "react";
 import { useProjects } from "@/contexts/ProjectContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useDisciplines } from "@/contexts/DisciplineContext";
+import { DisciplineManagerModal } from "@/components/DisciplineManagerModal";
 import {
   Bell, Search, AlertTriangle, Plus, Trash2, History, X,
   FileText, Ruler, Link2, Clock, CheckCircle2, XCircle,
-  Folder, FolderOpen, ChevronRight, ChevronLeft,
+  Folder, FolderOpen, ChevronRight, ChevronLeft, Settings2,
 } from "lucide-react";
 import { QuickAddModal } from "@/components/QuickAddModal";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -184,7 +186,9 @@ const statusStyle: Record<SubStatus, { bg: string; color: string }> = {
 // ── Drawing Register — CAD standard document control ──────────────────────
 
 type DwgStatus = "IFC" | "IFA" | "IFR" | "DRAFT" | "AS-BUILT" | "SUPERSEDED" | "VOID";
-type Discipline = "SU" | "GT" | "HW" | "ST" | "DR" | "AR" | "ME" | "EL" | "TR" | "LA" | "WS" | "UT";
+// Discipline codes now come from the shared DisciplineContext (see useDisciplines()) —
+// kept as a plain string here since the list is user-extensible.
+type Discipline = string;
 type Stage = "PD" | "DD" | "CD";
 
 interface RevisionEntry {
@@ -205,41 +209,11 @@ interface Drawing {
   revisions: RevisionEntry[];
 }
 
-const DISCIPLINES: { code: Discipline; en: string; he: string }[] = [
-  { code: "SU", en: "Survey",                    he: "מדידה" },
-  { code: "GT", en: "Geotechnical",               he: "גיאוטכני" },
-  { code: "HW", en: "Highways / Roadworks",       he: "כבישים" },
-  { code: "ST", en: "Structural",                 he: "קונסטרוקציה" },
-  { code: "DR", en: "Drainage & Hydrology",        he: "ניקוז והידרולוגיה" },
-  { code: "AR", en: "Architectural",              he: "אדריכלות" },
-  { code: "ME", en: "Mechanical",                 he: "מכונות" },
-  { code: "EL", en: "Electrical",                 he: "חשמל" },
-  { code: "TR", en: "Traffic & ITS",              he: "תנועה ומערכות חכמות" },
-  { code: "LA", en: "Landscape & Environmental",   he: "נוף וסביבה" },
-  { code: "WS", en: "Water & Sewage",             he: "מים וביוב" },
-  { code: "UT", en: "Utilities",                  he: "תשתיות" },
-];
-
 const STAGES: { code: Stage; en: string; he: string }[] = [
   { code: "PD", en: "Preliminary Design",     he: "תכנון ראשוני" },
   { code: "DD", en: "Detailed Design",        he: "תכנון מפורט" },
   { code: "CD", en: "Construction Documents", he: "תכניות לביצוע" },
 ];
-
-const disciplineStyle: Record<Discipline, { bg: string; color: string }> = {
-  SU: { bg: "#F1F5F9", color: "#475569" },
-  GT: { bg: "#FEF3C7", color: "#92400E" },
-  HW: { bg: "#E0F2FE", color: "#0369A1" },
-  ST: { bg: "#EDE9FE", color: "#7C3AED" },
-  DR: { bg: "#CCFBF1", color: "#0F766E" },
-  AR: { bg: "#FCE7F3", color: "#BE185D" },
-  ME: { bg: "#FFEDD5", color: "#C2410C" },
-  EL: { bg: "#FEF9C3", color: "#A16207" },
-  TR: { bg: "#ECFDF5", color: "#047857" },
-  LA: { bg: "#F0FDF4", color: "#15803D" },
-  WS: { bg: "#CFFAFE", color: "#0E7490" },
-  UT: { bg: "#F5F5F4", color: "#78716C" },
-};
 
 const dwgStatusStyle: Record<DwgStatus, { bg: string; color: string }> = {
   IFC:        { bg: P.goodBg,   color: P.good   },
@@ -483,11 +457,13 @@ export default function DesignPage() {
 
   const { lang, isHe } = useLanguage();
   const T = TRANSLATIONS[lang];
+  const { disciplines, styleFor } = useDisciplines();
 
   const [tab, setTab] = useState<TabId>("submittals");
   const [search, setSearch] = useState("");
   const [selectedDiscipline, setSelectedDiscipline] = useState<Discipline | null>(null);
   const [selectedStage, setSelectedStage] = useState<Stage | null>(null);
+  const [showDisciplineMgr, setShowDisciplineMgr] = useState(false);
 
   // Submittals
   const [submittals, setSubmittals] = useState(isDemo ? DEMO_SUBMITTALS : []);
@@ -792,7 +768,7 @@ export default function DesignPage() {
                   {isHe ? <ChevronLeft className="w-3.5 h-3.5" style={{ color: P.text3 }} /> : <ChevronRight className="w-3.5 h-3.5" style={{ color: P.text3 }} />}
                   <button onClick={() => setSelectedStage(null)} className="transition-colors"
                     style={{ color: !selectedStage ? P.text1 : P.copper }}>
-                    {isHe ? DISCIPLINES.find(x => x.code === selectedDiscipline)?.he : DISCIPLINES.find(x => x.code === selectedDiscipline)?.en}
+                    {isHe ? disciplines.find(x => x.code === selectedDiscipline)?.he : disciplines.find(x => x.code === selectedDiscipline)?.en}
                   </button>
                 </>
               )}
@@ -808,9 +784,17 @@ export default function DesignPage() {
 
             {/* Level 1: Discipline folders */}
             {!selectedDiscipline && (
+              <>
+              <div className="flex justify-end mb-3">
+                <button onClick={() => setShowDisciplineMgr(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold"
+                  style={{ background: P.card, border: `1px solid ${P.border}`, color: P.text2 }}>
+                  <Settings2 className="w-3.5 h-3.5" /> {isHe ? "ניהול תחומים" : "Manage Disciplines"}
+                </button>
+              </div>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {DISCIPLINES.map(({ code, en, he }) => {
-                  const dStyle = disciplineStyle[code];
+                {disciplines.map(({ code, en, he }) => {
+                  const dStyle = styleFor(code);
                   const count = disciplineCounts.get(code) ?? 0;
                   return (
                     <button key={code} onClick={() => setSelectedDiscipline(code)}
@@ -830,6 +814,7 @@ export default function DesignPage() {
                   );
                 })}
               </div>
+              </>
             )}
 
             {/* Level 2: Stage folders (PD / DD / CD) */}
@@ -1017,7 +1002,7 @@ export default function DesignPage() {
           fields={[
             { key: "title", label: T.fldTitle, labelHe: T.fldTitle, type: "text", required: true },
             { key: "discipline", label: T.fldDiscipline, labelHe: T.fldDiscipline, type: "select",
-              options: DISCIPLINES.map(d => ({ value: d.code, label: `${d.code} — ${d.en}`, labelHe: `${d.code} — ${d.he}` })) },
+              options: disciplines.map(d => ({ value: d.code, label: `${d.code} — ${d.en}`, labelHe: `${d.code} — ${d.he}` })) },
             { key: "stage", label: T.fldStage, labelHe: T.fldStage, type: "select",
               options: STAGES.map(s => ({ value: s.code, label: `${s.code} — ${s.en}`, labelHe: `${s.code} — ${s.he}` })) },
             { key: "sheet", label: T.fldSheet, labelHe: T.fldSheet, type: "select", options: [
@@ -1097,6 +1082,10 @@ export default function DesignPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {showDisciplineMgr && (
+        <DisciplineManagerModal isHe={isHe} onClose={() => setShowDisciplineMgr(false)} />
       )}
 
     </div>
