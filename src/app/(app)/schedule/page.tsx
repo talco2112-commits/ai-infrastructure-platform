@@ -15,16 +15,16 @@ const P = {
   track: "#E7E0D8",
 };
 
-type ViewId = "gantt" | "milestones" | "scurve" | "critical";
+type ViewId = "gantt" | "timeloc" | "milestones" | "scurve" | "critical";
 type FilterId = "all" | "critical" | "delays" | "A" | "B" | "C" | "D";
 
-const VIEW_IDS: ViewId[] = ["gantt", "milestones", "scurve", "critical"];
+const VIEW_IDS: ViewId[] = ["gantt", "timeloc", "milestones", "scurve", "critical"];
 const FILTER_IDS: FilterId[] = ["all", "critical", "delays", "A", "B", "C", "D"];
 
 const TRANSLATIONS = {
   en: {
     title: "Schedule",
-    views: ["Gantt", "Milestones", "S-Curve", "Critical Path"],
+    views: ["Gantt", "Time-Location (TILOS)", "Milestones", "S-Curve", "Critical Path"],
     searchPlaceholder: "Search activities...",
     filterLabel: "Filter:",
     filterChips: ["All Activities", "Critical Path Only", "Delays Only", "Zone A", "Zone B", "Zone C", "Zone D"],
@@ -48,10 +48,16 @@ const TRANSLATIONS = {
     criticalTitle: "Critical Path Activities",
     colFloat: "Float",
     colDelay: "Delay",
+    timelocTitle: "Time-Location Diagram — Progress vs Chainage",
+    chainageAxis: "Chainage",
+    legendLinear: "Linear progression",
+    legendFixed: "Fixed location",
+    legendCritical: "Critical",
+    zoneLabel: "Zone",
   },
   he: {
     title: "לוח זמנים",
-    views: ["גאנט", "אבני דרך", "עקום S", "נתיב קריטי"],
+    views: ["גאנט", "מיקום-זמן (TILOS)", "אבני דרך", "עקום S", "נתיב קריטי"],
     searchPlaceholder: "חיפוש פעילויות...",
     filterLabel: "סינון:",
     filterChips: ["כל הפעילויות", "נתיב קריטי בלבד", "איחורים בלבד", "אזור A", "אזור B", "אזור C", "אזור D"],
@@ -75,6 +81,12 @@ const TRANSLATIONS = {
     criticalTitle: "פעילויות נתיב קריטי",
     colFloat: "פלואט",
     colDelay: "איחור",
+    timelocTitle: "תרשים מיקום-זמן — התקדמות מול קילומטראז'",
+    chainageAxis: "קילומטראז'",
+    legendLinear: "התקדמות רציפה",
+    legendFixed: "מיקום קבוע",
+    legendCritical: "קריטי",
+    zoneLabel: "אזור",
   },
 };
 
@@ -92,34 +104,47 @@ type Activity = {
   startM: number; startD: number; endM: number; endD: number;
   progress: number; critical: boolean; delay?: string;
   isSummary?: boolean; zone?: "A" | "B" | "C" | "D"; float?: string;
+  chainageStart?: number; chainageEnd?: number; linear?: boolean;
 };
 
 const activities: Activity[] = [
   { id:"1",   wbs:"1",   name:"EARTHWORKS",                      startM:1, startD:2,  endM:7,  endD:15, progress:78, critical:false, isSummary:true  },
-  { id:"1.1", wbs:"1.1", name:"Site clearing & grubbing",         startM:1, startD:2,  endM:2,  endD:15, progress:100, critical:false },
-  { id:"1.2", wbs:"1.2", name:"Bulk excavation – Zone A",         startM:2, startD:1,  endM:4,  endD:30, progress:92,  critical:false, zone:"A" },
-  { id:"1.3", wbs:"1.3", name:"Bulk excavation – Zone B",         startM:3, startD:15, endM:6,  endD:30, progress:75,  critical:false, zone:"B" },
-  { id:"1.4", wbs:"1.4", name:"Utility relocation – Zone D",      startM:3, startD:1,  endM:7,  endD:15, progress:23,  critical:true,  delay:"14d", zone:"D", float:"-14d" },
+  { id:"1.1", wbs:"1.1", name:"Site clearing & grubbing",         startM:1, startD:2,  endM:2,  endD:15, progress:100, critical:false, chainageStart:0,    chainageEnd:8400, linear:true },
+  { id:"1.2", wbs:"1.2", name:"Bulk excavation – Zone A",         startM:2, startD:1,  endM:4,  endD:30, progress:92,  critical:false, zone:"A", chainageStart:0,    chainageEnd:2100, linear:true },
+  { id:"1.3", wbs:"1.3", name:"Bulk excavation – Zone B",         startM:3, startD:15, endM:6,  endD:30, progress:75,  critical:false, zone:"B", chainageStart:2100, chainageEnd:4800, linear:true },
+  { id:"1.4", wbs:"1.4", name:"Utility relocation – Zone D",      startM:3, startD:1,  endM:7,  endD:15, progress:23,  critical:true,  delay:"14d", zone:"D", float:"-14d", chainageStart:6600, chainageEnd:8400, linear:true },
   { id:"2",   wbs:"2",   name:"FOUNDATIONS",                      startM:4, startD:15, endM:10, endD:31, progress:35, critical:true,  isSummary:true  },
-  { id:"2.1", wbs:"2.1", name:"Pile drilling – Sec. A",           startM:4, startD:15, endM:7,  endD:31, progress:65,  critical:true,  zone:"A", float:"-7d" },
-  { id:"2.2", wbs:"2.2", name:"Pile drilling – Sec. B",           startM:6, startD:1,  endM:9,  endD:30, progress:30,  critical:true,  zone:"B", float:"-14d" },
-  { id:"2.3", wbs:"2.3", name:"Pile caps & grade beams",          startM:7, startD:15, endM:10, endD:31, progress:12,  critical:true,  float:"-14d" },
+  { id:"2.1", wbs:"2.1", name:"Pile drilling – Sec. A",           startM:4, startD:15, endM:7,  endD:31, progress:65,  critical:true,  zone:"A", float:"-7d", chainageStart:0,    chainageEnd:2100, linear:true },
+  { id:"2.2", wbs:"2.2", name:"Pile drilling – Sec. B",           startM:6, startD:1,  endM:9,  endD:30, progress:30,  critical:true,  zone:"B", float:"-14d", chainageStart:2100, chainageEnd:4800, linear:true },
+  { id:"2.3", wbs:"2.3", name:"Pile caps & grade beams",          startM:7, startD:15, endM:10, endD:31, progress:12,  critical:true,  float:"-14d", chainageStart:0,    chainageEnd:4800, linear:true },
   { id:"3",   wbs:"3",   name:"STRUCTURES",                       startM:6, startD:15, endM:12, endD:31, progress:10, critical:true,  isSummary:true  },
-  { id:"3.1", wbs:"3.1", name:"Bridge 68 – substructure",         startM:8, startD:1,  endM:11, endD:30, progress:5,   critical:true,  zone:"B", float:"-14d" },
-  { id:"3.2", wbs:"3.2", name:"Bridge 68 – superstructure",       startM:11,startD:1,  endM:12, endD:31, progress:0,   critical:true,  zone:"B", float:"-14d" },
-  { id:"3.3", wbs:"3.3", name:"Retaining walls – Zone A",         startM:6, startD:15, endM:9,  endD:30, progress:28,  critical:false, zone:"A" },
-  { id:"3.4", wbs:"3.4", name:"Bridge deck formwork",             startM:8, startD:15, endM:12, endD:15, progress:0,   critical:false, zone:"B" },
+  { id:"3.1", wbs:"3.1", name:"Bridge 68 – substructure",         startM:8, startD:1,  endM:11, endD:30, progress:5,   critical:true,  zone:"B", float:"-14d", chainageStart:3200, chainageEnd:3600, linear:false },
+  { id:"3.2", wbs:"3.2", name:"Bridge 68 – superstructure",       startM:11,startD:1,  endM:12, endD:31, progress:0,   critical:true,  zone:"B", float:"-14d", chainageStart:3200, chainageEnd:3600, linear:false },
+  { id:"3.3", wbs:"3.3", name:"Retaining walls – Zone A",         startM:6, startD:15, endM:9,  endD:30, progress:28,  critical:false, zone:"A", chainageStart:0,    chainageEnd:2100, linear:true },
+  { id:"3.4", wbs:"3.4", name:"Bridge deck formwork",             startM:8, startD:15, endM:12, endD:15, progress:0,   critical:false, zone:"B", chainageStart:3200, chainageEnd:3600, linear:false },
   { id:"4",   wbs:"4",   name:"ROAD PAVEMENT",                    startM:5, startD:1,  endM:12, endD:31, progress:24, critical:false, isSummary:true  },
-  { id:"4.1", wbs:"4.1", name:"Subgrade preparation",             startM:5, startD:1,  endM:8,  endD:31, progress:61,  critical:false },
-  { id:"4.2", wbs:"4.2", name:"Sub-base layer",                   startM:8, startD:1,  endM:10, endD:31, progress:15,  critical:false },
-  { id:"4.3", wbs:"4.3", name:"Asphalt base course",              startM:10,startD:15, endM:12, endD:31, progress:0,   critical:false },
-  { id:"4.4", wbs:"4.4", name:"Wearing course & markings",        startM:12,startD:1,  endM:12, endD:31, progress:0,   critical:false },
+  { id:"4.1", wbs:"4.1", name:"Subgrade preparation",             startM:5, startD:1,  endM:8,  endD:31, progress:61,  critical:false, chainageStart:0, chainageEnd:8400, linear:true },
+  { id:"4.2", wbs:"4.2", name:"Sub-base layer",                   startM:8, startD:1,  endM:10, endD:31, progress:15,  critical:false, chainageStart:0, chainageEnd:8400, linear:true },
+  { id:"4.3", wbs:"4.3", name:"Asphalt base course",              startM:10,startD:15, endM:12, endD:31, progress:0,   critical:false, chainageStart:0, chainageEnd:8400, linear:true },
+  { id:"4.4", wbs:"4.4", name:"Wearing course & markings",        startM:12,startD:1,  endM:12, endD:31, progress:0,   critical:false, chainageStart:0, chainageEnd:8400, linear:true },
   { id:"5",   wbs:"5",   name:"TRAFFIC SYSTEMS",                  startM:9, startD:1,  endM:12, endD:31, progress:0,  critical:false, isSummary:true  },
-  { id:"5.1", wbs:"5.1", name:"Traffic signals & signage",        startM:9, startD:1,  endM:12, endD:31, progress:0,   critical:false },
-  { id:"5.2", wbs:"5.2", name:"Lighting installation",            startM:10,startD:1,  endM:12, endD:31, progress:0,   critical:false },
+  { id:"5.1", wbs:"5.1", name:"Traffic signals & signage",        startM:9, startD:1,  endM:12, endD:31, progress:0,   critical:false, chainageStart:0, chainageEnd:8400, linear:true },
+  { id:"5.2", wbs:"5.2", name:"Lighting installation",            startM:10,startD:1,  endM:12, endD:31, progress:0,   critical:false, chainageStart:0, chainageEnd:8400, linear:true },
 ];
 
 const TODAY_POS = 177 / 365;
+
+const TOTAL_CHAINAGE = 8400;
+const ZONE_BOUNDS: { zone: "A" | "B" | "C" | "D"; start: number; end: number }[] = [
+  { zone: "A", start: 0,    end: 2100 },
+  { zone: "B", start: 2100, end: 4800 },
+  { zone: "C", start: 4800, end: 6600 },
+  { zone: "D", start: 6600, end: 8400 },
+];
+
+function fmtChainage(m: number) {
+  return `${Math.floor(m / 1000)}+${String(Math.round(m % 1000)).padStart(3, "0")}`;
+}
 
 const PLANNED_CUM = [5, 12, 20, 30, 45, 63, 71, 78, 85, 91, 96, 100];
 const ACTUAL_CUM  = [4, 9, 15, 23, 36, 57];
@@ -215,6 +240,121 @@ function GanttRows({ list, wbsCol }: { list: Activity[]; wbsCol: string }) {
           </div>
         );
       })}
+    </div>
+  );
+}
+
+function TimeLocationChart({ list, T }: { list: Activity[]; T: typeof TRANSLATIONS.en }) {
+  const CHART_H = 380;
+  const chainageTicks = [0, ...ZONE_BOUNDS.map(z => z.end)];
+  const plottable = list.filter(a => a.chainageStart != null && a.chainageEnd != null);
+
+  return (
+    <div className="rounded-2xl p-5"
+      style={{ background: P.card, border: `1px solid ${P.border}`, boxShadow: "0 2px 12px rgba(28,25,23,0.06)" }}>
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <h3 className="text-[14px] font-bold" style={{ color: P.text1 }}>{T.timelocTitle}</h3>
+        <div className="flex items-center gap-4 text-[11px]" style={{ color: P.text2 }}>
+          <span className="flex items-center gap-1.5">
+            <svg width="16" height="8"><line x1="1" y1="7" x2="15" y2="1" stroke={P.copper} strokeWidth="1.6" /></svg>
+            {T.legendLinear}
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 inline-block rounded-sm" style={{ background: P.copper, opacity: 0.5 }} />
+            {T.legendFixed}
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 inline-block rounded-sm" style={{ background: P.danger }} />
+            {T.legendCritical}
+          </span>
+        </div>
+      </div>
+
+      <div className="flex gap-2">
+        {/* Chainage axis */}
+        <div className="relative shrink-0" style={{ width: 52, height: CHART_H }}>
+          {chainageTicks.map(c => (
+            <div key={c} className="absolute text-[10px] font-mono font-semibold whitespace-nowrap"
+              style={{ top: `${(c / TOTAL_CHAINAGE) * 100}%`, transform: "translateY(-50%)", color: P.text3 }}>
+              {fmtChainage(c)}
+            </div>
+          ))}
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="relative" style={{ height: CHART_H }}>
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full block">
+              {ZONE_BOUNDS.map((z, i) => (
+                <rect key={z.zone} x={0} y={(z.start / TOTAL_CHAINAGE) * 100} width={100}
+                  height={((z.end - z.start) / TOTAL_CHAINAGE) * 100}
+                  fill={i % 2 === 0 ? P.bg : "transparent"} opacity={0.5} />
+              ))}
+              {ZONE_BOUNDS.map(z => (
+                <line key={z.zone} x1={0} x2={100} y1={(z.end / TOTAL_CHAINAGE) * 100} y2={(z.end / TOTAL_CHAINAGE) * 100}
+                  stroke={P.border} strokeWidth={0.3} />
+              ))}
+              <line x1={TODAY_POS * 100} x2={TODAY_POS * 100} y1={0} y2={100}
+                stroke={P.copper} strokeWidth={0.4} strokeDasharray="1.5,1.5" opacity={0.6} />
+
+              {plottable.map(a => {
+                const x1 = monthOffset(a.startM, a.startD) * 100;
+                const x2 = monthOffset(a.endM, a.endD) * 100;
+                const y1 = (a.chainageStart! / TOTAL_CHAINAGE) * 100;
+                const y2 = (a.chainageEnd! / TOTAL_CHAINAGE) * 100;
+                const color = a.critical ? P.danger : P.copper;
+                const progFrac = a.progress / 100;
+                const tooltip = `${a.name} (${fmtChainage(a.chainageStart!)}–${fmtChainage(a.chainageEnd!)})`;
+
+                if (a.linear) {
+                  const xp = x1 + (x2 - x1) * progFrac;
+                  const yp = y1 + (y2 - y1) * progFrac;
+                  return (
+                    <g key={a.id}>
+                      <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={color} strokeWidth={0.9} opacity={0.28} vectorEffect="non-scaling-stroke" />
+                      {a.progress > 0 && (
+                        <line x1={x1} y1={y1} x2={xp} y2={yp} stroke={color} strokeWidth={1.8} vectorEffect="non-scaling-stroke" />
+                      )}
+                      <title>{tooltip}</title>
+                    </g>
+                  );
+                }
+
+                const h = Math.max(y2 - y1, 1.2);
+                return (
+                  <g key={a.id}>
+                    <rect x={x1} y={y1} width={Math.max(x2 - x1, 0.6)} height={h}
+                      fill={color} opacity={0.18} stroke={color} strokeWidth={0.5} vectorEffect="non-scaling-stroke" />
+                    {a.progress > 0 && (
+                      <rect x={x1} y={y1} width={Math.max((x2 - x1) * progFrac, 0.3)} height={h} fill={color} opacity={0.55} />
+                    )}
+                    <title>{tooltip}</title>
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
+
+          <div className="flex mt-1">
+            {T.months.map((m) => (
+              <div key={m} className="flex-1 text-center text-[10.5px] font-semibold" style={{ color: P.text3 }}>{m}</div>
+            ))}
+          </div>
+        </div>
+
+        {/* Zone labels */}
+        <div className="relative shrink-0" style={{ width: 18, height: CHART_H }}>
+          {ZONE_BOUNDS.map(z => (
+            <div key={z.zone} className="absolute text-[10px] font-bold"
+              style={{ top: `${((z.start + z.end) / 2 / TOTAL_CHAINAGE) * 100}%`, transform: "translateY(-50%)", color: P.text3 }}>
+              {z.zone}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <p className="text-[11px] mt-3" style={{ color: P.text3 }}>
+        {T.chainageAxis}: Ch.{fmtChainage(0)} – Ch.{fmtChainage(TOTAL_CHAINAGE)}
+      </p>
     </div>
   );
 }
@@ -320,6 +460,11 @@ export default function SchedulePage() {
           ) : (
             <GanttRows list={filteredActivities} wbsCol={T.wbsCol} />
           )
+        )}
+
+        {/* ── Time-Location (TILOS) view ── */}
+        {view === "timeloc" && (
+          <TimeLocationChart list={activities} T={T} />
         )}
 
         {/* ── Critical Path view ── */}
