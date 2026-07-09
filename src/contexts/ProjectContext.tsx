@@ -27,6 +27,11 @@ export interface ScheduleActivity {
   successors: number[];
   totalSlack: number;
   freeSlack: number;
+  // Optional — populated for projects with linear/chainage-based work (e.g. highway demo)
+  // to drive the Time-Location (TILOS) view. Absent for normal uploaded schedules.
+  chainageStart?: number;
+  chainageEnd?: number;
+  linear?: boolean;
 }
 
 export interface Project {
