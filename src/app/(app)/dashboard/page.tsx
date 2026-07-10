@@ -474,7 +474,7 @@ function FullDashboard({ isHe, projectName }: { isHe: boolean; projectName: stri
     qualitySub:    isHe ? "אי-התאמות פתוחות" : "open NCRs",
     tasks:         isHe ? "משימות היום" : "Today's Tasks",
     alerts:        isHe ? "התראות פעילות" : "Active Alerts",
-    approvalsTitle:isHe ? "ממתינים לאישור" : "Pending Approvals",
+    approvalsTitle:isHe ? "ממתינים לאישורך" : "Pending Approvals",
     scheduleTitle: isHe ? "מצב לוח זמנים" : "Schedule Status",
     siteTitle:     isHe ? "מודל" : "Site Progress",
     datumLive:     isHe ? "DatumBIM חי" : "DatumBIM Live",
