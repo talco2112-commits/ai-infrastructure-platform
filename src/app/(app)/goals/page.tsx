@@ -3,9 +3,11 @@
 import { useState, useEffect } from "react";
 import { useProjects } from "@/contexts/ProjectContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Bell, Search, Plus, Lightbulb, Trash2, TrendingUp, TrendingDown } from "lucide-react";
+import { useTeam } from "@/contexts/TeamContext";
+import { Bell, Search, Plus, Lightbulb, Trash2, TrendingUp, TrendingDown, Send } from "lucide-react";
 import { QuickAddModal } from "@/components/QuickAddModal";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { SendToWorkerModal } from "@/components/SendToWorkerModal";
 
 const P = {
   bg: "#EDE8E1", card: "#FAF8F5", border: "#EDE8DF",
@@ -37,6 +39,9 @@ const TRANSLATIONS = {
     noLessons: "No lessons recorded yet — they appear here once a goal is Achieved or Missed",
     statusLabels: { "ON TRACK": "On Track", "AT RISK": "At Risk", ACHIEVED: "Achieved", MISSED: "Missed" },
     categoryLabels: { Safety: "Safety", Quality: "Quality", Schedule: "Schedule", Productivity: "Productivity", Training: "Training" },
+    sendToWorker: "Send to worker",
+    notSent: "Not sent",
+    sentAt: "Sent",
   },
   he: {
     title: "יעדים",
@@ -57,6 +62,9 @@ const TRANSLATIONS = {
     noLessons: "לא נרשמו לקחים עדיין — הם יופיעו כאן ברגע שיעד יושג או יפוספס",
     statusLabels: { "ON TRACK": "בתוכנית", "AT RISK": "בסיכון", ACHIEVED: "הושג", MISSED: "פוספס" },
     categoryLabels: { Safety: "בטיחות", Quality: "איכות", Schedule: "לוח זמנים", Productivity: "פרודוקטיביות", Training: "הכשרה" },
+    sendToWorker: "שלח לעובד",
+    notSent: "לא נשלח",
+    sentAt: "נשלח",
   },
 };
 
@@ -67,6 +75,7 @@ interface Goal {
   id: string; title: string; titleHe: string; category: Category;
   assignee: string; progress: number; deadline: string; status: Status;
   lesson?: string; lessonHe?: string;
+  workerId?: string; sentAt?: string;
 }
 
 const DEMO_GOALS: Goal[] = [
@@ -100,11 +109,13 @@ export default function GoalsPage() {
   const { active } = useProjects();
   const isDemo = active.id === "highway-20";
   const { isHe } = useLanguage();
+  const { workers } = useTeam();
   const T = TRANSLATIONS[isHe ? "he" : "en"];
 
   const [goals, setGoals] = useState<Goal[]>(isDemo ? DEMO_GOALS : []);
   const [showModal, setShowModal] = useState(false);
   const [deleteIdx, setDeleteIdx] = useState<number | null>(null);
+  const [sendIdx, setSendIdx] = useState<number | null>(null);
   useEffect(() => { setGoals(isDemo ? DEMO_GOALS : []); }, [isDemo]);
 
   const activeCount   = goals.filter(g => g.status === "ON TRACK" || g.status === "AT RISK").length;
@@ -118,13 +129,16 @@ export default function GoalsPage() {
 
   function addGoal(values: Record<string, string>) {
     const id = `G-${String(goals.length + 1).padStart(2, "0")}`;
+    const worker = workers.find(w => w.id === values.assignee);
     setGoals(prev => [{
       id, title: values.title || "", titleHe: values.title || "",
       category: (values.category as Category) || "Productivity",
-      assignee: values.assignee || "",
+      assignee: worker ? worker.name : "",
       progress: 0,
       deadline: values.deadline || "",
       status: "ON TRACK" as Status,
+      workerId: worker?.id,
+      sentAt: worker ? new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : undefined,
     }, ...prev]);
     setShowModal(false);
   }
@@ -133,6 +147,15 @@ export default function GoalsPage() {
     if (deleteIdx === null) return;
     setGoals(prev => prev.filter((_, i) => i !== deleteIdx));
     setDeleteIdx(null);
+  }
+
+  function sendGoal(idx: number, workerId: string) {
+    const worker = workers.find(w => w.id === workerId);
+    if (!worker) return;
+    setGoals(prev => prev.map((g, i) => i === idx
+      ? { ...g, assignee: worker.name, workerId: worker.id, sentAt: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }
+      : g));
+    setSendIdx(null);
   }
 
   function fmtDate(d: string) {
@@ -229,7 +252,22 @@ export default function GoalsPage() {
                           {T.categoryLabels[g.category]}
                         </span>
                       </td>
-                      <td className="px-4 py-2.5 whitespace-nowrap" style={{ color: P.text2 }}>{g.assignee}</td>
+                      <td className="px-4 py-2.5 whitespace-nowrap">
+                        <button onClick={() => setSendIdx(i)}
+                          className="flex flex-col items-start transition-colors"
+                          title={T.sendToWorker}>
+                          <span style={{ color: g.assignee ? P.text2 : P.text3 }}>{g.assignee || T.notSent}</span>
+                          {g.sentAt ? (
+                            <span className="flex items-center gap-1 text-[10px]" style={{ color: P.good }}>
+                              <Send className="w-2.5 h-2.5" /> {T.sentAt} {g.sentAt}
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-1 text-[10px]" style={{ color: P.copper }}>
+                              <Send className="w-2.5 h-2.5" /> {T.sendToWorker}
+                            </span>
+                          )}
+                        </button>
+                      </td>
                       <td className="px-4 py-2.5">
                         <div className="flex items-center gap-2">
                           <div className="w-14 h-1.5 rounded-full" style={{ background: P.track }}>
@@ -310,9 +348,20 @@ export default function GoalsPage() {
               { value: "Productivity", label: "Productivity", labelHe: "פרודוקטיביות" },
               { value: "Training", label: "Training", labelHe: "הכשרה" },
             ]},
-            { key: "assignee", label: "Assignee", labelHe: "אחראי", type: "text" },
+            { key: "assignee", label: "Assignee (sends immediately)", labelHe: "אחראי (נשלח מיידית)", type: "select", options: workers.map(w => ({ value: w.id, label: w.name, labelHe: w.nameHe })) },
             { key: "deadline", label: "Deadline", labelHe: "תאריך יעד", type: "date" },
           ]}
+        />
+      )}
+
+      {sendIdx !== null && goals[sendIdx] && (
+        <SendToWorkerModal
+          isHe={isHe}
+          itemLabel={goals[sendIdx].title}
+          itemLabelHe={goals[sendIdx].titleHe}
+          currentWorkerId={goals[sendIdx].workerId}
+          onClose={() => setSendIdx(null)}
+          onSend={workerId => sendGoal(sendIdx, workerId)}
         />
       )}
     </div>
