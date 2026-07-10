@@ -1,18 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, FolderOpen, CalendarDays, Banknote,
   Satellite, HelpCircle, Scale, ClipboardCheck, Shield,
   FileBarChart, Settings, LogOut, ChevronDown, Pencil,
-  HardHat, Receipt, Plus, CheckCircle2, Target,
+  HardHat, Receipt, Plus, CheckCircle2, Target, X,
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { LogoAnimation } from "@/components/LogoAnimation";
 import { NewProjectModal } from "@/components/NewProjectModal";
 import { useProjects } from "@/contexts/ProjectContext";
+import { useSidebarDrawer } from "@/contexts/SidebarDrawerContext";
 
 const navItems = [
   { href: "/dashboard",     icon: LayoutDashboard, labelEn: "Dashboard",     labelHe: "לוח בקרה"    },
@@ -47,13 +48,17 @@ export function Sidebar({ lang }: { lang: "en" | "he" }) {
   const isHe     = lang === "he";
 
   const { projects, activeId, active, setActiveId } = useProjects();
+  const { open: mobileOpen, close: closeMobile } = useSidebarDrawer();
 
   const [open, setOpen]                   = useState(false);
   const [showNewProject, setShowNewProject] = useState(false);
 
+  useEffect(() => { closeMobile(); }, [pathname, closeMobile]);
+
   function switchProject(id: string) {
     setActiveId(id);
     setOpen(false);
+    closeMobile();
     router.push("/dashboard");
   }
 
@@ -61,7 +66,22 @@ export function Sidebar({ lang }: { lang: "en" | "he" }) {
 
   return (
     <>
-      <aside className="w-56 flex flex-col h-full shrink-0" style={{ background: "#1A1512" }}>
+      {/* Mobile backdrop */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-40 md:hidden" style={{ background: "rgba(0,0,0,0.5)" }} onClick={closeMobile} />
+      )}
+
+      <aside
+        className={`w-64 md:w-56 flex flex-col h-full shrink-0 fixed md:static inset-y-0 start-0 z-50 transition-transform duration-200 ${
+          mobileOpen ? "translate-x-0" : isHe ? "translate-x-full md:translate-x-0" : "-translate-x-full md:translate-x-0"
+        }`}
+        style={{ background: "#1A1512" }}>
+        {/* Mobile close button */}
+        <button onClick={closeMobile}
+          className="md:hidden absolute top-3 end-3 w-8 h-8 rounded-lg flex items-center justify-center"
+          style={{ background: "rgba(255,255,255,0.08)", color: "#D6D0CA" }}>
+          <X className="w-4 h-4" />
+        </button>
 
         {/* ── Logo ── */}
         <div className="flex items-center justify-center h-[72px] border-b shrink-0 overflow-hidden"

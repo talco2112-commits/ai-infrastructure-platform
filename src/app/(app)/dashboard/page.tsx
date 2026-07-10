@@ -408,7 +408,7 @@ function EmptyDashboard({ isHe, project }: { isHe: boolean; project: ReturnType<
         {/* Module grid — all empty */}
         <Card>
           <CardTitle title={isHe ? "מודולי הפלטפורמה" : "Platform Modules"}/>
-          <div className="px-5 pb-5 pt-3 grid grid-cols-3 gap-3">
+          <div className="px-5 pb-5 pt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {[
               { en:"Documents",     he:"מסמכים",      icon:FolderOpen,     bg:"#EDE9FF", color:"#5B21B6", route:"/documents"     },
               { en:"Design",        he:"תכנון",        icon:Pencil,         bg:"#EDE9FF", color:"#4338CA", route:"/design"        },
@@ -788,7 +788,7 @@ function FullDashboard({ isHe, projectName }: { isHe: boolean; projectName: stri
 
           <Card className="lg:col-span-3">
             <CardTitle title={t.modulesTitle}/>
-            <div className="px-5 pb-5 pt-3 grid grid-cols-3 gap-3">
+            <div className="px-5 pb-5 pt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {modulesData.map(mod => {
                 const Icon = mod.icon;
                 return (
