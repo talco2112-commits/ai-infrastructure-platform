@@ -6,7 +6,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import {
   Bell, Search, Upload, Filter, Grid, List,
   FolderOpen, Folder, FileText, Download, Eye,
-  Lightbulb, ChevronRight, AlertTriangle, Trash2,
+  Lightbulb, ChevronRight, AlertTriangle, Trash2, Pencil, Check, X,
 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 
@@ -38,20 +38,6 @@ const TRANSLATIONS = {
     colSize: "Size",
     colStatus: "Status",
     colBy: "Uploaded by",
-    folders: [
-      "Drawings & Plans",
-      "Contracts",
-      "Technical Specifications",
-      "Bills of Quantities",
-      "Submittals",
-      "RFI Correspondence",
-      "Meeting Minutes",
-      "3rd Party Reports",
-      "Authority Approvals",
-      "Environmental & Safety",
-      "Geotechnical Reports",
-      "As-Built Drawings",
-    ],
   },
   he: {
     title: "ניהול מסמכים",
@@ -70,22 +56,27 @@ const TRANSLATIONS = {
     colSize: "גודל",
     colStatus: "סטטוס",
     colBy: "הועלה על-ידי",
-    folders: [
-      "תכניות ושרטוטים",
-      "חוזים",
-      "מפרטים טכניים",
-      "כתבי כמויות",
-      "הגשות",
-      "התכתבות בקשות מידע",
-      "פרוטוקולי ישיבות",
-      "דוחות צד ג׳",
-      "אישורים רגולטוריים",
-      "בטיחות וסביבה",
-      "דוחות גאוטכניים",
-      "תכניות כנבנה",
-    ],
   },
 };
+
+interface DocFolder { en: string; he: string }
+
+const DEFAULT_FOLDERS: DocFolder[] = [
+  { en: "Drawings & Plans",          he: "תכניות ושרטוטים" },
+  { en: "Contracts",                 he: "חוזים" },
+  { en: "Technical Specifications",  he: "מפרטים טכניים" },
+  { en: "Bills of Quantities",       he: "כתבי כמויות" },
+  { en: "Submittals",                he: "הגשות" },
+  { en: "RFI Correspondence",        he: "התכתבות בקשות מידע" },
+  { en: "Meeting Minutes",           he: "פרוטוקולי ישיבות" },
+  { en: "3rd Party Reports",         he: "דוחות צד ג׳" },
+  { en: "Authority Approvals",       he: "אישורים רגולטוריים" },
+  { en: "Environmental & Safety",    he: "בטיחות וסביבה" },
+  { en: "Geotechnical Reports",      he: "דוחות גאוטכניים" },
+  { en: "As-Built Drawings",         he: "תכניות כנבנה" },
+];
+
+const FOLDERS_STORAGE_KEY = "infrai_doc_folders";
 
 const DEMO_FOLDER_COUNTS = [156, 12, 34, 8, 38, 47, 29, 21, 15, 19, 11, 0];
 
@@ -133,6 +124,36 @@ export default function DocumentsPage() {
   const [activeFolderIdx, setActiveFolderIdx] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => { setFiles(isDemo ? DEMO_FILES : []); }, [isDemo]);
+
+  const [folders, setFolders] = useState<DocFolder[]>(DEFAULT_FOLDERS);
+  const [foldersHydrated, setFoldersHydrated] = useState(false);
+  const [editingFolderIdx, setEditingFolderIdx] = useState<number | null>(null);
+  const [editingFolderName, setEditingFolderName] = useState("");
+
+  useEffect(() => {
+    const stored = localStorage.getItem(FOLDERS_STORAGE_KEY);
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length === DEFAULT_FOLDERS.length) setFolders(parsed);
+      } catch { /* ignore corrupt storage */ }
+    }
+    setFoldersHydrated(true);
+  }, []);
+  useEffect(() => { if (foldersHydrated) localStorage.setItem(FOLDERS_STORAGE_KEY, JSON.stringify(folders)); }, [folders, foldersHydrated]);
+
+  function startRenameFolder(idx: number) {
+    setEditingFolderIdx(idx);
+    setEditingFolderName(isHe ? folders[idx].he : folders[idx].en);
+  }
+  function saveRenameFolder() {
+    if (editingFolderIdx === null) return;
+    const name = editingFolderName.trim();
+    if (name) {
+      setFolders(prev => prev.map((f, i) => i === editingFolderIdx ? { ...f, [isHe ? "he" : "en"]: name } : f));
+    }
+    setEditingFolderIdx(null);
+  }
 
   function confirmDelete() {
     if (deleteIdx === null) return;
@@ -195,11 +216,36 @@ export default function DocumentsPage() {
           <p className="text-[10px] font-bold uppercase tracking-widest mb-2 px-2" style={{ color: P.text3 }}>
             {T.projectFolders}
           </p>
-          {T.folders.map((name, idx) => {
+          {folders.map((f, idx) => {
             const active = idx === activeFolderIdx;
+            const name = isHe ? f.he : f.en;
+            const isEditing = editingFolderIdx === idx;
+            if (isEditing) {
+              return (
+                <div key={idx} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl"
+                  style={{ background: P.copperLight, border: `1px solid ${P.copperMid}` }}>
+                  <Folder className="w-4 h-4 shrink-0" style={{ color: P.copper }} />
+                  <input
+                    autoFocus
+                    value={editingFolderName}
+                    onChange={e => setEditingFolderName(e.target.value)}
+                    onKeyDown={e => { if (e.key === "Enter") saveRenameFolder(); if (e.key === "Escape") setEditingFolderIdx(null); }}
+                    dir={isHe ? "rtl" : "ltr"}
+                    className="flex-1 min-w-0 text-[12.5px] font-medium rounded-lg px-1.5 py-0.5 outline-none"
+                    style={{ background: P.card, border: `1px solid ${P.border}`, color: P.text1 }}
+                  />
+                  <button onClick={saveRenameFolder} className="p-0.5 rounded shrink-0" style={{ color: P.good }}>
+                    <Check className="w-3.5 h-3.5" />
+                  </button>
+                  <button onClick={() => setEditingFolderIdx(null)} className="p-0.5 rounded shrink-0" style={{ color: P.text3 }}>
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              );
+            }
             return (
-              <div key={name} onClick={() => setActiveFolderIdx(idx)}
-                className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl cursor-pointer"
+              <div key={idx} onClick={() => setActiveFolderIdx(idx)}
+                className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl cursor-pointer group"
                 style={{
                   background: active ? P.copperLight : "transparent",
                   border: active ? `1px solid ${P.copperMid}` : "1px solid transparent",
@@ -208,10 +254,17 @@ export default function DocumentsPage() {
                   ? <FolderOpen className="w-4 h-4 shrink-0" style={{ color: P.copper }} />
                   : <Folder className="w-4 h-4 shrink-0" style={{ color: P.text3 }} />
                 }
-                <span className="flex-1 text-[12.5px] font-medium leading-tight" style={{ color: active ? P.copper : P.text2 }}>
+                <span className="flex-1 text-[12.5px] font-medium leading-tight truncate" style={{ color: active ? P.copper : P.text2 }}>
                   {name}
                 </span>
-                <span className="text-[11px] font-bold" style={{ color: active ? P.copper : P.text3 }}>{folderCounts[idx]}</span>
+                <button
+                  onClick={e => { e.stopPropagation(); startRenameFolder(idx); }}
+                  className="p-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                  title={isHe ? "שנה שם תיקייה" : "Rename folder"}
+                  style={{ color: active ? P.copper : P.text3 }}>
+                  <Pencil className="w-3 h-3" />
+                </button>
+                <span className="text-[11px] font-bold shrink-0" style={{ color: active ? P.copper : P.text3 }}>{folderCounts[idx]}</span>
               </div>
             );
           })}
@@ -223,7 +276,7 @@ export default function DocumentsPage() {
           {/* Toolbar */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <span className="text-[13px] font-semibold" style={{ color: P.text2 }}>{T.folders[activeFolderIdx]}</span>
+              <span className="text-[13px] font-semibold" style={{ color: P.text2 }}>{isHe ? folders[activeFolderIdx].he : folders[activeFolderIdx].en}</span>
               <ChevronRight className="w-3.5 h-3.5" style={{ color: P.text3 }} />
               <span className="text-[13px]" style={{ color: P.text3 }}>{docsCount}</span>
             </div>
@@ -270,7 +323,7 @@ export default function DocumentsPage() {
               <thead>
                 <tr style={{ borderBottom: `1px solid ${P.border}` }}>
                   {[T.colName, T.colRev, T.colDiscipline, T.colDate, T.colSize, T.colStatus, T.colBy, ""].map(h => (
-                    <th key={h} className="px-4 py-3 text-left font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
+                    <th key={h} className="px-4 py-3 text-start font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
                   ))}
                 </tr>
               </thead>
