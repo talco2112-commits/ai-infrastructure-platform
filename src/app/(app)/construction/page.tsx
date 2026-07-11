@@ -39,6 +39,19 @@ const TABS = [
 
 type TabId = typeof TABS[number]["id"];
 
+const TAB_COLORS: Record<TabId, { color: string; bg: string }> = {
+  daily:          { color: "#8B5A2B", bg: "#F5EBE0" },
+  weekly:         { color: "#1D4ED8", bg: "#EFF6FF" },
+  monthly:        { color: "#7C3AED", bg: "#F5F3FF" },
+  operations:     { color: "#B45309", bg: "#FFFBEB" },
+  permits:        { color: "#15803D", bg: "#F0FDF4" },
+  procurement:    { color: "#0891B2", bg: "#ECFEFF" },
+  inventory:      { color: "#C2410C", bg: "#FFF7ED" },
+  diary:          { color: "#4338CA", bg: "#EEF2FF" },
+  equipment:      { color: "#475569", bg: "#F1F5F9" },
+  subcontractors: { color: "#BE185D", bg: "#FDF2F8" },
+};
+
 /* ─── shared helpers ─── */
 function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
@@ -77,11 +90,11 @@ function AIBanner({ text, label, danger }: { text: string; label: string; danger
     </div>
   );
 }
-function THead({ cols }: { cols: string[] }) {
+function THead({ cols, aligns }: { cols: string[]; aligns?: ("start" | "center" | "right")[] }) {
   return (
     <thead>
       <tr style={{ borderBottom: `1px solid ${P.border}` }}>
-        {cols.map(h => <th key={h} className="px-4 py-3 text-left font-bold whitespace-nowrap" style={{ color: P.text3, background: P.bg }}>{h}</th>)}
+        {cols.map((h, i) => <th key={h} className={`px-4 py-3 font-bold whitespace-nowrap text-${aligns?.[i] ?? "start"}`} style={{ color: P.text3, background: P.bg }}>{h}</th>)}
       </tr>
     </thead>
   );
@@ -163,7 +176,7 @@ const DailyTasks = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(fun
       <KPIRow items={kpis} colors={[P.text1, P.good, "#1D4ED8", P.danger]} />
       {isDemo && <AIBanner label={isHe?"תובנת AI לתכנית עבודה":"AI Work Plan Insight"} text={ai} />}
       <Card>
-        <table className="w-full text-[12px]"><THead cols={[...cols, ""]} /><tbody>
+        <table className="w-full text-[12px]"><THead cols={[...cols, ""]} aligns={["start","start","center","start","start","start","start","start","center"]} /><tbody>
           {tasks.length === 0 && (
             <tr><td colSpan={9} className="px-4 py-10 text-center text-[13px]" style={{color:P.text3}}>{isHe?"אין משימות עדיין":"No tasks yet"}</td></tr>
           )}
@@ -282,7 +295,7 @@ const WeeklyPlan = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(fun
       <KPIRow items={kpis} colors={[P.text1, P.good, "#1D4ED8", P.danger]} />
       {isDemo && <AIBanner label={isHe?"תובנת AI לתחזית":"AI Lookahead Insight"} text={ai} />}
       <Card>
-        <table className="w-full text-[12px]"><THead cols={[...cols, ""]} /><tbody>
+        <table className="w-full text-[12px]"><THead cols={[...cols, ""]} aligns={["start","start","center","start","start","start","center"]} /><tbody>
           {activities.length === 0 && (
             <tr><td colSpan={7} className="px-4 py-10 text-center text-[13px]" style={{color:P.text3}}>{isHe?"אין פעילויות עדיין":"No activities yet"}</td></tr>
           )}
@@ -384,7 +397,7 @@ const MonthlyPlan = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(fu
       <KPIRow items={kpis} colors={[P.copper, P.text1, P.good, P.danger]} />
       {isDemo && <AIBanner label={isHe?"תחזית AI חודשית":"AI Monthly Outlook"} text={ai} />}
       <Card>
-        <table className="w-full text-[12px]"><THead cols={[...cols, ""]} /><tbody>
+        <table className="w-full text-[12px]"><THead cols={[...cols, ""]} aligns={["start","start","start","start","center"]} /><tbody>
           {milestones.length === 0 && (
             <tr><td colSpan={5} className="px-4 py-10 text-center text-[13px]" style={{color:P.text3}}>{isHe?"אין אבני דרך עדיין":"No milestones yet"}</td></tr>
           )}
@@ -482,7 +495,7 @@ const SpecialOps = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(fun
       <KPIRow items={kpis} colors={[P.good, "#1D4ED8", P.copper, P.danger]} />
       {isDemo && <AIBanner label={isHe?"התראת AI לפעולות":"AI Operations Alert"} text={ai} danger />}
       <Card>
-        <table className="w-full text-[12px]"><THead cols={[...cols, ""]} /><tbody>
+        <table className="w-full text-[12px]"><THead cols={[...cols, ""]} aligns={["start","start","start","center","start","start","start","center"]} /><tbody>
           {ops.length === 0 && (
             <tr><td colSpan={8} className="px-4 py-10 text-center text-[13px]" style={{color:P.text3}}>{isHe?"אין פעולות מיוחדות עדיין":"No special operations yet"}</td></tr>
           )}
@@ -608,7 +621,7 @@ const Permits = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(functi
       <KPIRow items={kpis} colors={[P.good, P.warn, P.danger, "#1D4ED8"]} />
       {isDemo && <AIBanner label={isHe?"התראת AI להיתרים":"AI Permits Alert"} text={ai} danger />}
       <Card>
-        <table className="w-full text-[12px]"><THead cols={[...cols, ""]} /><tbody>
+        <table className="w-full text-[12px]"><THead cols={[...cols, ""]} aligns={["start","start","center","start","start","start","start","center"]} /><tbody>
           {permits.length === 0 && (
             <tr><td colSpan={8} className="px-4 py-10 text-center text-[13px]" style={{color:P.text3}}>{isHe?"אין היתרים עדיין":"No permits yet"}</td></tr>
           )}
@@ -711,7 +724,7 @@ const Procurement = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(fu
       <KPIRow items={kpis} colors={[P.text1, P.warn, P.copper, P.good]} />
       {isDemo && <AIBanner label={isHe?"התראת רכש AI":"AI Procurement Alert"} text={ai} danger />}
       <Card>
-        <table className="w-full text-[12px]"><THead cols={[...cols, ""]} /><tbody>
+        <table className="w-full text-[12px]"><THead cols={[...cols, ""]} aligns={["start","start","start","right","start","start","start","start","center"]} /><tbody>
           {pos.length === 0 && (
             <tr><td colSpan={9} className="px-4 py-10 text-center text-[13px]" style={{color:P.text3}}>{isHe?"אין הזמנות רכש עדיין":"No purchase orders yet"}</td></tr>
           )}
@@ -823,7 +836,7 @@ const Inventory = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(func
       <KPIRow items={kpis} colors={[P.text1, P.warn, P.danger, P.copper]} />
       {isDemo && <AIBanner label={isHe?"תובנת AI למלאי":"AI Inventory Insight"} text={ai} />}
       <Card>
-        <table className="w-full text-[12px]"><THead cols={[...cols, ""]} /><tbody>
+        <table className="w-full text-[12px]"><THead cols={[...cols, ""]} aligns={["start","start","start","start","start","start","start","center"]} /><tbody>
           {items.length === 0 && (
             <tr><td colSpan={8} className="px-4 py-10 text-center text-[13px]" style={{color:P.text3}}>{isHe?"אין פריטי מלאי עדיין":"No inventory items yet"}</td></tr>
           )}
@@ -931,7 +944,7 @@ const SiteDiary = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(func
         <div className="col-span-2">
           <Card>
             <div className="px-5 pt-4 pb-2"><p className="text-[14px] font-bold" style={{color:P.text1}}>{isHe?"פעילויות עבודה":"Work Activities"}</p></div>
-            <table className="w-full text-[12px]"><THead cols={[...wcols, ""]}/><tbody>
+            <table className="w-full text-[12px]"><THead cols={[...wcols, ""]} aligns={["center","start","start","start","start","center"]}/><tbody>
               {work.length === 0 && (
                 <tr><td colSpan={6} className="px-4 py-10 text-center text-[13px]" style={{color:P.text3}}>{isHe?"אין רשומות יומן עדיין":"No diary entries yet"}</td></tr>
               )}
@@ -1059,7 +1072,7 @@ const Equipment = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>(func
       <KPIRow items={kpis} colors={[P.text1, P.good, "#475569", P.danger]} />
       {isDemo && <AIBanner label={isHe?"תובנת AI לצי ציוד":"AI Fleet Insight"} text={ai} />}
       <Card>
-        <table className="w-full text-[12px]"><THead cols={[...cols, ""]}/><tbody>
+        <table className="w-full text-[12px]"><THead cols={[...cols, ""]} aligns={["start","start","start","center","start","start","start","start","center"]}/><tbody>
           {equip.length === 0 && (
             <tr><td colSpan={9} className="px-3 py-10 text-center text-[13px]" style={{color:P.text3}}>{isHe?"אין ציוד עדיין":"No equipment yet"}</td></tr>
           )}
@@ -1150,7 +1163,7 @@ const Subcontractors = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>
     setSubs(prev => [{
       company: values.company || "", companyHe: values.company || "",
       trade: values.trade || "", tradeHe: values.trade || "",
-      workers: Number(values.workers) || 0, contract: values.contract ? `₪${values.contract}` : "",
+      workers: Number(values.workers) || 0, contract: values.contract ? `₪${Number(values.contract).toLocaleString()}` : "",
       perf: 0, schedule: "on-track" as const, ncrs: 0, status: "MOBILIZING" as SS2,
     }, ...prev]);
     setShowModal(false);
@@ -1163,7 +1176,7 @@ const Subcontractors = forwardRef<TabHandle, { isHe: boolean; isDemo: boolean }>
       <KPIRow items={kpis} colors={[P.text1, P.copper, P.good, P.danger]} />
       {isDemo && <AIBanner label={isHe?"תובנת AI לקבלני משנה":"AI Subcontractor Insight"} text={ai} />}
       <Card>
-        <table className="w-full text-[12px]"><THead cols={[...cols, ""]}/><tbody>
+        <table className="w-full text-[12px]"><THead cols={[...cols, ""]} aligns={["start","start","center","start","start","start","center","start","center"]}/><tbody>
           {subs.length === 0 && (
             <tr><td colSpan={9} className="px-3 py-10 text-center text-[13px]" style={{color:P.text3}}>{isHe?"אין קבלני משנה עדיין":"No subcontractors yet"}</td></tr>
           )}
@@ -1266,23 +1279,29 @@ export default function ConstructionPage() {
       </header>
 
       {/* Tabs */}
-      <div className="px-6 pt-3 pb-0 flex items-center gap-1 overflow-x-auto shrink-0"
+      <div className="px-6 pt-3 pb-3 flex flex-wrap items-center gap-2 shrink-0"
         style={{ borderBottom: `1px solid ${P.border}`, background: P.card }}>
         {TABS.map(t => {
           const active = t.id === activeTab;
           const Icon = t.icon;
+          const c = TAB_COLORS[t.id];
           return (
             <button
               key={t.id}
               onClick={() => setActiveTab(t.id)}
-              className="flex items-center gap-1.5 px-3.5 py-2.5 text-[12px] font-semibold whitespace-nowrap transition-all shrink-0 border-b-2"
+              className="flex items-center gap-2 pe-3.5 ps-2 py-1.5 rounded-xl text-[12.5px] font-semibold whitespace-nowrap transition-all"
               style={{
-                color: active ? P.copper : P.text3,
-                borderBottomColor: active ? P.copper : "transparent",
-                background: "transparent",
-                marginBottom: "-1px",
-              }}>
-              <Icon className="w-3.5 h-3.5" />
+                background: active ? c.bg : "transparent",
+                border: `1.5px solid ${active ? c.color : "transparent"}`,
+                color: active ? c.color : P.text2,
+              }}
+              onMouseEnter={e => { if (!active) e.currentTarget.style.background = P.bg; }}
+              onMouseLeave={e => { if (!active) e.currentTarget.style.background = "transparent"; }}
+            >
+              <span className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
+                style={{ background: active ? "rgba(255,255,255,0.65)" : c.bg, color: c.color }}>
+                <Icon className="w-3.5 h-3.5" />
+              </span>
               {isHe ? t.labelHe : t.labelEn}
             </button>
           );
