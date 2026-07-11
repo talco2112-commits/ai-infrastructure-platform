@@ -697,7 +697,7 @@ export default function DesignPage() {
               <thead>
                 <tr style={{ borderBottom: `1px solid ${P.border}` }}>
                   {[T.colNum, T.colTitle, T.colDiscipline, T.colRev, T.colSubmitted, T.colDue, T.colDaysLeft, T.colStatus, ""].map(h => (
-                    <th key={h} className="px-4 py-3 text-left font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
+                    <th key={h} className="px-4 py-3 text-start font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -848,7 +848,7 @@ export default function DesignPage() {
                   <thead>
                     <tr style={{ borderBottom: `1px solid ${P.border}` }}>
                       {[T.colDwg, T.colSheetScale, T.colRev, T.colStatus, T.colIssueDate, T.colFormat, T.colLinked, ""].map(h => (
-                        <th key={h} className="px-4 py-3 text-left font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
+                        <th key={h} className="px-4 py-3 text-start font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -1049,7 +1049,7 @@ export default function DesignPage() {
                 <thead>
                   <tr style={{ borderBottom: `1px solid ${P.border}` }}>
                     {[T.colRevCol, T.colDate, T.colDesc, T.colBy, T.colChecked, T.colApproved].map(h => (
-                      <th key={h} className="px-2 py-2 text-left font-bold" style={{ color: P.text3 }}>{h}</th>
+                      <th key={h} className="px-2 py-2 text-start font-bold" style={{ color: P.text3 }}>{h}</th>
                     ))}
                   </tr>
                 </thead>

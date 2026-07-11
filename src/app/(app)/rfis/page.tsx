@@ -234,7 +234,7 @@ export default function RFIsPage() {
             <thead>
               <tr style={{ borderBottom: `1px solid ${P.border}` }}>
                 {[T.colNum, T.colSubject, T.colDiscipline, T.colSubmitted, T.colDue, T.colDaysOpen, T.colStatus, T.colPriority, T.colAssigned, ""].map(h => (
-                  <th key={h} className="px-4 py-3 text-left font-bold whitespace-nowrap" style={{ color: P.text3, background: P.bg }}>{h}</th>
+                  <th key={h} className="px-4 py-3 text-start font-bold whitespace-nowrap" style={{ color: P.text3, background: P.bg }}>{h}</th>
                 ))}
               </tr>
             </thead>

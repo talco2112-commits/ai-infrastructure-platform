@@ -148,7 +148,7 @@ export default async function SiteDiaryPage() {
               <thead>
                 <tr style={{ borderBottom: `1px solid ${P.border}` }}>
                   {[T.colZone, T.colActivity, T.colCrew, T.colQty, T.colNote].map(h => (
-                    <th key={h} className="px-4 py-2.5 text-left font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
+                    <th key={h} className="px-4 py-2.5 text-start font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
                   ))}
                 </tr>
               </thead>

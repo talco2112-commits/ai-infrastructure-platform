@@ -449,8 +449,8 @@ function NewBillModal({ isHe, onClose, onSave }: { isHe:boolean; onClose:()=>voi
                 <div className="overflow-x-auto">
                   <table className="w-full text-[11px]">
                     <thead><tr style={{ borderBottom:`1px solid ${P.border}` }}>
-                      {(isHe?["פעילות","אזור","כמות","יחידה","מחיר","סכום"]:["Activity","Zone","Qty","Unit","Rate","Amount"]).map(h =>
-                        <th key={h} className="px-3 py-2 text-left font-bold" style={{ color:P.text3, background:P.bg }}>{h}</th>
+                      {(isHe?["פעילות","אזור","כמות","יחידה","מחיר","סכום"]:["Activity","Zone","Qty","Unit","Rate","Amount"]).map((h,i) =>
+                        <th key={h} className={`px-3 py-2 font-bold ${["text-start","text-center","text-right","text-start","text-right","text-right"][i]}`} style={{ color:P.text3, background:P.bg }}>{h}</th>
                       )}
                     </tr></thead>
                     <tbody>
@@ -715,8 +715,8 @@ function NewBillModal({ isHe, onClose, onSave }: { isHe:boolean; onClose:()=>voi
                 <div className="overflow-x-auto">
                   <table className="w-full text-[11.5px]">
                     <thead><tr style={{ borderBottom:`1px solid ${P.border}` }}>
-                      {(isHe?["#","פעילות","אזור","כמות","יחידה","מחיר","סכום"]:["#","Activity","Zone","Qty","Unit","Rate","Amount"]).map(h =>
-                        <th key={h} className="px-4 py-2.5 text-left font-bold" style={{ color:P.text3, background:P.bg }}>{h}</th>
+                      {(isHe?["#","פעילות","אזור","כמות","יחידה","מחיר","סכום"]:["#","Activity","Zone","Qty","Unit","Rate","Amount"]).map((h,i) =>
+                        <th key={h} className={`px-4 py-2.5 font-bold ${["text-start","text-start","text-center","text-right","text-start","text-right","text-right"][i]}`} style={{ color:P.text3, background:P.bg }}>{h}</th>
                       )}
                     </tr></thead>
                     <tbody>
@@ -1068,8 +1068,8 @@ export default function BillingPage() {
               </div>
               <table className="w-full text-[12px]">
                 <thead><tr style={{ borderBottom:`1px solid ${P.border}` }}>
-                  {[L.colId,isHe?"תיאור":"Description",L.colPeriod,L.colClaimed,L.colRetention,isHe?"שחרור צפוי":"Release Est."].map(h =>
-                    <th key={h} className="px-4 py-3 text-left font-bold" style={{ color:P.text3, background:P.bg }}>{h}</th>
+                  {[L.colId,isHe?"תיאור":"Description",L.colPeriod,L.colClaimed,L.colRetention,isHe?"שחרור צפוי":"Release Est."].map((h,i) =>
+                    <th key={h} className={`px-4 py-3 font-bold ${["text-start","text-start","text-start","text-right","text-right","text-start"][i]}`} style={{ color:P.text3, background:P.bg }}>{h}</th>
                   )}
                 </tr></thead>
                 <tbody>
@@ -1093,8 +1093,8 @@ export default function BillingPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-[12px]">
                 <thead><tr style={{ borderBottom:`1px solid ${P.border}` }}>
-                  {[L.colId,L.colType,L.colDesc,L.colPeriod,L.colSubmitted,L.colDue,L.colClaimed,L.colCertified,L.colRetention,L.colStatus,L.colApprover].map(h =>
-                    <th key={h} className="px-4 py-3 text-left font-bold whitespace-nowrap" style={{ color:P.text3, background:P.bg }}>{h}</th>
+                  {[L.colId,L.colType,L.colDesc,L.colPeriod,L.colSubmitted,L.colDue,L.colClaimed,L.colCertified,L.colRetention,L.colStatus,L.colApprover].map((h,i) =>
+                    <th key={h} className={`px-4 py-3 font-bold whitespace-nowrap ${["text-start","text-start","text-start","text-start","text-start","text-start","text-right","text-right","text-right","text-start","text-start"][i]}`} style={{ color:P.text3, background:P.bg }}>{h}</th>
                   )}
                 </tr></thead>
                 <tbody>

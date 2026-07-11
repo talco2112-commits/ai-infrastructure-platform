@@ -229,7 +229,7 @@ export default function GoalsPage() {
               <thead>
                 <tr style={{ borderBottom: `1px solid ${P.border}` }}>
                   {[T.colGoal, T.colCategory, T.colAssignee, T.colProgress, T.colDeadline, T.colStatus, ""].map(h => (
-                    <th key={h} className="px-4 py-2.5 text-left font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
+                    <th key={h} className="px-4 py-2.5 text-start font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
                   ))}
                 </tr>
               </thead>

@@ -630,7 +630,7 @@ export function ReportsPageClient({ lang }: { lang: "en" | "he" }) {
                 <thead>
                   <tr style={{ borderBottom: `1px solid ${P.border}` }}>
                     {[tx.colReport, tx.colPeriod, tx.colGenerated, tx.colSize, tx.colFormat, ""].map((h, i) => (
-                      <th key={i} className="px-4 py-2 text-left font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
+                      <th key={i} className="px-4 py-2 text-start font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
                     ))}
                   </tr>
                 </thead>

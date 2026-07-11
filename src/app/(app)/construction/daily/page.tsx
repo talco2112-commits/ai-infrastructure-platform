@@ -141,7 +141,7 @@ export default async function DailyTasksPage() {
             <thead>
               <tr style={{ borderBottom: `1px solid ${P.border}` }}>
                 {["ID", T.colTask, T.colZone, T.colCrew, T.colPriority, T.colStart, T.colEnd, T.colStatus].map(h => (
-                  <th key={h} className="px-4 py-3 text-left font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
+                  <th key={h} className="px-4 py-3 text-start font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
                 ))}
               </tr>
             </thead>

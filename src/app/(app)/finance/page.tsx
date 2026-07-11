@@ -201,7 +201,7 @@ export default function FinancePage() {
               <thead>
                 <tr style={{ borderBottom: `1px solid ${P.border}` }}>
                   {[T.colSection, T.colContract, T.colSpent, T.colProgress, T.colStatus].map(h => (
-                    <th key={h} className="px-5 py-2 text-left font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
+                    <th key={h} className="px-5 py-2 text-start font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
                   ))}
                 </tr>
               </thead>

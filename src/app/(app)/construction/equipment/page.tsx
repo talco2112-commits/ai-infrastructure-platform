@@ -133,7 +133,7 @@ export default async function EquipmentPage() {
               <thead>
                 <tr style={{ borderBottom: `1px solid ${P.border}` }}>
                   {[T.colID, T.colDesc, T.colType, T.colZone, T.colHours, T.colUtil, T.colStatus, T.colNext].map(h => (
-                    <th key={h} className="px-3 py-3 text-left font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
+                    <th key={h} className="px-3 py-3 text-start font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
                   ))}
                 </tr>
               </thead>

@@ -129,7 +129,7 @@ export default async function SubcontractorsPage() {
               <thead>
                 <tr style={{ borderBottom: `1px solid ${P.border}` }}>
                   {[T.colCompany, T.colTrade, T.colWorkers, T.colContract, T.colPerf, T.colSchedule, T.colNCRs, T.colStatus].map(h => (
-                    <th key={h} className="px-3 py-3 text-left font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
+                    <th key={h} className="px-3 py-3 text-start font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
                   ))}
                 </tr>
               </thead>

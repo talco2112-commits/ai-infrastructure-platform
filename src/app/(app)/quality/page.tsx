@@ -224,7 +224,7 @@ export default function QualityPage() {
               <thead>
                 <tr style={{ borderBottom: `1px solid ${P.border}` }}>
                   {[T.colNCR, T.colDesc, T.colTrade, T.colLocation, T.colOpened, T.colStatus, T.colCAR, ""].map(h => (
-                    <th key={h} className="px-4 py-2.5 text-left font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
+                    <th key={h} className="px-4 py-2.5 text-start font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -311,7 +311,7 @@ export default function QualityPage() {
             <thead>
               <tr style={{ borderBottom: `1px solid ${P.border}` }}>
                 {[T.colInspType, T.colLocation, T.colInspector, T.colResult, T.colDate].map(h => (
-                  <th key={h} className="px-4 py-2.5 text-left font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
+                  <th key={h} className="px-4 py-2.5 text-start font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
                 ))}
               </tr>
             </thead>

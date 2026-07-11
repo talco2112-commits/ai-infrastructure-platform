@@ -137,7 +137,7 @@ export default async function ProcurementPage() {
             <thead>
               <tr style={{ borderBottom: `1px solid ${P.border}` }}>
                 {[T.colPO, T.colMaterial, T.colSupplier, T.colQty, T.colUnit, T.colValue, T.colDelivery, T.colStatus].map(h => (
-                  <th key={h} className="px-4 py-2.5 text-left font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
+                  <th key={h} className="px-4 py-2.5 text-start font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -172,7 +172,7 @@ export default async function ProcurementPage() {
             <thead>
               <tr style={{ borderBottom: `1px solid ${P.border}` }}>
                 {[T.colReq, T.colDesc, T.colRequestor, T.colUrgency].map(h => (
-                  <th key={h} className="px-4 py-2.5 text-left font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
+                  <th key={h} className="px-4 py-2.5 text-start font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
                 ))}
               </tr>
             </thead>

@@ -99,7 +99,7 @@ function WeekTable({ activities, isHe, T }: { activities: WeekActivity[]; isHe: 
       <thead>
         <tr style={{ borderBottom: `1px solid ${P.border}` }}>
           {["ID", T.colActivity, T.colZone, T.colCrew, T.colDuration, T.colPredecessor, T.colStatus].map(h => (
-            <th key={h} className="px-3 py-2.5 text-left font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
+            <th key={h} className="px-3 py-2.5 text-start font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
           ))}
         </tr>
       </thead>

@@ -230,8 +230,8 @@ export default function SafetyPage() {
             <table className="w-full text-[12px]">
               <thead>
                 <tr style={{ borderBottom: `1px solid ${P.border}` }}>
-                  {[T.colType, T.colDesc, T.colZone, T.colReporter, T.colDate, T.colStatus, ""].map(h => (
-                    <th key={h} className="px-4 py-2.5 text-left font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
+                  {[T.colType, T.colDesc, T.colZone, T.colReporter, T.colDate, T.colStatus, ""].map((h,i) => (
+                    <th key={h} className={`px-4 py-2.5 font-bold ${["text-start","text-start","text-center","text-start","text-start","text-start","text-center"][i]}`} style={{ color: P.text3, background: P.bg }}>{h}</th>
                   ))}
                 </tr>
               </thead>

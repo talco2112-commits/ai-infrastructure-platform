@@ -256,7 +256,7 @@ function CriticalPathPanel({ activities, isHe, today }: { activities: ScheduleAc
           <thead>
             <tr style={{ borderBottom: `1px solid ${P.border}` }}>
               {[isHe ? "WBS / פעילות" : "WBS / Activity", isHe ? "פלואט" : "Float", isHe ? "איחור" : "Delay"].map(h => (
-                <th key={h} className="px-4 py-2.5 text-left font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
+                <th key={h} className="px-4 py-2.5 text-start font-bold" style={{ color: P.text3, background: P.bg }}>{h}</th>
               ))}
             </tr>
           </thead>
