@@ -28,6 +28,19 @@ const P = {
   track: "#E7E0D8",
 };
 
+function fmtMoney(v: string) {
+  const n = Number(String(v).replace(/,/g, ""));
+  return Number.isFinite(n) && n !== 0 ? n.toLocaleString("en-US") : v;
+}
+
+function getGreeting(isHe: boolean) {
+  const h = new Date().getHours();
+  if (h >= 5 && h < 12)  return isHe ? "בוקר טוב" : "Good morning";
+  if (h >= 12 && h < 17) return isHe ? "צהריים טובים" : "Good afternoon";
+  if (h >= 17 && h < 21) return isHe ? "ערב טוב" : "Good evening";
+  return isHe ? "לילה טוב" : "Good night";
+}
+
 type Status = "good" | "warning" | "danger";
 
 /* ─── shared sub-components ─── */
@@ -222,6 +235,9 @@ function EmptyDashboard({ isHe, project }: { isHe: boolean; project: ReturnType<
             style={{ background: P.bg, color: P.text1, paddingInlineStart: "40px", paddingInlineEnd: "16px" }}/>
         </div>
         <div className="flex items-center gap-4 ms-auto">
+          <span className="text-[13px] font-medium hidden md:block" style={{ color: P.text3 }}>
+            {new Date().toLocaleDateString(isHe ? "he-IL" : "en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+          </span>
           <button className="relative w-9 h-9 flex items-center justify-center rounded-xl" style={{ color: P.text2 }}>
             <Bell className="w-[18px] h-[18px]"/>
           </button>
@@ -240,7 +256,10 @@ function EmptyDashboard({ isHe, project }: { isHe: boolean; project: ReturnType<
         {/* Project identity */}
         <div className="flex flex-col lg:flex-row gap-5 items-start">
           <div className="flex-1">
-            <h1 className="text-[28px] font-bold tracking-tight" style={{ color: P.text1 }}>{displayName}</h1>
+            <h1 className="text-[28px] font-bold tracking-tight leading-tight" style={{ color: P.text1 }}>
+              {getGreeting(isHe)}, David
+            </h1>
+            <p className="text-[15px] font-medium mt-1" style={{ color: P.text2 }}>{displayName}</p>
             <div className="flex flex-wrap items-center gap-3 mt-2">
               {project.client && (
                 <span className="text-[13px] font-medium" style={{ color: P.text2 }}>{project.client}</span>
@@ -254,7 +273,7 @@ function EmptyDashboard({ isHe, project }: { isHe: boolean; project: ReturnType<
               {project.contractValue && (
                 <span className="text-[12px] px-2.5 py-0.5 rounded-full font-semibold"
                   style={{ background: P.goodBg, color: P.good }}>
-                  ₪{project.contractValue}
+                  ₪{fmtMoney(project.contractValue)}
                 </span>
               )}
               {project.pm && (
@@ -290,7 +309,7 @@ function EmptyDashboard({ isHe, project }: { isHe: boolean; project: ReturnType<
         {/* Zero-state KPIs */}
         <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
           {[
-            { label: isHe ? "תקציב מנוצל" : "Budget Spent",       value: "₪0",  sub: project.contractValue ? `${isHe?"מתוך":"of"} ₪${project.contractValue}` : isHe?"אין נתון":"No contract value", route: "/finance" },
+            { label: isHe ? "תקציב מנוצל" : "Budget Spent",       value: "₪0",  sub: project.contractValue ? `${isHe?"מתוך":"of"} ₪${fmtMoney(project.contractValue)}` : isHe?"אין נתון":"No contract value", route: "/finance" },
             (project.scheduleActivities?.length ?? 0) > 0
               ? { label: isHe ? "לוח זמנים"   : "Schedule",          value: String(project.scheduleActivities.length), sub: isHe ? "פעילויות בלוח הזמנים" : "activities in schedule", route: "/schedule" }
               : { label: isHe ? "לוח זמנים"   : "Schedule",          value: "—",   sub: isHe ? "לא הועלה לוח זמנים" : "No schedule uploaded", route: "/schedule" },
@@ -459,7 +478,7 @@ function EmptyDashboard({ isHe, project }: { isHe: boolean; project: ReturnType<
 function FullDashboard({ isHe, projectName }: { isHe: boolean; projectName: string }) {
   const router = useRouter();
   const t = {
-    greeting:      isHe ? "בוקר טוב" : "Good morning",
+    greeting:      getGreeting(isHe),
     projectLine:   isHe ? "שבוע 89 מתוך 156" : "Week 89 of 156",
     aiBrief:       isHe ? "תדריך יומי AI" : "AI Daily Brief",
     aiText:        isHe
@@ -502,7 +521,7 @@ function FullDashboard({ isHe, projectName }: { isHe: boolean; projectName: stri
         </div>
         <div className="flex items-center gap-4 ms-auto">
           <span className="text-[13px] font-medium hidden md:block" style={{ color: P.text3 }}>
-            {isHe ? "יום שישי, 27 יוני 2026" : "Friday, 27 June 2026"}
+            {new Date().toLocaleDateString(isHe ? "he-IL" : "en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
           </span>
           <button className="relative w-9 h-9 flex items-center justify-center rounded-xl" style={{ color: P.text2 }}>
             <Bell className="w-[18px] h-[18px]"/>

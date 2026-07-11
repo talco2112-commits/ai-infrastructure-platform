@@ -140,6 +140,10 @@ export function NewProjectModal({ isHe, onClose }: { isHe: boolean; onClose: () 
   const [client, setClient]         = useState("");
   const [location, setLocation]     = useState("");
   const [contractVal, setContractVal] = useState("");
+  function handleContractValChange(v: string) {
+    const digits = v.replace(/[^\d]/g, "");
+    setContractVal(digits ? Number(digits).toLocaleString("en-US") : "");
+  }
   const [startDate, setStartDate]   = useState("");
   const [endDate, setEndDate]       = useState("");
   const [pm, setPm]                 = useState("");
@@ -372,8 +376,8 @@ export function NewProjectModal({ isHe, onClose }: { isHe: boolean; onClose: () 
                   <label className="block text-[12px] font-bold mb-1.5" style={{ color: P.text2 }}>
                     <Banknote className="w-3.5 h-3.5 inline me-1"/>{isHe ? "שווי חוזה (₪)" : "Contract Value (₪)"}
                   </label>
-                  <input value={contractVal} onChange={e => setContractVal(e.target.value)}
-                    placeholder="148,000,000" dir="ltr"
+                  <input value={contractVal} onChange={e => handleContractValChange(e.target.value)}
+                    placeholder="148,000,000" dir="ltr" inputMode="numeric"
                     className="w-full px-3 py-2.5 rounded-xl text-[13px] font-mono"
                     style={{ background: P.bg, border: `1.5px solid ${P.border}`, color: P.text1, outline: "none" }}/>
                 </div>
