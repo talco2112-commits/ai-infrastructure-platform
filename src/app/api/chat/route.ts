@@ -61,9 +61,9 @@ interface ProjectPayload {
 
 const DEMO_PROJECT_BLOCK = `## Project Overview
 Project: Highway 20 – Northern Extension (כביש 20 – הרחבה צפונית)
-Client: Israel National Roads Company (חברת נתיבי ישראל)
+Client: Ministry of Transport – Northern District (משרד התחבורה – מחוז צפון)
 Contractor: DatumBuild Group
-Contract value: ₪450,000,000
+Contract value: ₪148,000,000
 Duration: 156 weeks | Current: Week 89
 Overall schedule: 14 days behind
 Project Manager: David Cohen
@@ -71,7 +71,7 @@ Project Manager: David Cohen
 ## Schedule Status
 Overall: 57% complete, 14 days behind target.
 Critical path: Utility relocation Zone D → Pile foundations Bridge 68 → Bridge deck → Road base Section B
-Today: June 29, 2026
+Today: {{TODAY}}
 
 Activities (WBS):
 1. EARTHWORKS (78% complete)
@@ -100,22 +100,22 @@ Activities (WBS):
 5. TRAFFIC SYSTEMS (0% not started)
 
 ## Budget / Finance
-Contract: ₪450M | Spent: ₪312M (69%) | Committed: ₪28M | Remaining: ₪110M | This month: ₪18.2M
+Contract: ₪148M | Spent: ₪71.7M (48%) | Committed: ₪9.2M | Remaining: ₪67.1M | This month: ₪6.0M
 
 Budget by section:
-- Earthworks: ₪48.5M contract / ₪47.2M spent (97%) — On Track
-- Foundations: ₪112M contract / ₪68.4M spent (61%) — On Track
-- Bridge Structures: ₪158M contract / ₪42.1M spent (27%) — On Track
-- Road Pavement: ₪67.5M contract / ₪38.9M spent (58%) — Warning
-- Traffic Systems: ₪24M contract / ₪2.1M spent (9%)
-- Utilities: ₪18M contract / ₪11.8M spent (66%) — OVER BUDGET (overrun ~₪2.8M)
-- Drainage: ₪14M contract / ₪7.2M spent (51%)
-- Landscaping: ₪8M contract / ₪0.3M spent (4%)
+- Earthworks: ₪16M contract / ₪15.5M spent (97%) — On Track
+- Foundations: ₪36.8M contract / ₪22.5M spent (61%) — On Track
+- Bridge Structures: ₪52M contract / ₪13.8M spent (27%) — On Track
+- Road Pavement: ₪22.2M contract / ₪12.8M spent (58%) — Warning
+- Traffic Systems: ₪7.9M contract / ₪0.7M spent (9%)
+- Utilities: ₪5.9M contract / ₪3.9M spent (66%) — OVER BUDGET (overrun ~₪0.9M)
+- Drainage: ₪4.6M contract / ₪2.4M spent (51%)
+- Landscaping: ₪2.6M contract / ₪0.1M spent (4%)
 
-Pending invoices: ₪10.69M total overdue
-Overdue suppliers: Ambar Engineering (₪2.84M, 15 days), Heidelberg Cement (₪1.92M, 12d), Tadiran Steel (₪3.1M, 8d)
+Pending invoices: ₪3.52M total overdue
+Overdue suppliers: Ambar Engineering (₪0.93M, 15 days), Heidelberg Cement (₪0.63M, 12d), Tadiran Steel (₪1.02M, 8d)
 
-Cash flow: Jan ₪31M actual vs ₪28M plan | Feb ₪29M vs ₪32M | Mar ₪41M vs ₪38M | Apr ₪44M vs ₪42M | May ₪42M vs ₪45M
+Cash flow: Jan ₪10.2M actual vs ₪9.2M plan | Feb ₪9.5M vs ₪10.5M | Mar ₪13.5M vs ₪12.5M | Apr ₪14.5M vs ₪13.8M | May ₪13.8M vs ₪14.8M
 
 ## Zone Progress (DatumBIM)
 Zone A – Earthworks: 89% actual vs 85% planned → AHEAD
@@ -135,21 +135,21 @@ OPEN:
 - RFI-046: Pavement marking colour | Due Jul 4 | LOW
 - RFI-047: Guardrail post spacing near culvert | Due Jul 6 | MEDIUM
 
-## Change Orders / Claims (12 total | ₪8.4M)
-- CO-001: Additional earthworks unforeseen rock | ₪1.24M | APPROVED
-- CO-002: Utility relocation scope increase | ₪2.8M | APPROVED
-- CO-003: Bridge 68 design change wider deck | ₪3.1M | UNDER REVIEW (72 days — may be deemed approved under Clause 36.4)
-- CO-004: Additional piling soft ground Zone B | ₪890K | UNDER REVIEW
-- CO-005: Extended night work traffic permits | ₪340K | PENDING
-- CO-006: Environmental mitigation noise barrier | ₪520K | PENDING
-- CO-007: Dewatering unforeseen groundwater Zone B | ₪380K | PENDING
-- CO-008: Stone pitching erosion protection Zone C | ₪195K | PENDING
+## Change Orders / Claims (12 total | ₪3.4M)
+- CO-001: Additional earthworks unforeseen rock | ₪410K | APPROVED
+- CO-002: Utility relocation scope increase | ₪920K | APPROVED
+- CO-003: Bridge 68 design change wider deck | ₪1.02M | UNDER REVIEW (72 days — may be deemed approved under Clause 36.4)
+- CO-004: Additional piling soft ground Zone B | ₪290K | UNDER REVIEW
+- CO-005: Extended night work traffic permits | ₪110K | PENDING
+- CO-006: Environmental mitigation noise barrier | ₪170K | PENDING
+- CO-007: Dewatering unforeseen groundwater Zone B | ₪125K | PENDING
+- CO-008: Stone pitching erosion protection Zone C | ₪65K | PENDING
 
 ## Risk Register
-RSK-01: Utility relocation further delays (HIGH | ₪1.8M / 21d exposure)
-RSK-02: Bridge 68 design approval delayed beyond Jul 15 (HIGH | ₪3.1M / 28d)
-RSK-03: Concrete supply disruption (MEDIUM | ₪900K / 14d)
-RSK-04: Seasonal flooding drainage incomplete by Oct (MEDIUM | ₪600K / 10d)
+RSK-01: Utility relocation further delays (HIGH | ₪600K / 21d exposure)
+RSK-02: Bridge 68 design approval delayed beyond Jul 15 (HIGH | ₪1.02M / 28d)
+RSK-03: Concrete supply disruption (MEDIUM | ₪300K / 14d)
+RSK-04: Seasonal flooding drainage incomplete by Oct (MEDIUM | ₪200K / 10d)
 
 ## Safety
 LTI-free days: 142
@@ -183,12 +183,13 @@ KEY ISSUE: 2 structural drawings have conflicting pile cap dimensions requiring 
 SUB-007 overdue 5 days — Bridge 68 abutment bearing schedule.
 
 ## Procurement risks
-DELAYED: Elco Bridge Systems expansion joints (₪2.2M) — could impact Bridge 68 timeline.
-PENDING: Roadway Asphalt Co. asphalt (₪5.6M) and Strad Traffic signals (₪4.1M).`;
+DELAYED: Elco Bridge Systems expansion joints (₪720K) — could impact Bridge 68 timeline.
+PENDING: Roadway Asphalt Co. asphalt (₪1.85M) and Strad Traffic signals (₪1.35M).`;
 
 function buildProjectBlock(project: ProjectPayload): string {
   if (project.id === "highway-20") {
-    return `### Project: ${project.name} (${project.nameHe}) [id: ${project.id}]\n${DEMO_PROJECT_BLOCK}`;
+    const today = new Date().toISOString().slice(0, 10);
+    return `### Project: ${project.name} (${project.nameHe}) [id: ${project.id}]\n${DEMO_PROJECT_BLOCK.replace("{{TODAY}}", today)}`;
   }
 
   const totalFiles = project.scheduleFiles + project.contractFiles + project.boqFiles + project.drawingFiles;

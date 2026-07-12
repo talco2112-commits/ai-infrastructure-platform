@@ -156,7 +156,7 @@ const modulesData = [
   { labelEn:"Documents",     labelHe:"מסמכים",        sub:"124 files · 3 new",         subHe:"124 קבצים · 3 חדשים",         icon:Layers,         bg:"#EDE9FF", color:"#5B21B6", alert:false, route:"/documents"     },
   { labelEn:"Design",        labelHe:"תכנון",          sub:"2 drawing inconsistencies", subHe:"2 אי-התאמות בתוכניות",       icon:Pencil,         bg:"#EDE9FF", color:"#4338CA", alert:true,  route:"/design"        },
   { labelEn:"Schedule",      labelHe:"לוח זמנים",      sub:"14d behind critical path",  subHe:"14י מאחורי נתיב קריטי",      icon:Clock,          bg:"#FFFBEB", color:"#B45309", alert:true,  route:"/schedule"      },
-  { labelEn:"Finance",       labelHe:"פיננסים",        sub:"₪312M of ₪450M",           subHe:"312M ₪ מתוך 450M ₪",         icon:Banknote,       bg:"#F5EBE0", color:"#8B5A2B", alert:false, route:"/finance"       },
+  { labelEn:"Finance",       labelHe:"פיננסים",        sub:"₪71.7M of ₪148M",          subHe:"71.7M ₪ מתוך 148M ₪",        icon:Banknote,       bg:"#F5EBE0", color:"#8B5A2B", alert:false, route:"/finance"       },
   { labelEn:"Construction",  labelHe:"בנייה וביצוע",   sub:"12 tasks blocked · Zone D", subHe:"12 משימות חסומות · אזור D", icon:HardHat,        bg:"#FEF3C7", color:"#92400E", alert:true,  route:"/construction"  },
   { labelEn:"Site Progress", labelHe:"מודל",           sub:"Zone D 5% behind model",    subHe:"אזור D 5% מתחת למודל",       icon:Satellite,      bg:"#ECFDF5", color:"#065F46", alert:true,  route:"/site-progress" },
   { labelEn:"RFIs",          labelHe:"בקשות מידע",     sub:"3 overdue · 8 open",        subHe:"3 פגי תוקף · 8 פתוחים",      icon:AlertTriangle,  bg:"#FEF2F2", color:"#B91C1C", alert:true,  route:"/rfis"          },

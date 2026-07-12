@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 
+// KNOWN ISSUE: writes to the local filesystem, which is read-only on Vercel —
+// POST will fail in production. Fix planned for Phase 4 (move to DB/storage).
 const FILE = path.join(process.cwd(), "src/data/content.json");
 
 export async function GET() {
