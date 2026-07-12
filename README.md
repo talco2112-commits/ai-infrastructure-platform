@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# InfrAI
 
-## Getting Started
+A construction management platform for execution contractors (schedule, billing, RFIs, documents, safety, quality, and more), with an AI assistant on top.
 
-First, run the development server:
+## Prerequisites
+
+- Node.js 20+
+- Java 21 JDK (e.g. [Microsoft Build of OpenJDK](https://learn.microsoft.com/en-us/java/openjdk/download)) — required only for the schedule parser service below
+
+## Environment variables
+
+Copy `.env.local.example` to `.env.local` and fill in:
+
+| Variable | Used for | Required |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | AI chat / schedule analysis (`src/app/api/chat`) | Yes — chat routes return 401/error without it |
+| `NEXT_PUBLIC_SANITY_PROJECT_ID` | Sanity CMS (landing page content) | Yes |
+| `NEXT_PUBLIC_SANITY_DATASET` | Sanity CMS dataset (usually `production`) | Yes |
+| `SCHEDULE_PARSER_URL` | URL of the schedule-parser service (defaults to `http://localhost:3001`) | No — only if running the parser on a non-default host/port |
+
+## Running the app
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Schedule parser service (`schedule-parser/`)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+MPP/MPX/XER/PMXML schedule files are parsed by a separate Node + Java microservice (MPXJ), since MPXJ can't run inside Next.js/webpack. It must be running for schedule uploads and Gantt import to work.
 
-## Learn More
+**One-time setup:**
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+cd schedule-parser
+npm install
+npm run setup          # downloads mpxj.jar from Maven Central into lib/
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Build the Java fat JAR (requires the JDK and Maven; a portable Maven is vendored under `schedule-parser/maven/`):
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+cd schedule-parser/java
+../maven/apache-maven-3.9.9/bin/mvn.cmd package -q
+```
 
-## Deploy on Vercel
+**Run the service** (in a separate terminal, alongside `npm run dev`):
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+cd schedule-parser
+node server.js
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+It listens on port `3001` by default (override with `PARSER_PORT`). Health check: `GET http://localhost:3001/health`.
+
+**Data flow:** browser → `POST /api/parse-schedule` (Next.js) → `POST :3001/parse` → `java -jar schedule-parser-1.0.0.jar` → normalized JSON.
+
+## Known limitations
+
+- `src/app/api/content/route.ts` writes to the local filesystem — this breaks on Vercel's read-only filesystem in production. Scheduled to be fixed in Phase 4 (see roadmap).
